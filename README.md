@@ -1,13 +1,13 @@
 # QsBeanfun 5 - 秋水登录器
 
 <p align="center">
-    <a target="_blank" href="https://github.com/dream-core/qs-beanfun">
-        <img alt="stars" src="https://img.shields.io/github/stars/dream-core/qs-beanfun?label=Stars"/>
+    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5">
+        <img alt="stars" src="https://img.shields.io/github/stars/dream-core/qs-beanfun-5?label=Stars"/>
     </a>    
-    <a target="_blank" href="https://github.com/dream-core/qs-beanfun/blob/master/LICENSE">
+    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5/blob/master/LICENSE">
         <img alt="LICENSE" src="https://img.shields.io/badge/License-MIT-lightgrey"/>
     </a>
-    <a target="_blank" href="https://github.com/dream-core/qs-beanfun/releases/latest">
+    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5/releases/latest">
         <img alt="Releases" src="https://img.shields.io/github/v/release/dream-core/qs-beanfun-5?display_name=tag&label=Latest&color=red"/>
     </a>
   </p>
