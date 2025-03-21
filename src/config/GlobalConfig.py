@@ -32,6 +32,6 @@ GLOBAL_PATH_PLUGIN_ZWW_ZIP = 'MapleNecrocer.zip'
 
 GLOBAL_APP_VERSION = '5.0.1'
 
-GLOBAL_APP_GITHUB = "https://github.com/starmcc/qs-beanfun-5"
+GLOBAL_APP_GITHUB = "https://github.com/dream-core/qs-beanfun-5"
 
-GLOBAL_APP_GITHUB_API = "https://api.github.com/repos/starmcc/qs-beanfun-5"
+GLOBAL_APP_GITHUB_API = "https://api.github.com/repos/dream-core/qs-beanfun-5"
