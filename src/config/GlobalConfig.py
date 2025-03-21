@@ -20,7 +20,6 @@ class _GlobalConfig:
         self.custom_thread = None
         self.custom_queue = TaskQueue()
         self.now_login_type = ''
-        self.github_url = '5.0.1'
 
 
 GLOBAL_CONFIG = _GlobalConfig()
@@ -31,7 +30,7 @@ GLOBAL_ACT_TYPE_TW = 'TW'
 GLOBAL_PATH_PLUGIN_LR_ZIP = 'LocaleRemulator.zip'
 GLOBAL_PATH_PLUGIN_ZWW_ZIP = 'MapleNecrocer.zip'
 
-GLOBAL_APP_VERSION = '5.0'
+GLOBAL_APP_VERSION = '5.0.1'
 
 GLOBAL_APP_GITHUB = "https://github.com/starmcc/qs-beanfun-5"
 
