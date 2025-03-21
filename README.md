@@ -1,24 +1,24 @@
 # QsBeanfun 5 - 秋水登录器
 
 <p align="center">
-    <a target="_blank" href="https://github.com/starmcc/qs-beanfun">
-        <img alt="stars" src="https://img.shields.io/github/stars/starmcc/qs-beanfun?label=Stars"/>
+    <a target="_blank" href="https://github.com/dream-core/qs-beanfun">
+        <img alt="stars" src="https://img.shields.io/github/stars/dream-core/qs-beanfun?label=Stars"/>
     </a>    
-    <a target="_blank" href="https://github.com/starmcc/qs-beanfun/blob/master/LICENSE">
+    <a target="_blank" href="https://github.com/dream-core/qs-beanfun/blob/master/LICENSE">
         <img alt="LICENSE" src="https://img.shields.io/badge/License-MIT-lightgrey"/>
     </a>
-    <a target="_blank" href="https://github.com/starmcc/qs-beanfun/releases/latest">
-        <img alt="Releases" src="https://img.shields.io/github/v/release/starmcc/qs-beanfun?display_name=tag&label=Latest&color=red"/>
+    <a target="_blank" href="https://github.com/dream-core/qs-beanfun/releases/latest">
+        <img alt="Releases" src="https://img.shields.io/github/v/release/dream-core/qs-beanfun-5?display_name=tag&label=Latest&color=red"/>
     </a>
   </p>
 <p align="center">
-    <a target="_blank" href="https://github.com/starmcc/qs-beanfun/releases/latest">
-        <img alt="Downloads" src="https://img.shields.io/github/downloads/starmcc/qs-beanfun/total?label=Downloads"/>
+    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5/releases/latest">
+        <img alt="Downloads" src="https://img.shields.io/github/downloads/dream-core/qs-beanfun-5/total?label=Downloads"/>
     </a>
-    <a target="_blank" href="https://github.com/starmcc/qs-beanfun/commits/master">
-        <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/starmcc/qs-beanfun?label=LastCommit">
+    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5/commits/master">
+        <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/dream-core/qs-beanfun-5?label=LastCommit">
     </a>
-    <a target="_blank" href="https://www.oracle.com/java/technologies/downloads/#jre8-windows">
+    <a target="_blank" href="https://www.python.org/">
         <img alt="JRE" src="https://img.shields.io/badge/Python-3.9.6-8d38dc"/>
     </a>
 </p>
@@ -47,7 +47,7 @@ I don't have a lot of energy to do it.
 
 ## 安装
 
-[**Releases-点击进入下载页面**](https://github.com/starmcc/qs-beanfun/releases)
+[**Releases-点击进入下载页面**](https://github.com/dream-core/qs-beanfun-5/releases)
 
 **下载最新`QsBeanfun.zip`开箱即用。**
 
