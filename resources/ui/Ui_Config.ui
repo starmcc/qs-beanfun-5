@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Config</class>
+ <widget class="QDialog" name="Config">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>330</width>
+    <height>150</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>設置</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox_normal">
+     <property name="title">
+      <string>常規</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="checkBox_stopUpdate">
+        <property name="text">
+         <string>阻止遊戲更新</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="checkBox_closeStartWindow">
+        <property name="text">
+         <string>跳過Play頁面</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QCheckBox" name="checkBox_passInput">
+        <property name="text">
+         <string>跳過登錄界面</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_gamePath">
+     <property name="title">
+      <string>遊戲目錄</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,1">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLineEdit" name="lineEdit_gamePath">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_gamePath">
+        <property name="text">
+         <string>選擇</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
