@@ -150,4 +150,4 @@ config.json
 
 /plugins/
 
-.spec
+*.spec

@@ -1,21 +1,21 @@
 
 <p align="center">
-    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5">
-        <img alt="stars" src="https://img.shields.io/github/stars/dream-core/qs-beanfun-5?label=Stars"/>
+    <a target="_blank" href="https://github.com/starmcc/qs-beanfun-5">
+        <img alt="stars" src="https://img.shields.io/github/stars/starmcc/qs-beanfun-5?label=Stars"/>
     </a>    
-    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5/blob/master/LICENSE">
+    <a target="_blank" href="https://github.com/starmcc/qs-beanfun-5/blob/master/LICENSE">
         <img alt="LICENSE" src="https://img.shields.io/badge/License-MIT-lightgrey"/>
     </a>
-    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5/releases/latest">
-        <img alt="Releases" src="https://img.shields.io/github/v/release/dream-core/qs-beanfun-5?display_name=tag&label=Latest&color=red"/>
+    <a target="_blank" href="https://github.com/starmcc/qs-beanfun-5/releases/latest">
+        <img alt="Releases" src="https://img.shields.io/github/v/release/starmcc/qs-beanfun-5?display_name=tag&label=Latest&color=red"/>
     </a>
   </p>
 <p align="center">
-    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5/releases/latest">
-        <img alt="Downloads" src="https://img.shields.io/github/downloads/dream-core/qs-beanfun-5/total?label=Downloads"/>
+    <a target="_blank" href="https://github.com/starmcc/qs-beanfun-5/releases/latest">
+        <img alt="Downloads" src="https://img.shields.io/github/downloads/starmcc/qs-beanfun-5/total?label=Downloads"/>
     </a>
-    <a target="_blank" href="https://github.com/dream-core/qs-beanfun-5/commits/master">
-        <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/dream-core/qs-beanfun-5?label=LastCommit">
+    <a target="_blank" href="https://github.com/starmcc/qs-beanfun-5/commits/master">
+        <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/starmcc/qs-beanfun-5?label=LastCommit">
     </a>
     <a target="_blank" href="https://www.python.org/">
         <img alt="JRE" src="https://img.shields.io/badge/Python-3.9.6-8d38dc"/>
@@ -28,6 +28,8 @@
 
 
 ## 介紹
+
+<image style="width: 120px; height: 120px;" src="./resources/images/logo.png"></image>
 
 Please forgive me for not writing this document in English.
 
@@ -43,7 +45,7 @@ I don't have a lot of energy to do it.
 
 ## 安裝
 
-[**Releases-點擊進入下載頁面**](https://github.com/dream-core/qs-beanfun-5/releases)
+[**Releases-點擊進入下載頁面**](https://github.com/starmcc/qs-beanfun-5/releases)
 
 **下載最新`Beanfun.zip`開箱即用。**
 
