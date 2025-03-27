@@ -37,11 +37,7 @@ I don't have a lot of energy to do it.
 
 引用LR区域模拟元件，支持32/64bit台服新枫之谷游戏运行。
 
-> 支持登录方式
-
-1. 香港账号 - (账密/双重验证)
-2. 台湾账号 - (账密/二维码/QR码)
-3. 内置各种实用小功能
+> 支持香港/台湾游戏橘子登录
 
 **遵循MIT开源协议**，如遇问题或 Bug 亦或交流，请移步 Issues。
 
@@ -49,11 +45,11 @@ I don't have a lot of energy to do it.
 
 [**Releases-点击进入下载页面**](https://github.com/dream-core/qs-beanfun-5/releases)
 
-**下载最新`QsBeanfun.zip`开箱即用。**
+**下载最新`Beanfun.zip`开箱即用。**
 
 > **特别注意**
 
-`QsBeanfun.exe`目录不能存在中文，否则无法启动游戏
+`Beanfun.exe`目录不能存在中文，否则无法启动游戏
 
 ## 实现功能
 
