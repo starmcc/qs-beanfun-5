@@ -22,8 +22,8 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
         super().__init__(parent)
         self.task_id = None
         self.login_success.connect(self._login_success)
-        BaseTools.set_basic_window(self)
         self.setupUi(self)
+        BaseTools.set_basic_window(self)
         self.init_ui()
 
     def init_ui(self):
@@ -61,7 +61,7 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
             if not ok:
                 return
             # 登录成功
-            logging.info('二维码登录成功')
+            logging.info('二维码登录成功!')
             GLOBAL_CONFIG.bf_web_token = token
             self.login_success.emit()
 

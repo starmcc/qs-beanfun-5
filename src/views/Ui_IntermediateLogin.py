@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'UI_IntermediateLogin.ui'
+# Form implementation generated from reading ui file 'Ui_IntermediateLogin.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -28,4 +28,4 @@ class Ui_IntermediateLogin(object):
     def retranslateUi(self, IntermediateLogin):
         _translate = QtCore.QCoreApplication.translate
         IntermediateLogin.setWindowTitle(_translate("IntermediateLogin", "Await"))
-        self.label_await.setText(_translate("IntermediateLogin", "請稍後..."))
+        self.label_await.setText(_translate("IntermediateLogin", "请稍后..."))

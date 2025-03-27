@@ -61,7 +61,7 @@ I don't have a lot of energy to do it.
 |-------------------------------------------------|
 | 香港/台湾橘子 <br/>普通登录、双重登录、二维码登录<br/>Ps: 無需安裝游戏橘子插件 |
 | 模拟繁体操作系统环境运行[新楓之谷]                              |
-| 用户中心 -> 充值、客服、会员中心、账户详情                         |
+| 用户中心 -> 充值、客服、会员中心、账号详情                         |
 | 免输账密启动/进入游戏                                     |
 | 自动屏蔽游戏启动窗口（可选）                                  |
 | 自动阻止游戏自动更新（可选）                                  | 
@@ -78,8 +78,6 @@ pip config get global.index-url
 
 # 安装包前请自行创建 Virtualenv 虚拟环境
 pip install -r requirements.txt
-# 编译QRC资源文件 请在pipenv环境中执行
-pyrcc5.exe .\src\Resources.qrc -o .\src\Resources_rc.py
 ```
 
 # 打包编译

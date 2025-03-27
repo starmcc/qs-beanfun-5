@@ -144,10 +144,10 @@ config.json
 
 .idea
 
-/out_put/
+/compile/
 
 *.log.*
 
 /plugins/
 
-*.spec
+.spec

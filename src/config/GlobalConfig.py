@@ -30,7 +30,7 @@ GLOBAL_ACT_TYPE_TW = 'TW'
 GLOBAL_PATH_PLUGIN_LR_ZIP = 'LocaleRemulator.zip'
 GLOBAL_PATH_PLUGIN_ZWW_ZIP = 'MapleNecrocer.zip'
 
-GLOBAL_APP_VERSION = '5.0.1'
+GLOBAL_APP_VERSION = '5.0.2'
 
 GLOBAL_APP_GITHUB = "https://github.com/dream-core/qs-beanfun-5"
 

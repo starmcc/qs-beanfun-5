@@ -19,7 +19,7 @@ class _PyQtBrowser(QDialog):
         super().__init__(parent)
         BaseTools.set_basic_window(self)
         self.setMinimumSize(880, 550)
-        self.setWindowTitle("瀏覽器")
+        self.setWindowTitle("浏览器")
         self.webView = _CustomWebEngineView()
         self.urlBar = QLineEdit()
         self.goButton = QPushButton("Go")

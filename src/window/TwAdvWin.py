@@ -16,8 +16,8 @@ class TwAdvWin(QDialog, Ui_TwAdv):
         self.viewstate = ''
         self.eventvalidation = ''
         self.viewstateGenerator = ''
-        BaseTools.set_basic_window(self)
         self.setupUi(self)
+        BaseTools.set_basic_window(self)
         self.init_ui()
 
     def init_ui(self):
@@ -56,11 +56,11 @@ class TwAdvWin(QDialog, Ui_TwAdv):
 
     def continue_login(self):
         if not self.lineEdit_phone.text():
-            BoxPop.err(self, '請輸入手提號碼!')
+            BoxPop.err(self, '请输入手机号码!')
             return
 
         if not self.lineEdit_verifyCode.text():
-            BoxPop.err(self, '請輸入驗證碼!')
+            BoxPop.err(self, '请输入验证码!')
             self.load_verify_image()
             return
 
@@ -76,7 +76,7 @@ class TwAdvWin(QDialog, Ui_TwAdv):
         }
         rsp = RequestClient.get_instance().post('https://tw.newlogin.beanfun.com/LoginCheck/AdvanceCheck.aspx', data=data)
         if rsp.status_code != 200:
-            BoxPop.err(self, '網絡錯誤')
+            BoxPop.err(self, '网络错误')
             return
 
         data_list = re.findall(r'<span id="lblMessage" style="color:Red;">(.*?)</span>', rsp.text)
@@ -90,7 +90,7 @@ class TwAdvWin(QDialog, Ui_TwAdv):
         data_list = re.findall(r"alert\('([^']*)'\)", rsp.text)
         msg = data_list[0] if data_list else None
         if not msg:
-            BoxPop.err(self, '未知錯誤,無法獲得Beanfun訊息!')
+            BoxPop.err(self, '未知错误,无法获得Beanfun信息!')
             return
         BoxPop.info(self, msg)
         self.close()

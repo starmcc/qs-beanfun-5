@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>賬戶詳情</string>
+   <string>账号详情</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -46,7 +46,7 @@
         </size>
        </property>
        <property name="text">
-        <string>編輯</string>
+        <string>编辑</string>
        </property>
       </widget>
      </item>
@@ -71,7 +71,7 @@
         </size>
        </property>
        <property name="text">
-        <string>名稱</string>
+        <string>名称</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -119,7 +119,7 @@
         </size>
        </property>
        <property name="text">
-        <string>賬戶</string>
+        <string>账号</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -195,7 +195,7 @@
         </size>
        </property>
        <property name="text">
-        <string>編號</string>
+        <string>编号</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -213,7 +213,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>您的账户已建立了</string>
+      <string>您的账号已建立了</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

@@ -30,4 +30,4 @@ class Ui_QrCodeLogin(object):
 
     def retranslateUi(self, QrCodeLogin):
         _translate = QtCore.QCoreApplication.translate
-        QrCodeLogin.setWindowTitle(_translate("QrCodeLogin", "二維碼登入"))
+        QrCodeLogin.setWindowTitle(_translate("QrCodeLogin", "二维码登录"))

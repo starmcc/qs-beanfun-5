@@ -20,15 +20,15 @@ class IntermediateLoginWin(QDialog, Ui_IntermediateLogin):
     def __init__(self, parent=None, login_record: LoginRecord = None):
         super().__init__(parent)
         self.login_record: LoginRecord = login_record
-        BaseTools.set_basic_window(self)
         self.setupUi(self)
+        BaseTools.set_basic_window(self)
         self.await_num = 0
         self.close_signal.connect(self.handle_close)
         self.task_id = SchedulerManager.do_task(self.polling_login, 1000)
 
     def polling_login(self, task_id):
         self.await_num += 1
-        self.label_await.setText(f'等待App確認登入\n請在{self.MAX_AWAIT_SECONDS - self.await_num}秒內進行操作!')
+        self.label_await.setText(f'等待App确认登录\n请在{self.MAX_AWAIT_SECONDS - self.await_num}秒内进行操作!')
 
         status, self.login_record.auth_key = self.intermediate_login()
         self.login_record.intermediate_login = False
@@ -36,7 +36,7 @@ class IntermediateLoginWin(QDialog, Ui_IntermediateLogin):
         if status == 2:
             self.login_record = QsClient.get_instance().login_return_token(self.login_record)
         elif self.await_num > self.MAX_AWAIT_SECONDS:
-            self.login_record.message = '已超時,請重新登入!'
+            self.login_record.message = '已超时,请重新登录!'
         else:
             return
         self.task_id = -1

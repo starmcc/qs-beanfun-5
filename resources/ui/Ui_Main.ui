@@ -125,14 +125,14 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>賬戶狀態</string>
+          <string>账号狀態</string>
          </property>
         </widget>
        </item>
        <item row="5" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>數字賬戶</string>
+          <string>數字账号</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -152,7 +152,7 @@
        <item row="9" column="0">
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>動態密令</string>
+          <string>动态密令</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -162,7 +162,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>遊戲賬戶</string>
+          <string>游戏账号</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -172,14 +172,14 @@
        <item row="9" column="2">
         <widget class="QPushButton" name="pushButton_dynamicPwd">
          <property name="text">
-          <string>獲取動態密令</string>
+          <string>获取动态密令</string>
          </property>
         </widget>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>樂豆</string>
+          <string>乐豆</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -202,7 +202,7 @@
           <enum>Qt::RightToLeft</enum>
          </property>
          <property name="text">
-          <string>自動填入</string>
+          <string>自动填入</string>
          </property>
          <property name="checked">
           <bool>true</bool>
@@ -212,7 +212,7 @@
        <item row="3" column="2">
         <widget class="QPushButton" name="pushButton_createAct">
          <property name="text">
-          <string>新建賬戶</string>
+          <string>新建账号</string>
          </property>
         </widget>
        </item>
@@ -235,14 +235,14 @@
        <item row="2" column="2">
         <widget class="QPushButton" name="pushButton_config">
          <property name="text">
-          <string>設置</string>
+          <string>设置</string>
          </property>
         </widget>
        </item>
        <item row="0" column="2">
         <widget class="QPushButton" name="pushButton_loginOut">
          <property name="text">
-          <string>註銷</string>
+          <string>注销</string>
          </property>
         </widget>
        </item>
@@ -258,7 +258,7 @@
        </size>
       </property>
       <property name="text">
-       <string>啟動遊戲</string>
+       <string>启动游戏</string>
       </property>
      </widget>
     </item>
@@ -306,7 +306,7 @@
     </widget>
     <widget class="QMenu" name="menu_nav_gamana">
      <property name="title">
-      <string>Beanfun官網</string>
+      <string>Beanfun官网</string>
      </property>
      <addaction name="action_nav_gamana_hk"/>
      <addaction name="action_nav_gamana_tw"/>
@@ -336,12 +336,12 @@
   </widget>
   <action name="action_user_center">
    <property name="text">
-    <string>會員中心</string>
+    <string>会员中心</string>
    </property>
   </action>
   <action name="action_user_recharge">
    <property name="text">
-    <string>儲值中心</string>
+    <string>储值中心</string>
    </property>
   </action>
   <action name="action_user_services">
@@ -351,12 +351,12 @@
   </action>
   <action name="action_user_info">
    <property name="text">
-    <string>賬戶詳情</string>
+    <string>账号详情</string>
    </property>
   </action>
   <action name="action_user_loginOut">
    <property name="text">
-    <string>註銷</string>
+    <string>注销</string>
    </property>
   </action>
   <action name="action_user_exit">
@@ -366,12 +366,12 @@
   </action>
   <action name="action_help_about">
    <property name="text">
-    <string>關於..</string>
+    <string>关于..</string>
    </property>
   </action>
   <action name="action_nav_mapleStory">
    <property name="text">
-    <string>新楓之谷官網</string>
+    <string>新枫之谷官网</string>
    </property>
   </action>
   <action name="action_nav_bahamute">
@@ -381,7 +381,7 @@
   </action>
   <action name="action_nav_toushijing">
    <property name="text">
-    <string>透視鏡</string>
+    <string>透视镜</string>
    </property>
   </action>
   <action name="action_nav_tb_beanfun">
@@ -406,32 +406,32 @@
   </action>
   <action name="action_tools_huilv">
    <property name="text">
-    <string>匯率換算</string>
+    <string>汇率换算</string>
    </property>
   </action>
   <action name="action_tools_ngsKill">
    <property name="text">
-    <string>結束NGS進程</string>
+    <string>结束NGS进程</string>
    </property>
   </action>
   <action name="action_tools_minCoreCalc">
    <property name="text">
-    <string>小核心計算器</string>
+    <string>小核心计算器</string>
    </property>
   </action>
   <action name="action_tools_zww">
    <property name="text">
-    <string>紙娃娃系統</string>
+    <string>纸娃娃系统</string>
    </property>
   </action>
   <action name="action_tools_lianMeng">
    <property name="text">
-    <string>聯盟擺放模擬器</string>
+    <string>联盟摆放模拟器</string>
    </property>
   </action>
   <action name="action_tools_sysCalc">
    <property name="text">
-    <string>系統計算器</string>
+    <string>系统计算器</string>
    </property>
   </action>
   <action name="action_nav_author_bilibili">
@@ -441,7 +441,7 @@
   </action>
   <action name="action_help_update">
    <property name="text">
-    <string>檢查更新</string>
+    <string>检查更新</string>
    </property>
   </action>
  </widget>

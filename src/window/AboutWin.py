@@ -11,8 +11,8 @@ from src.views.Ui_About import Ui_About
 class AboutWin(QDialog, Ui_About):
     def __init__(self, parent=None):
         super().__init__(parent)
-        BaseTools.set_basic_window(self)
         self.setupUi(self)
+        BaseTools.set_basic_window(self)
         self.init_ui()
 
     def init_ui(self):

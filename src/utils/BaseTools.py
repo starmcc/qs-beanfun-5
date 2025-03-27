@@ -1,12 +1,15 @@
+import locale
 import logging
 import os
 import sys
 import webbrowser
 import zipfile
 
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QWidget
 from packaging import version
 
+from src import zhconv
 from src.client import RequestClient
 from src.config import GlobalConfig
 from src.config.GlobalConfig import GLOBAL_APP_VERSION, GLOBAL_APP_GITHUB_API, GLOBAL_APP_GITHUB
@@ -48,7 +51,7 @@ def set_basic_window(self: QWidget):
     from src.window.IntermediateLoginWin import IntermediateLoginWin
     self.setWindowIcon(QIcon(":/images/logo"))
     # 所有窗口透明度
-    self.setWindowOpacity(0.93)
+    self.setWindowOpacity(0.97)
     self.setStyleSheet("""
     * {
     font-family: '微软雅黑';
@@ -77,6 +80,9 @@ def set_basic_window(self: QWidget):
         lineedit-password-character: 9679;
     }
     """)
+
+    # 将所有空间转成对应语言
+    translate_all_controls(self)
 
     if (isinstance(self, ConfigWin)
             or isinstance(self, AccountInfoWin)
@@ -119,7 +125,7 @@ def check_version(self):
         data = response.json()
         latest_version = data.get('tag_name')
         if latest_version is None:
-            BoxPop.err(self,"無法獲取版本信息")
+            BoxPop.err(self, "無法獲取版本信息")
             return
         try:
             if version.parse(GlobalConfig.GLOBAL_APP_VERSION) >= version.parse(latest_version):
@@ -132,3 +138,42 @@ def check_version(self):
     except ValueError as e:
         logging.error(f"解析 JSON 出错: {e}")
         BoxPop.err(self, "解析版本失敗2")
+
+
+def translate_all_controls(self):
+    # 定义需要转换文本的控件类型
+    control_types = (QtWidgets.QLabel, QtWidgets.QPushButton, QtWidgets.QCheckBox,
+                     QtWidgets.QRadioButton, QtWidgets.QGroupBox, QtWidgets.QComboBox,
+                     QtWidgets.QAction, QtWidgets.QMenu)
+    # 查找所有指定类型的控件
+    widgets = self.findChildren(control_types)
+    for widget in widgets:
+        if hasattr(widget, 'text') and callable(widget.text):
+            # 进行简转繁
+            text = translate(widget.text())
+            if hasattr(widget, 'setText') and callable(widget.setText):
+                widget.setText(text)
+            elif isinstance(widget, QtWidgets.QMenu):
+                widget.setTitle(text)
+    # 转换窗口标题
+    self.setWindowTitle(translate(self.windowTitle()))
+
+
+def translate(text):
+    return zhconv.convert(text, 'zh-cn' if is_windows_simplified_chinese() else 'zh-tw')
+
+
+def is_windows_simplified_chinese():
+    try:
+        # 获取系统默认语言环境
+        lang, _ = locale.getdefaultlocale()
+        simplified_codes = {
+            "zh_CN", "zh-CN",
+            "zh_Hans_CN",
+            "zh_SG", "zh-SG",
+            "zh_Hans_SG"
+        }
+        return lang in simplified_codes
+    except Exception as e:
+        print(f"获取系统语言时出现异常: {e}")
+        return False

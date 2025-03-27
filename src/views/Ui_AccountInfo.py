@@ -134,12 +134,12 @@ class Ui_AccountInfo(object):
 
     def retranslateUi(self, AccountInfo):
         _translate = QtCore.QCoreApplication.translate
-        AccountInfo.setWindowTitle(_translate("AccountInfo", "賬戶詳情"))
-        self.pushButton_edit.setText(_translate("AccountInfo", "編輯"))
-        self.label_5.setText(_translate("AccountInfo", "名稱"))
-        self.label.setText(_translate("AccountInfo", "賬戶"))
+        AccountInfo.setWindowTitle(_translate("AccountInfo", "账号详情"))
+        self.pushButton_edit.setText(_translate("AccountInfo", "编辑"))
+        self.label_5.setText(_translate("AccountInfo", "名称"))
+        self.label.setText(_translate("AccountInfo", "账号"))
         self.label_7.setText(_translate("AccountInfo", "狀態"))
-        self.label_2.setText(_translate("AccountInfo", "編號"))
-        self.label_3.setText(_translate("AccountInfo", "您的账户已建立了"))
+        self.label_2.setText(_translate("AccountInfo", "编号"))
+        self.label_3.setText(_translate("AccountInfo", "您的账号已建立了"))
         self.label_day.setText(_translate("AccountInfo", "0"))
         self.label_6.setText(_translate("AccountInfo", "天"))

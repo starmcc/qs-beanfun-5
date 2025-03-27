@@ -125,11 +125,11 @@ class HkClientImpl(QsClient):
         # 获取token，如果没有则失败!
         login_record.bfWebToken = RequestClient.get_ck_val('bfWebToken')
         if not login_record.bfWebToken:
-            login_record.message = '登录失败! bfWebToken is NULL!'
+            login_record.message = '登录失败,请检查网络环境'
             return login_record
 
         login_record.status = True
-        login_record.message = '登录成功!'
+        login_record.message = '登录成功'
         return login_record
 
     def get_session_key(self) -> (bool, str):

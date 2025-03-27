@@ -56,10 +56,10 @@ class Ui_Config(object):
 
     def retranslateUi(self, Config):
         _translate = QtCore.QCoreApplication.translate
-        Config.setWindowTitle(_translate("Config", "設置"))
-        self.groupBox_normal.setTitle(_translate("Config", "常規"))
-        self.checkBox_stopUpdate.setText(_translate("Config", "阻止遊戲更新"))
-        self.checkBox_closeStartWindow.setText(_translate("Config", "跳過Play頁面"))
-        self.checkBox_passInput.setText(_translate("Config", "跳過登錄界面"))
-        self.groupBox_gamePath.setTitle(_translate("Config", "遊戲目錄"))
-        self.pushButton_gamePath.setText(_translate("Config", "選擇"))
+        Config.setWindowTitle(_translate("Config", "设置"))
+        self.groupBox_normal.setTitle(_translate("Config", "常规"))
+        self.checkBox_stopUpdate.setText(_translate("Config", "阻止游戏更新"))
+        self.checkBox_closeStartWindow.setText(_translate("Config", "跳过Play页面"))
+        self.checkBox_passInput.setText(_translate("Config", "跳过登录界面"))
+        self.groupBox_gamePath.setTitle(_translate("Config", "游戏目录"))
+        self.pushButton_gamePath.setText(_translate("Config", "选择"))

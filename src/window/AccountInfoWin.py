@@ -17,8 +17,8 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
     def __init__(self, parent=None, account: Account = None):
         super().__init__(parent)
         self.account: Account = account
-        BaseTools.set_basic_window(self)
         self.setupUi(self)
+        BaseTools.set_basic_window(self)
         self.init_ui()
         self.init_data()
 
@@ -44,7 +44,7 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
 
 
     def edit_account(self):
-        text, ok = BoxPop.input_dialog(self, '修改賬戶名稱', '請輸入新的賬戶名稱')
+        text, ok = BoxPop.input_dialog(self, '修改账号名称', '请输入新的账号名称')
         if not ok or not text:
             return
         try:
@@ -58,4 +58,4 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
             self.close()
         except Exception as e:
             logging.error(e)
-            BoxPop.info(self, '操作異常！')
+            BoxPop.info(self, '操作异常！')

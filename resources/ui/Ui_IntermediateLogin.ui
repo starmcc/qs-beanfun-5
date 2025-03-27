@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label_await">
      <property name="text">
-      <string>請稍後...</string>
+      <string>请稍后...</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

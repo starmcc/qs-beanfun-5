@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'UI_TwAdv.ui'
+# Form implementation generated from reading ui file 'Ui_TwAdv.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -81,9 +81,9 @@ class Ui_TwAdv(object):
 
     def retranslateUi(self, TwAdv):
         _translate = QtCore.QCoreApplication.translate
-        TwAdv.setWindowTitle(_translate("TwAdv", "登入驗證"))
-        self.label_3.setText(_translate("TwAdv", "圖形驗證碼"))
-        self.label_5.setText(_translate("TwAdv", "提示資料"))
-        self.label_4.setText(_translate("TwAdv", "手提號碼"))
+        TwAdv.setWindowTitle(_translate("TwAdv", "登录验证"))
+        self.label_3.setText(_translate("TwAdv", "图形验证码"))
+        self.label_5.setText(_translate("TwAdv", "提示资料"))
+        self.label_4.setText(_translate("TwAdv", "手机号码"))
         self.label_tips.setText(_translate("TwAdv", "XXXXXXXXXXXX"))
-        self.pushButton_send.setText(_translate("TwAdv", "確認送出"))
+        self.pushButton_send.setText(_translate("TwAdv", "确认送出"))

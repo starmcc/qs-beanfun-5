@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>二維碼登入</string>
+   <string>二维码登录</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

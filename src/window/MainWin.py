@@ -91,9 +91,9 @@ class MainWin(QMainWindow, Ui_Main):
 
     def createAct_clicked(self):
         if not self.auth_cert:
-            BoxPop.info(self, '此賬戶尚未完成進階認證,請前往會員中心完成後重新登入!')
+            BoxPop.info(self, '此账号尚未完成进阶认证,请前往会员中心完成后重新登录!')
             return
-        text, ok = BoxPop.input_dialog(self, '新建賬戶', '請輸入賬戶名稱')
+        text, ok = BoxPop.input_dialog(self, '新建账号', '请输入账号名称')
         if not ok or not text:
             return
 
@@ -106,7 +106,7 @@ class MainWin(QMainWindow, Ui_Main):
             self.get_account_info()
         except Exception as e:
             logging.error(e)
-            BoxPop.info(self, '操作異常！')
+            BoxPop.info(self, '操作异常！')
 
     def autoInput_stateChanged(self):
         Config.auto_input(self.checkBox_autoInput.isChecked())
@@ -122,14 +122,14 @@ class MainWin(QMainWindow, Ui_Main):
             SystemCom.auto_input_act_pwd(self.nowAccount.id, self.nowAccount.dynamic_pwd)
         except Exception as e:
             logging.error(e)
-            BoxPop.err(self, '請求動態密令失敗!')
+            BoxPop.err(self, '可能由于网络原因导致请求动态密令失败!\n也可能是无进阶认证导致获取失败!')
 
     def start_clicked(self):
         try:
             SystemCom.run_game(self, self.lineEdit_numAct.text(), self.lineEdit_dynamicPwd.text(), self.run_game_result)
         except Exception as e:
             logging.error(e)
-            BoxPop.err(self, '啟動異常!')
+            BoxPop.err(self, '启动异常!')
 
     def run_game_result(self, data):
         status, msg = data
@@ -145,7 +145,7 @@ class MainWin(QMainWindow, Ui_Main):
             if not BoxPop.question(self, msg):
                 return
             options = QFileDialog.Options()
-            directory = QFileDialog.getExistingDirectory(None, "請選擇新楓之谷遊戲目錄", "", options=options)
+            directory = QFileDialog.getExistingDirectory(None, "请选择新枫之谷游戏目录", "", options=options)
             if not directory:
                 return
             Config.game_path(directory)
@@ -170,7 +170,7 @@ class MainWin(QMainWindow, Ui_Main):
             if result.new_user is True or len(self.children_accounts) == 0:
                 # 新账号
                 if not self.auth_cert:
-                    BoxPop.info(self, '此賬戶尚未完成電話進階認證，請前往會員中心完成後重新登入!')
+                    BoxPop.info(self, '此账号尚未完成电话进阶认证\n请前往会员中心完成后重新登录！')
                     # 不允许创建账号和查看账号详情
                     self.pushButton_createAct.setEnabled(False)
                     self.action_user_info.setEnabled(False)
@@ -182,7 +182,7 @@ class MainWin(QMainWindow, Ui_Main):
             self.refresh_account_info(0)
         except Exception as e:
             logging.error(e)
-            BoxPop.err(self, '獲取賬戶信息失敗!')
+            BoxPop.err(self, '获取账号信息失败!')
 
     def refresh_account_info(self, index):
         """
@@ -261,7 +261,7 @@ class MainWin(QMainWindow, Ui_Main):
         subprocess.Popen(rf'{plugin_directory}\MapleNecrocer.exe')
 
     def tools_ngsKill_triggered(self):
-        if BoxPop.question(self, '是否立即結束NGS進程？'):
+        if BoxPop.question(self, '是否立即结束NGS进程？'):
             err = SystemCom.kill_black_xchg()
             if err:
                 BoxPop.err(self, err)

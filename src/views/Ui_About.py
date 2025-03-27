@@ -122,6 +122,6 @@ class Ui_About(object):
         self.label_4.setText(_translate("About", "所有不怀好意的指责...都需要时间去验证！"))
         self.label_7.setText(_translate("About", "如果您条件允许,望君赞赏"))
         self.label_version.setText(_translate("About", "0.0.0"))
-        self.label_9.setText(_translate("About", "現版本:"))
+        self.label_9.setText(_translate("About", "现版本:"))
         self.label_11.setText(_translate("About", "作者QQ:"))
         self.label_qq.setText(_translate("About", "1140526018"))

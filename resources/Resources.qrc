@@ -1,0 +1,13 @@
+<RCC>
+    <qresource>
+        <file alias="images/banner">./images/banner.png</file>
+        <file alias="images/logo">./images/logo.png</file>
+        <file alias="images/loading">./images/loading.gif</file>
+        <file alias="images/qrCode">./images/qrCode.png</file>
+        <file alias="images/qrLoading">./images/qrLoading.gif</file>
+        <file alias="images/sponsor">./images/sponsor.png</file>
+        <file alias="images/pwd_open">./images/pwd_o.png</file>
+        <file alias="images/pwd_close">./images/pwd_c.png</file>
+        <file alias="statics/zhconv">./statics/zhcdict.json</file>
+    </qresource>
+</RCC>

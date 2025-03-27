@@ -19,8 +19,8 @@ class CustomQTableWidgetItem(QTableWidgetItem):
 class ActEditWin(QDialog, Ui_AccountEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
-        BaseTools.set_basic_window(self)
         self.setupUi(self)
+        BaseTools.set_basic_window(self)
         self.account = ''
         self.editAct = {}
         self.insert = False
@@ -69,8 +69,8 @@ class ActEditWin(QDialog, Ui_AccountEdit):
 class ActManagerWin(QDialog, Ui_ActManager):
     def __init__(self, parent=None):
         super().__init__(parent)
-        BaseTools.set_basic_window(self)
         self.setupUi(self)
+        BaseTools.set_basic_window(self)
         self.init_ui()
         self.win_actEdit = ActEditWin(self)
 
@@ -104,14 +104,14 @@ class ActManagerWin(QDialog, Ui_ActManager):
         acts = Config.accounts()
         self.tableWidget.clear()
         self.tableWidget.setRowCount(len(acts))
-        column_name = ('賬戶', '登入地區', '描述', '最後登入時間')
+        column_name = ('账号', '账号地区', '描述', '最后登录时间')
         self.tableWidget.setHorizontalHeaderLabels(column_name)
 
         for index, act in enumerate(acts):
             self.tableWidget.setItem(index, 0, CustomQTableWidgetItem(act.get('account')))
             login_type = ''
             if act.get('login_type') == GLOBAL_ACT_TYPE_TW:
-                login_type = '台灣'
+                login_type = '台湾'
             else:
                 login_type = '香港'
             self.tableWidget.setItem(index, 1, CustomQTableWidgetItem(login_type))
@@ -130,8 +130,8 @@ class ActManagerWin(QDialog, Ui_ActManager):
         edit_action = None
         selected_indexes = self.tableWidget.selectedIndexes()
         if selected_indexes:
-            edit_action = menu.addAction("編輯")
-            delete_action = menu.addAction("刪除")
+            edit_action = menu.addAction("编辑")
+            delete_action = menu.addAction("删除")
 
         action = menu.exec_(self.tableWidget.mapToGlobal(position))
 
@@ -148,7 +148,7 @@ class ActManagerWin(QDialog, Ui_ActManager):
             select = self.tableWidget.selectedIndexes()
             if len(select) > 0:
                 item = self.tableWidget.item(select[0].row(), 0)
-                if BoxPop.question(self, f'是否刪除賬戶[{item.text()}]?'):
+                if BoxPop.question(self, f'是否删除账号[{item.text()}]?'):
                     Config.account_del(item.text())
         elif action == edit_action:
             select = self.tableWidget.selectedIndexes()

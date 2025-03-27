@@ -4,8 +4,9 @@ import time
 
 import httpx
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QWidget, QButtonGroup
+from PyQt5 import QtWidgets
 
 from src.client import QsClient
 from src.config import Config
@@ -13,6 +14,7 @@ from src.config.GlobalConfig import *
 from src.models.LoginRecord import LoginRecord
 from src.utils import BaseTools, BoxPop
 from src.utils.ThreadTools import CustomThread
+from src.views.Ui_Login import Ui_Login
 from src.window import PyQtBrowser
 from src.window.ActManagerWin import ActManagerWin
 from src.window.IntermediateLoginWin import IntermediateLoginWin
@@ -20,7 +22,6 @@ from src.window.LoadMask import LoadMask
 from src.window.MainWin import MainWin
 from src.window.QrCodeLoginWin import QrCodeLoginWin
 from src.window.TwAdvWin import TwAdvWin
-from src.views.Ui_Login import Ui_Login
 
 
 class LoginWin(QWidget, Ui_Login):
@@ -55,6 +56,28 @@ class LoginWin(QWidget, Ui_Login):
         self.checkBox_remember.setChecked(Config.remember())
 
         self.login_go_to_main_event.connect(self.login_go_to_main_win)
+        # 初始状态为隐藏密码
+        self.is_password_visible = False
+        # 创建显示密码动作按钮
+        self.show_password_action = QtWidgets.QAction(self)
+        # 获取系统自带的可见图标，这里以开启眼睛图标作示例，不同系统显示效果可能有差异
+        self.show_password_action.setIcon(QIcon(':/images/pwd_open'))
+
+        def toggle_password_visibility():
+            if self.is_password_visible:
+                # 如果密码当前可见，将其设为隐藏状态
+                self.lineEdit_password.setEchoMode(QtWidgets.QLineEdit.Password)
+                self.show_password_action.setIcon(QIcon(':/images/pwd_open'))
+                self.is_password_visible = False
+            else:
+                # 如果密码当前隐藏，将其设为可见状态
+                self.lineEdit_password.setEchoMode(QtWidgets.QLineEdit.Normal)
+                self.show_password_action.setIcon(QIcon(':/images/pwd_close'))
+                self.is_password_visible = True
+
+        self.show_password_action.triggered.connect(toggle_password_visibility)
+        # 将动作添加到密码输入框
+        self.lineEdit_password.addAction(self.show_password_action, QtWidgets.QLineEdit.TrailingPosition)
 
     def open_qr_code_win(self, event=None):
         GLOBAL_CONFIG.win_qrCode = QrCodeLoginWin(self)
@@ -89,7 +112,7 @@ class LoginWin(QWidget, Ui_Login):
             return QsClient.get_instance().login(act, pwd)
         except httpx.RequestError as e:
             logging.error(e)
-            return LoginRecord(status=False, message='網絡錯誤')
+            return LoginRecord(status=False, message='网络错误')
 
     def task_login_result(self, login_record):
         if login_record.daul_status:
@@ -143,7 +166,7 @@ class LoginWin(QWidget, Ui_Login):
         self.login_go_to_main_event.emit()
 
     def _login_double_input(self) -> str:
-        text, ok = BoxPop.input_dialog(self, '雙重驗證', '請填入驗證碼')
+        text, ok = BoxPop.input_dialog(self, '双重验证', '请填写验证码')
         if ok:
             if re.match(r'^\d+$', text):
                 return text
