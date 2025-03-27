@@ -1,6 +1,4 @@
 @echo off
-pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
-
 
 pyinstaller --clean -w ^
 --distpath="compile/dist" ^

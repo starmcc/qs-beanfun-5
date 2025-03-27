@@ -83,6 +83,9 @@ pip install -r requirements.txt
 执行`build.bat`文件
 
 ```
+# 编译qrc文件
+pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
+# 打包
 .\build.bat
 ```
 
