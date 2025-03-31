@@ -1,7 +1,11 @@
 import logging
 import os
 import threading
+
 import httpx
+from httpx import Response
+
+from src.config import Config
 
 
 class _RequestClient:
@@ -22,6 +26,8 @@ class _RequestClient:
 
     def init_client(self):
         proxies = os.environ.get('ENV_PROXY_URL')
+        if not proxies:
+            proxies = Config.proxy()
         if proxies:
             logging.info(f'use proxy {proxies}')
         headers = {
@@ -40,33 +46,29 @@ class _RequestClient:
         except Exception as e:
             logging.error(f"Unexpected error while creating client: {e}")
 
-    def get(self, url, **kwargs):
+    def get(self, url, **kwargs) -> Response:
         try:
             return self.client.get(url, **kwargs)
         except httpx.RequestError as req_err:
             logging.error(f"Error occurred during GET request to {url}: {req_err}")
-            return None
+            return Response(408)
         except Exception as e:
             logging.error(f"Unexpected error during GET request to {url}: {e}")
-            return None
+            return Response(500)
 
-    def post(self, url, **kwargs):
+    def post(self, url, **kwargs) -> Response:
         try:
             return self.client.post(url, **kwargs)
         except httpx.RequestError as req_err:
             logging.error(f"Error occurred during POST request to {url}: {req_err}")
-            return None
+            return Response(408)
         except Exception as e:
             logging.error(f"Unexpected error during POST request to {url}: {e}")
-            return None
+            return Response(500)
 
 
 def get_instance() -> _RequestClient:
-    try:
-        return _RequestClient()
-    except Exception as e:
-        logging.error(f"Error getting client instance: {e}")
-        return None
+    return _RequestClient()
 
 
 def get_ck_val(key) -> str or None:

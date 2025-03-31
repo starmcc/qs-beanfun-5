@@ -21,11 +21,11 @@ class QsQrClientImpl(QsQrClient):
 
         rsp = RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/generic_handlers/get_qrcodeData.ashx', params=params)
         if rsp.status_code != 200:
-            qr_code_result.msg = '请求status_code状态码错误!'
+            qr_code_result.msg = '获取二维码失败,错误代码[0]'
             return qr_code_result
         entry = json.loads(rsp.text)
         if not entry or not entry.get('intResult') or entry.get('intResult') != 1:
-            qr_code_result.msg = '获取get_qrcodeData失败!'
+            qr_code_result.msg = '获取二维码失败,错误代码[1]'
             return qr_code_result
 
         qr_code_result.str_encrypt_data = entry.get("strEncryptData")
@@ -33,7 +33,7 @@ class QsQrClientImpl(QsQrClient):
         rsp = RequestClient.get_instance().get(
             f'https://tw.newlogin.beanfun.com/qrhandler.ashx?u=https://beanfunstor.blob.core.windows.net/redirect/appCheck.html?url=beanfunapp://Q/gameLogin/gtw/{qr_code_result.str_encrypt_data}')
         if rsp.status_code != 200:
-            qr_code_result.msg = '请求status_code状态码错误!'
+            qr_code_result.msg = '获取二维码图片失败,错误代码[0]'
             return qr_code_result
         qr_code_result.status = True
         qr_code_result.qr_image = rsp.content

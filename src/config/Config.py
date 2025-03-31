@@ -186,3 +186,9 @@ def remember(value: bool = None):
         return __get_config(key, True)
     __save_config(key, value)
     return None
+
+
+def proxy():
+    key = 'proxy'
+    # 读取
+    return __get_config(key)

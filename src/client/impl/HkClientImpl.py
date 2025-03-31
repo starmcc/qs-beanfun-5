@@ -70,7 +70,7 @@ class HkClientImpl(QsClient):
         viewstate, eventvalidation, viewstateGenerator = self.regex_login_request_params(login_record.content)
 
         if not viewstate or not eventvalidation or not viewstateGenerator:
-            login_record.message = '无法获取关键参数\r[viewstate][eventvalidation][viewstateGenerator]'
+            login_record.message = '登入失败,无法获取关键参数\r[viewstate][eventvalidation][viewstateGenerator]'
             return login_record
 
         url = f"https://login.hk.beanfun.com/login/id-pass_form_newBF.aspx?otp1={login_record.skey}"
@@ -119,13 +119,13 @@ class HkClientImpl(QsClient):
         login_record.content = rsp.text
 
         if rsp.status_code != 200:
-            login_record.message = f'登录失败! Status code:{rsp.status_code}'
+            login_record.message = f'登入失败,请检查网络环境[2]'
             return login_record
 
         # 获取token，如果没有则失败!
         login_record.bfWebToken = RequestClient.get_ck_val('bfWebToken')
         if not login_record.bfWebToken:
-            login_record.message = '登录失败,请检查网络环境'
+            login_record.message = '登入失败,请检查网络环境[3]'
             return login_record
 
         login_record.status = True
@@ -137,7 +137,7 @@ class HkClientImpl(QsClient):
         params = {'service': '999999_T0'}
         response = RequestClient.get_instance().get(url, params=params)
         if response.status_code != 200:
-            return False, '获取sKey失败-1'
+            return False, '登入失败,请检查网络环境[0]'
         if "已自動被系統鎖定" in response.text:
             return False, "IP已自動被系統鎖定"
         if "目前無法在您的國家或地區瀏覽此網站" in response.text:
@@ -147,7 +147,7 @@ class HkClientImpl(QsClient):
             match = re.search(r'skey=([\w]+)', str(url))
             if match:
                 return True, match.group(1)
-        return False, '获取sKey失败-2'
+        return False, '登入失败,请检查网络环境[1]'
 
     def get_account_list(self, bf_web_token: str) -> ActInfoResult:
         actResult = ActInfoResult()
@@ -303,7 +303,7 @@ class HkClientImpl(QsClient):
                 'token1': '',
                 'totpLoginBtn': '登入'}
         if not viewstate or not eventvalidation or not viewstateGenerator:
-            login_record.message = '无法获取关键参数[viewstate][eventvalidation][viewstateGenerator]'
+            login_record.message = '登入失败,无法获取关键参数[viewstate][eventvalidation][viewstateGenerator]'
             return login_record
         for index, char in enumerate(login_record.dual_code):
             data[f'otpCode{index + 1}'] = char
@@ -320,7 +320,7 @@ class HkClientImpl(QsClient):
 
         data_list = re.findall(r'AuthKey\.value\s=\s\"(.*?)\";parent', login_record.content)
         if not data_list:
-            login_record.message = '双重验证获取AuthKey失败!'
+            login_record.message = '登入失败,双重验证获取AuthKey失败!'
             return login_record
 
         login_record.authkey = data_list[0]

@@ -20,7 +20,7 @@ class TwClientImpl(QsClient):
         params = {'service': '999999_T0'}
         response = RequestClient.get_instance().get(url, params=params)
         if response.status_code != 200:
-            return False, '获取sKey失败-1'
+            return False, '登入失败,请检查网络环境[0]'
         if "已自動被系統鎖定" in response.text:
             return False, "IP已自動被系統鎖定"
         if "目前無法在您的國家或地區瀏覽此網站" in response.text:
@@ -31,7 +31,7 @@ class TwClientImpl(QsClient):
             match = re.search(r'skey=([\w]+)', str(url))
             if match:
                 return True, match.group(1)
-        return False, '获取sKey失败-2'
+        return False, '登入失败,请检查网络环境[1]'
 
     def login(self, act: str, pwd: str) -> LoginRecord:
         RequestClient.get_instance().client.cookies.jar.clear()
@@ -50,7 +50,7 @@ class TwClientImpl(QsClient):
         viewstate, eventvalidation, viewstateGenerator = self.regex_login_request_params(login_record.content)
 
         if not viewstate or not eventvalidation or not viewstateGenerator:
-            login_record.message = '无法获取关键参数\r[viewstate][eventvalidation][viewstateGenerator]'
+            login_record.message = '登入失败,无法获取关键参数\r[viewstate][eventvalidation][viewstateGenerator]'
             return login_record
 
         url = f'https://tw.newlogin.beanfun.com/login/id-pass_form.aspx?skey={login_record.skey}'
@@ -110,13 +110,13 @@ class TwClientImpl(QsClient):
         login_record.content = rsp.text
 
         if rsp.status_code != 200:
-            login_record.message = f'登录失败! Status code:{rsp.status_code}'
+            login_record.message = f'登入失败,请检查网络环境[2]'
             return login_record
 
         # 获取token，如果没有则失败!
         login_record.bfWebToken = RequestClient.get_ck_val('bfWebToken')
         if not login_record.bfWebToken:
-            login_record.message = '登录失败! bfWebToken is NULL!'
+            login_record.message = '登入失败,请检查网络环境[3]'
             return login_record
 
         login_record.status = True

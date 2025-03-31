@@ -91,7 +91,7 @@ class MainWin(QMainWindow, Ui_Main):
 
     def createAct_clicked(self):
         if not self.auth_cert:
-            BoxPop.info(self, '此账号尚未完成进阶认证,请前往会员中心完成后重新登录!')
+            BoxPop.info(self, '此账号尚未完成进阶认证,请前往会员中心完成后【重新登录】!')
             return
         text, ok = BoxPop.input_dialog(self, '新建账号', '请输入账号名称')
         if not ok or not text:
@@ -117,7 +117,7 @@ class MainWin(QMainWindow, Ui_Main):
             self.lineEdit_dynamicPwd.setText(self.nowAccount.dynamic_pwd)
         except Exception as e:
             logging.error(e)
-            BoxPop.err(self, '可能由于网络原因导致请求动态密令失败!\n也可能是无进阶认证导致获取失败!')
+            BoxPop.err(self, '请求动态密令失败!')
         try:
             # 需要运行游戏才能执行自动输入
             if self.checkBox_autoInput.isChecked() and SystemCom.check_game_running():
