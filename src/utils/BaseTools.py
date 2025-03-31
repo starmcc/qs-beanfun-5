@@ -98,6 +98,7 @@ def set_basic_window(self: QWidget):
         self.setWindowTitle(f'{self.windowTitle()} {GLOBAL_APP_VERSION}')
     elif isinstance(self, MainWin):
         self.setWindowFlags(Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
+        self.setWindowTitle(f'{self.windowTitle()} {GLOBAL_APP_VERSION}')
     elif isinstance(self, _PyQtBrowser):
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint | Qt.WindowMaximizeButtonHint)
 

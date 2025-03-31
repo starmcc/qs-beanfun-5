@@ -100,7 +100,7 @@ def accounts(value: list[dict] = None):
     key = 'accounts'
     new_ls: list[dict] = []
     # ==================== 读取需解密
-    if not value:
+    if value is None:
         # 读取
         ls = list(__get_config(key, []))
         for account in ls:
@@ -122,26 +122,27 @@ def accounts(value: list[dict] = None):
     return None
 
 
-def account_changes(value: dict, insert: bool = False) -> (bool, str):
+def account_changes(value: dict, insert: bool = False) -> tuple[bool, str]:
     lt = accounts()
     if insert:
         for index, entry in enumerate(lt):
             if entry.get('account') == value.get('account'):
                 return False, '已存在此账号!'
         lt.insert(0, value)
+        accounts(lt)  # 保存修改后的数据
     else:
         for index, entry in enumerate(lt):
             if entry.get('account') == value.get('account'):
                 lt[index] = value
+                accounts(lt)  # 保存修改后的数据
                 break
             if index == len(lt) - 1:
                 return False, '找不到该账号!'
-    accounts(lt)
     return True, '操作成功!'
 
 
 def account_get(account: str) -> dict:
-    if not account:
+    if account is None:
         return {}
     lt = accounts()
     for entry in lt:
@@ -152,7 +153,7 @@ def account_get(account: str) -> dict:
 
 def account_del(account: str) -> bool:
     lt = accounts()
-    if not lt or not account:
+    if not lt or account is None:
         return False
     status = False
     for index, entry in enumerate(lt):
@@ -162,7 +163,8 @@ def account_del(account: str) -> bool:
             break
     if status:
         accounts(lt)
-    return status
+        return True
+    return False
 
 
 def account_first(account: str = None):
@@ -172,9 +174,9 @@ def account_first(account: str = None):
     for index, entry in enumerate(lt):
         if entry.get('account') == account:
             lt.insert(0, lt.pop(index))
+            accounts(lt)
             break
-    accounts(lt)
-    return lt[0]
+    return lt[0] if lt else {}
 
 
 def remember(value: bool = None):

@@ -113,16 +113,18 @@ class MainWin(QMainWindow, Ui_Main):
 
     def dynamicPwd_clicked(self):
         try:
-            self.nowAccount.dynamic_pwd = QsClient.get_instance().get_dynamic_password(self.children_accounts[0],
-                                                                                       GLOBAL_CONFIG.bf_web_token)
+            self.nowAccount.dynamic_pwd = QsClient.get_instance().get_dynamic_password(self.children_accounts[0], GLOBAL_CONFIG.bf_web_token)
             self.lineEdit_dynamicPwd.setText(self.nowAccount.dynamic_pwd)
-            # 需要运行游戏才能执行自动输入
-            if not self.checkBox_autoInput.isChecked() or not SystemCom.check_game_running():
-                return
-            SystemCom.auto_input_act_pwd(self.nowAccount.id, self.nowAccount.dynamic_pwd)
         except Exception as e:
             logging.error(e)
             BoxPop.err(self, '可能由于网络原因导致请求动态密令失败!\n也可能是无进阶认证导致获取失败!')
+        try:
+            # 需要运行游戏才能执行自动输入
+            if self.checkBox_autoInput.isChecked() and SystemCom.check_game_running():
+                SystemCom.auto_input_act_pwd(self.nowAccount.id, self.nowAccount.dynamic_pwd)
+        except Exception as e:
+            logging.error(e)
+            BoxPop.err(self, '自动输入失败,请手动输入!')
 
     def start_clicked(self):
         try:
@@ -164,7 +166,7 @@ class MainWin(QMainWindow, Ui_Main):
             self.auth_cert = result.auth_cert
             self.comboBox_gameAct.clear()
             self.pushButton_createAct.setVisible(result.new_user)
-            self.pushButton_dynamicPwd.setVisible(not result.new_user)
+            self.pushButton_dynamicPwd.setEnabled(not result.new_user)
             self.lineEdit_numAct.setText('')
             self.lineEdit_dynamicPwd.setText('')
             if result.new_user is True or len(self.children_accounts) == 0:
