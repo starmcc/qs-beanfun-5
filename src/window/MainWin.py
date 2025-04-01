@@ -114,7 +114,7 @@ class MainWin(QMainWindow, Ui_Main):
     def dynamicPwd_clicked(self):
         try:
             self.nowAccount.dynamic_pwd = QsClient.get_instance().get_dynamic_password(self.children_accounts[0], GLOBAL_CONFIG.bf_web_token)
-            self.lineEdit_dynamicPwd.setText(self.nowAccount.dynamic_pwd)
+            self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(self.nowAccount.dynamic_pwd))
         except Exception as e:
             logging.error(e)
             BoxPop.err(self, '请求动态密令失败!')
@@ -128,7 +128,13 @@ class MainWin(QMainWindow, Ui_Main):
 
     def start_clicked(self):
         try:
-            SystemCom.run_game(self, self.lineEdit_numAct.text(), self.lineEdit_dynamicPwd.text(), self.run_game_result)
+            if Config.pass_input():
+                self.nowAccount.dynamic_pwd = QsClient.get_instance().get_dynamic_password(self.children_accounts[0], GLOBAL_CONFIG.bf_web_token)
+                self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(self.nowAccount.dynamic_pwd))
+                if not self.nowAccount.dynamic_pwd:
+                    BoxPop.err(self, '获取数据失败,请尝试取消【跳过登录界面】再试!')
+                    return
+            SystemCom.run_game(self, self.nowAccount.id, self.nowAccount.id, self.run_game_result)
         except Exception as e:
             logging.error(e)
             BoxPop.err(self, '启动异常!')
