@@ -134,7 +134,7 @@ class MainWin(QMainWindow, Ui_Main):
                 if not self.nowAccount.dynamic_pwd:
                     BoxPop.err(self, '获取数据失败,请尝试取消【跳过登录界面】再试!')
                     return
-            SystemCom.run_game(self, self.nowAccount.id, self.nowAccount.id, self.run_game_result)
+            SystemCom.run_game(self, self.nowAccount.id, self.nowAccount.dynamic_pwd, self.run_game_result)
         except Exception as e:
             logging.error(e)
             BoxPop.err(self, '启动异常!')
