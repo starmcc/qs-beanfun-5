@@ -26,7 +26,6 @@ class TwClientImpl(QsClient):
         if "目前無法在您的國家或地區瀏覽此網站" in response.text:
             return False, "目前無法在您的國家或地區瀏覽此網站"
         redirect_urls = [r.url for r in response.history]
-        print(redirect_urls)
         for url in redirect_urls:
             match = re.search(r'skey=([\w]+)', str(url))
             if match:

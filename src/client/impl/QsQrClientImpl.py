@@ -62,7 +62,6 @@ class QsQrClientImpl(QsQrClient):
         if rsp.status_code != 200:
             return False, ''
         data_list = re.findall(r'akey=(.*)&authkey=(.*)&', rsp.text)
-        print('data_list=', data_list)
         data_list = data_list[0] if data_list else None
         aKey = data_list[0] if len(data_list) > 0 else None
         authKey = data_list[1] if len(data_list) > 1 else None

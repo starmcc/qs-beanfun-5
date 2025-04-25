@@ -1,6 +1,8 @@
+import importlib
 import locale
 import logging
 import os
+import shutil
 import sys
 import webbrowser
 import zipfile
@@ -44,7 +46,7 @@ def set_basic_window(self: QWidget):
     from src.window.AboutWin import AboutWin
     from src.window.AccountInfoWin import AccountInfoWin
     from src.window.ConfigWin import ConfigWin
-    from src.window.PyQtBrowser import _PyQtBrowser
+    from src.window.PyQtBrowser import PyQtBrowser
     from src.window.ActManagerWin import ActEditWin, ActManagerWin
     from src.window.TwAdvWin import TwAdvWin
     from src.window.QrCodeLoginWin import QrCodeLoginWin
@@ -99,7 +101,7 @@ def set_basic_window(self: QWidget):
     elif isinstance(self, MainWin):
         self.setWindowFlags(Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
         self.setWindowTitle(f'{self.windowTitle()} {GLOBAL_APP_VERSION}')
-    elif isinstance(self, _PyQtBrowser):
+    elif isinstance(self, PyQtBrowser):
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint | Qt.WindowMaximizeButtonHint)
 
 
@@ -176,5 +178,22 @@ def is_windows_simplified_chinese():
         }
         return lang in simplified_codes
     except Exception as e:
-        print(f"获取系统语言时出现异常: {e}")
+        logging.error(f"获取系统语言时出现异常: {e}")
         return False
+
+
+def build_chrome():
+    # 构建QtWebEngineProcess的复制品chrome.exe 适配加速器
+    spec = importlib.util.find_spec('PyQt5')
+    if spec and spec.submodule_search_locations:
+        pyqt5_dir = spec.submodule_search_locations[0]
+        possible_path = os.path.join(pyqt5_dir, 'Qt5', 'bin', 'QtWebEngineProcess.exe')
+        if os.path.exists(possible_path):
+            # 构建目标文件路径
+            target_path = os.path.join(os.path.dirname(possible_path), 'chrome.exe')
+            # 复制文件
+            if not os.path.exists(target_path):
+                shutil.copy2(possible_path, target_path)
+                logging.info(f"已初始化 {target_path}")
+            return target_path
+    return None

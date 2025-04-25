@@ -40,7 +40,7 @@ class _RequestClient:
                                        verify=False,
                                        proxies=proxies,
                                        headers=headers,
-                                       timeout=30)
+                                       timeout=10)
         except httpx.RequestError as req_err:
             logging.error(f"Error creating HTTP client: {req_err}")
         except Exception as e:
