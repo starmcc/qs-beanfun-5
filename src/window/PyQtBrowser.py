@@ -1,6 +1,7 @@
 import logging
 
 from PyQt5.QtCore import QUrl, QEventLoop, QDateTime
+from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtNetwork import QNetworkCookie, QNetworkRequest, QNetworkAccessManager, QNetworkReply
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout
@@ -12,8 +13,7 @@ from src.utils import BaseTools
 
 class CustomWebEngineView(QWebEngineView):
     def createWindow(self, web_window_type):
-        new_view = CustomWebEngineView()
-        return new_view
+        return self
 
 
 class PyQtBrowser(QDialog):
@@ -153,6 +153,9 @@ class PyQtBrowser(QDialog):
         except Exception as e:
             logging.error(f"处理 cookies 时出现错误: {e}")
 
+    def closeEvent(self, event: QCloseEvent):
+        self.web_view.deleteLater()
+        event.accept()
 
 def open_browser(url_path: str, parent=None):
     GLOBAL_CONFIG.win_browser = PyQtBrowser(parent)
