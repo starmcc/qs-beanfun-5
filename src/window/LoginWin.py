@@ -33,7 +33,6 @@ class LoginWin(QWidget, Ui_Login):
         self.setupUi(self)
         BaseTools.set_basic_window(self)
         self.init_ui()
-        self.show()
 
     def init_ui(self):
         # 设置图片

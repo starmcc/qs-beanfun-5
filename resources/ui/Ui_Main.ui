@@ -25,9 +25,6 @@
   <property name="windowTitle">
    <string>QsBeanfun</string>
   </property>
-  <property name="windowOpacity">
-   <double>0.960000000000000</double>
-  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <property name="spacing">

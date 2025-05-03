@@ -53,7 +53,7 @@ def set_basic_window(self: QWidget):
     from src.window.IntermediateLoginWin import IntermediateLoginWin
     self.setWindowIcon(QIcon(":/images/logo"))
     # 所有窗口透明度
-    self.setWindowOpacity(0.97)
+    self.setWindowOpacity(0.98)
     self.setStyleSheet("""
     * {
     font-family: '微软雅黑';
@@ -83,7 +83,7 @@ def set_basic_window(self: QWidget):
     }
     """)
 
-    # 将所有空间转成对应语言
+    # 将所有控件转成对应语言
     translate_all_controls(self)
 
     if (isinstance(self, ConfigWin)

@@ -17,7 +17,6 @@ class Ui_Main(object):
         Main.resize(310, 200)
         Main.setMinimumSize(QtCore.QSize(310, 200))
         Main.setMaximumSize(QtCore.QSize(310, 200))
-        Main.setWindowOpacity(0.96)
         self.centralwidget = QtWidgets.QWidget(Main)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.centralwidget)

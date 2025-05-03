@@ -65,4 +65,5 @@ if __name__ == '__main__':
 
     app = QsBeanfun(sys.argv)
     win_login = LoginWin()
+    win_login.show()
     sys.exit(app.exec_())

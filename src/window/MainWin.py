@@ -112,12 +112,10 @@ class MainWin(QMainWindow, Ui_Main):
         Config.auto_input(self.checkBox_autoInput.isChecked())
 
     def dynamicPwd_clicked(self):
-        try:
-            self.nowAccount.dynamic_pwd = QsClient.get_instance().get_dynamic_password(self.children_accounts[0], GLOBAL_CONFIG.bf_web_token)
-            self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(self.nowAccount.dynamic_pwd))
-        except Exception as e:
-            logging.error(e)
-            BoxPop.err(self, '请求动态密令失败!')
+        dp_result = self.get_dynamic_password()
+        if dp_result != 0:
+            BoxPop.err(self, f'请求动态密令失败[{dp_result}]')
+            return
         try:
             # 需要运行游戏才能执行自动输入
             if self.checkBox_autoInput.isChecked() and SystemCom.check_game_running():
@@ -129,15 +127,25 @@ class MainWin(QMainWindow, Ui_Main):
     def start_clicked(self):
         try:
             if Config.pass_input():
-                self.nowAccount.dynamic_pwd = QsClient.get_instance().get_dynamic_password(self.children_accounts[0], GLOBAL_CONFIG.bf_web_token)
-                self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(self.nowAccount.dynamic_pwd))
-                if not self.nowAccount.dynamic_pwd:
-                    BoxPop.err(self, '获取数据失败,请尝试取消【跳过登录界面】再试!')
+                dp_result = self.get_dynamic_password()
+                if dp_result != 0:
+                    BoxPop.err(self, f'请求动态密令失败[{dp_result}]')
                     return
             SystemCom.run_game(self, self.nowAccount.id, self.nowAccount.dynamic_pwd, self.run_game_result)
         except Exception as e:
             logging.error(e)
             BoxPop.err(self, '启动异常!')
+
+    def get_dynamic_password(self) -> int:
+        try:
+            self.nowAccount.dynamic_pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)
+            if not self.nowAccount.dynamic_pwd:
+                return 1
+            self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(self.nowAccount.dynamic_pwd))
+        except Exception as e:
+            logging.error(e)
+            return 2
+        return 0
 
     def run_game_result(self, data):
         status, msg = data
@@ -278,6 +286,7 @@ class MainWin(QMainWindow, Ui_Main):
         from src.window.LoginWin import LoginWin
         QsClient.get_instance().login_out()
         win_login = LoginWin()
+        win_login.show()
         self.close()
 
     def user_info_triggered(self):
