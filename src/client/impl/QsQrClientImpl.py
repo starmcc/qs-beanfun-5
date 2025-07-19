@@ -1,4 +1,3 @@
-import json
 import re
 
 from src.client import QsClient, RequestClient
@@ -20,12 +19,28 @@ class QsQrClientImpl(QsQrClient):
         RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/login/qr_form.aspx', params=params)
 
         rsp = RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/generic_handlers/get_qrcodeData.ashx', params=params)
+        # 检查HTTP响应状态码
         if rsp.status_code != 200:
             qr_code_result.msg = '获取二维码失败,错误代码[0]'
             return qr_code_result
-        entry = json.loads(rsp.text)
-        if not entry or not entry.get('intResult') or entry.get('intResult') != 1:
+        try:
+            # 解析JSON响应
+            entry = rsp.json()
+        except ValueError as e:
+            qr_code_result.msg = f'JSON解析失败：{str(e)}'
+            return qr_code_result
+        # 检查响应数据结构完整性
+        if not isinstance(entry, dict):
             qr_code_result.msg = '获取二维码失败,错误代码[1]'
+            return qr_code_result
+        # 获取intResult字段并验证
+        int_result = entry.get('intResult')
+        if int_result is None:
+            qr_code_result.msg = '获取二维码失败,错误代码[2]'
+            return qr_code_result
+        # 检查业务逻辑状态码
+        if int_result != 1:
+            qr_code_result.msg = entry.get('strOutstring', '获取二维码失败,错误代码[3]')
             return qr_code_result
 
         qr_code_result.str_encrypt_data = entry.get("strEncryptData")
@@ -47,7 +62,7 @@ class QsQrClientImpl(QsQrClient):
         if rsp.status_code != 200:
             return -1
 
-        content = json.loads(rsp.text)
+        content = rsp.json()
         return content.get('Result')
 
     def login(self, session_key: str) -> (bool, str):

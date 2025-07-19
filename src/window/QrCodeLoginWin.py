@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QDialog
 from src.client import QsQrClient
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.QrCodeResult import QrCodeResult
-from src.utils import BaseTools, SchedulerManager, BoxPop
+from src.utils import SchedulerManager, BoxPop, WinManager
 from src.utils.ThreadTools import CustomThread
 from src.views.Ui_QrCodeLogin import Ui_QrCodeLogin
 
@@ -23,7 +23,7 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
         self.task_id = None
         self.login_success.connect(self._login_success)
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.init_ui()
 
     def init_ui(self):

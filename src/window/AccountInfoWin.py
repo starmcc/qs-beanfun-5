@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QDialog
 
 from src.client import QsClient
 from src.models.Account import Account
-from src.utils import BaseTools, BoxPop
+from src.utils import BoxPop, WinManager
 from src.views.Ui_AccountInfo import Ui_AccountInfo
 
 
@@ -18,7 +18,7 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
         super().__init__(parent)
         self.account: Account = account
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.init_ui()
         self.init_data()
 
@@ -41,7 +41,6 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
         day = abs(date - datetime.now()).days
         self.label_day.setText(f'{day}')
         self.label_createTme.setText(f"于 {self.account.create_time} 创建")
-
 
     def edit_account(self):
         text, ok = BoxPop.input_dialog(self, '修改账号名称', '请输入新的账号名称')

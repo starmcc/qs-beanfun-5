@@ -3,8 +3,8 @@ import webbrowser
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QDialog
 
-from src.config.GlobalConfig import GLOBAL_APP_VERSION, GLOBAL_APP_GITHUB
-from src.utils import BaseTools, BoxPop
+from src.config.GlobalConfig import GLOBAL_APP_VERSION
+from src.utils import BaseTools, WinManager
 from src.views.Ui_About import Ui_About
 
 
@@ -12,7 +12,7 @@ class AboutWin(QDialog, Ui_About):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.init_ui()
 
     def init_ui(self):

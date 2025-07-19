@@ -24,14 +24,7 @@ class HkClientImpl(QsClient):
             'nsadn': new_name.strip(),
         }
         rsp = RequestClient.get_instance().post(url, data=data)
-        if rsp.status_code != 200:
-            return False, '请求失败!'
-        entry = json.loads(rsp.text)
-        if not entry or not entry.get('intResult'):
-            return False, '解析失败!'
-        if entry.get('intResult') == 1:
-            return True, 'ok'
-        return False, entry.get('strOutstring')
+        return self.result_json_handler(rsp, '修改')
 
     def add_account(self, new_name: str) -> (bool, str):
         url = "https://bfweb.hk.beanfun.com/generic_handlers/gamezone.ashx"
@@ -44,15 +37,8 @@ class HkClientImpl(QsClient):
             'sadn': new_name.strip(),
             'sag': '',
         }
-        rsp = RequestClient.get_instance().post(url, data=data)
-        if rsp.status_code != 200:
-            return False, '请求失败!'
-        entry = json.loads(rsp.text)
-        if not entry or not entry.get('intResult'):
-            return False, '解析失败!'
-        if entry.get('intResult') == 1:
-            return True, 'ok'
-        return False, entry.get('strOutstring')
+        rsp = RequestClient.get_instance().post(url, data=data, timeout=60)
+        return self.result_json_handler(rsp, '创建')
 
     def login(self, act: str, pwd: str) -> LoginRecord:
         RequestClient.get_instance().client.cookies.jar.clear()
@@ -360,3 +346,6 @@ class HkClientImpl(QsClient):
 
     def regex_login_request_params(self, text: str) -> (str, str, str):
         return super().regex_login_request_params(text)
+
+    def result_json_handler(self, rsp, msg) -> (bool, str):
+        return super().result_json_handler(rsp, msg)

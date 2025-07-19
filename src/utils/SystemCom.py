@@ -1,8 +1,9 @@
+import ctypes
 import logging
 import subprocess
 import time
-import ctypes
 from ctypes import wintypes
+
 import psutil
 import pyautogui
 
@@ -29,8 +30,9 @@ user32.SetForegroundWindow.restype = wintypes.BOOL
 user32.ClientToScreen.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.POINT)]
 user32.ClientToScreen.restype = wintypes.BOOL
 
+
 # 运行游戏的函数
-def run_game(self, act: str = None, pwd: str = None, res_fnc=None):
+def run_game(act: str = None, pwd: str = None, res_fnc=None):
     try:
         # 加载插件
         BaseTools.extract_build_plugin(GLOBAL_PATH_PLUGIN_LR_ZIP)
@@ -103,7 +105,7 @@ def check_game_running():
 
 def check_game_isZoomed():
     hwnd = getMapleStoryHwnd()
-    if hwnd >= 0:
+    if hwnd:
         if user32.IsZoomed(hwnd):
             return True
     return False
@@ -113,10 +115,15 @@ def getMapleStoryHwnd():
     return user32.FindWindowW("MapleStoryClassTW", "MapleStory")
 
 
-def auto_input_act_pwd(act, pwd):
-    if not check_game_running() or check_game_isZoomed():
-        logging.info("窗口最大化，不使用自动输入")
-        return
+def auto_input_act_pwd(act, pwd) -> (int, str):
+    if not check_game_running():
+        msg = '游戏未启动，无法自动输入!'
+        logging.info(msg)
+        return 1, msg
+    if check_game_isZoomed():
+        msg = '窗口最大化，无法自动输入!'
+        logging.info(msg)
+        return 2, msg
     # 操作流程：获取窗口焦点 -> 鼠标点输入框 -> 按End -> 按退格 -> 输入 -> 按TAB -> 输入 -> 回车
     hwnd = getMapleStoryHwnd()
     # 前置游戏窗口
@@ -138,6 +145,7 @@ def auto_input_act_pwd(act, pwd):
     __postChars(hwnd, pwd)
     pyautogui.sleep(0.1)
     __postKey(hwnd, 0x0D)  # VK_RETURN = 0x0D
+    return 0, ''
 
 
 def __postKey(hwnd, w_param):

@@ -1,40 +1,32 @@
 import logging
 import math
-import subprocess
-import sys
-import webbrowser
 from decimal import Decimal
 
 from PyQt5.QtCore import QEvent
 from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QMainWindow, QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QWidget
 
 from src.client import QsClient
 from src.config import Config
-from src.config.GlobalConfig import GLOBAL_CONFIG, GLOBAL_PATH_PLUGIN_ZWW_ZIP
+from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.Account import Account
-from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager
-from src.utils.TaskQueue import TaskQueue
+from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager, WinManager
 from src.utils.ThreadTools import CustomThread
 from src.views.Ui_Main import Ui_Main
-from src.window import PyQtBrowser
-from src.window.AboutWin import AboutWin
-from src.window.AccountInfoWin import AccountInfoWin
 from src.window.ConfigWin import ConfigWin
 from src.window.LoadMask import LoadMask
 from src.window.TrayIcon import TrayIcon
 
 
-class MainWin(QMainWindow, Ui_Main):
-    icon: TrayIcon
+class MainWin(QWidget, Ui_Main):
+    trayIcon: TrayIcon
     nowAccount: Account = Account()
     task_id: str
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.task_queue = TaskQueue()
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.children_accounts: list[Account] = []
         self.auth_cert = True
         self.init_ui()
@@ -46,14 +38,14 @@ class MainWin(QMainWindow, Ui_Main):
     def closeEvent(self, a0):
         # 当窗口关闭时停止心跳
         SchedulerManager.stop_task(self.task_id)
-        self.icon.deleteLater()
+        self.trayIcon.deleteLater()
         super().closeEvent(a0)
 
     def refresh_login_status(self, task_id):
         QsClient.get_instance().heartbeat()
 
     def init_ui(self):
-        self.icon = TrayIcon(self)
+        self.trayIcon = TrayIcon(self)
         self.checkBox_autoInput.setChecked(Config.auto_input())
         self.pushButton_dynamicPwd.clicked.connect(self.dynamicPwd_clicked)
         self.pushButton_start.clicked.connect(self.start_clicked)
@@ -66,7 +58,6 @@ class MainWin(QMainWindow, Ui_Main):
         self.comboBox_gameAct.currentIndexChanged.connect(self.refresh_account_info)
         self.label_points.mousePressEvent = self.refresh_points
         self.label_status.mousePressEvent = self.get_account_info
-        self.__init_menu()
         self.pushButton_loginOut.setFocus()
 
     def eventFilter(self, obj, event):
@@ -83,17 +74,11 @@ class MainWin(QMainWindow, Ui_Main):
 
         return super().eventFilter(obj, event)
 
-    def changeEvent(self, event):
-        super().changeEvent(event)
-        if event.type() == QEvent.WindowStateChange:
-            if self.isMinimized():
-                self.hide()
-
     def createAct_clicked(self):
         if not self.auth_cert:
             BoxPop.info(self, '此账号尚未完成进阶认证,请前往会员中心完成后【重新登录】!')
             return
-        text, ok = BoxPop.input_dialog(self, '新建账号', '请输入账号名称')
+        text, ok = BoxPop.input_dialog(self, '新建账号', '请输入账号昵称')
         if not ok or not text:
             return
 
@@ -103,7 +88,7 @@ class MainWin(QMainWindow, Ui_Main):
                 BoxPop.err(self, msg)
             else:
                 BoxPop.info(self, msg)
-            self.get_account_info()
+                self.get_account_info()
         except Exception as e:
             logging.error(e)
             BoxPop.info(self, '操作异常！')
@@ -114,12 +99,14 @@ class MainWin(QMainWindow, Ui_Main):
     def dynamicPwd_clicked(self):
         dp_result = self.get_dynamic_password()
         if dp_result != 0:
-            BoxPop.err(self, f'请求动态密令失败[{dp_result}]')
+            BoxPop.err(self, f'获取动态密令失败[{dp_result}]')
             return
         try:
             # 需要运行游戏才能执行自动输入
             if self.checkBox_autoInput.isChecked() and SystemCom.check_game_running():
-                SystemCom.auto_input_act_pwd(self.nowAccount.id, self.nowAccount.dynamic_pwd)
+                status, msg = SystemCom.auto_input_act_pwd(self.nowAccount.id, self.nowAccount.dynamic_pwd)
+                if status != 0:
+                    BoxPop.err(self, msg)
         except Exception as e:
             logging.error(e)
             BoxPop.err(self, '自动输入失败,请手动输入!')
@@ -131,7 +118,7 @@ class MainWin(QMainWindow, Ui_Main):
                 if dp_result != 0:
                     BoxPop.err(self, f'请求动态密令失败[{dp_result}]')
                     return
-            SystemCom.run_game(self, self.nowAccount.id, self.nowAccount.dynamic_pwd, self.run_game_result)
+            SystemCom.run_game(self.nowAccount.id, self.nowAccount.dynamic_pwd, self.run_game_result)
         except Exception as e:
             logging.error(e)
             BoxPop.err(self, '启动异常!')
@@ -156,7 +143,7 @@ class MainWin(QMainWindow, Ui_Main):
         # 4  = 自动阻止更新失败
         if status == 0 or status == -1 or status == 2 or status == 4:
             logging.error(msg)
-            BoxPop.err(self, msg)
+            BoxPop.warn(self, msg)
         elif status == 1:
             if not BoxPop.question(self, msg):
                 return
@@ -240,62 +227,9 @@ class MainWin(QMainWindow, Ui_Main):
 
         CustomThread.run_task(__task, None, LoadMask(self))
 
-    ## ----------------------- 菜单事件 -----------------------
-
-    def __init_menu(self):
-        # 用户中心
-        self.action_user_center.triggered.connect(lambda: PyQtBrowser.open_browser(QsClient.get_instance().get_web_url_member_center(GLOBAL_CONFIG.bf_web_token), self))
-        self.action_user_recharge.triggered.connect(lambda: PyQtBrowser.open_browser(QsClient.get_instance().get_web_url_user_recharge(GLOBAL_CONFIG.bf_web_token), self))
-        self.action_user_services.triggered.connect(lambda: PyQtBrowser.open_browser(QsClient.get_instance().get_web_url_service_center(), self))
-        self.action_user_info.triggered.connect(self.user_info_triggered)
-        self.action_user_loginOut.triggered.connect(self.user_loginOut_triggerd)
-        self.action_user_exit.triggered.connect(sys.exit)
-        # 快速导航
-        self.action_nav_mapleStory.triggered.connect(lambda: webbrowser.open('https://maplestory.beanfun.com/main'))
-        self.action_nav_gamana_hk.triggered.connect(lambda: webbrowser.open('https://bfweb.hk.beanfun.com/'))
-        self.action_nav_gamana_tw.triggered.connect(lambda: webbrowser.open('https://tw.beanfun.com'))
-        self.action_nav_tb_beanfun.triggered.connect(lambda: webbrowser.open('https://tieba.baidu.com/f?kw=beanfun'))
-        self.action_nav_tb_xfzg.triggered.connect(lambda: webbrowser.open('https://tieba.baidu.com/f?kw=%E6%96%B0%E6%9E%AB%E4%B9%8B%E8%B0%B7'))
-        self.action_nav_bahamute.triggered.connect(lambda: webbrowser.open('https://forum.gamer.com.tw/A.php?bsn=7650/'))
-        self.action_nav_toushijing.triggered.connect(lambda: webbrowser.open('http://www.gametsg.com/maplestory/'))
-        self.action_nav_author_bilibili.triggered.connect(lambda: webbrowser.open('https://space.bilibili.com/391919722'))
-
-        # 实用功能
-        self.action_tools_ngsKill.triggered.connect(self.tools_ngsKill_triggered)
-        self.action_tools_sysCalc.triggered.connect(lambda: subprocess.Popen('calc.exe'))
-        self.action_tools_minCoreCalc.triggered.connect(lambda: PyQtBrowser.open_browser('https://starmcc.github.io/MapleStoryCoreCalc/', self))
-        self.action_tools_huilv.triggered.connect(lambda: PyQtBrowser.open_browser('https://zh.coinmill.com/CNY_calculator.html', self))
-        self.action_tools_lianMeng.triggered.connect(lambda: PyQtBrowser.open_browser('https://starmcc.github.io/MapleStoryAllianceSimulator/', self))
-        self.action_tools_zww.triggered.connect(self.tools_zww_triggered)
-
-        # Help
-        self.action_help_about.triggered.connect(self.help_open_about_triggered)
-        self.action_help_update.triggered.connect(lambda: BaseTools.check_version(self))
-
-    def tools_zww_triggered(self):
-        plugin_directory = BaseTools.extract_build_plugin(GLOBAL_PATH_PLUGIN_ZWW_ZIP)
-        subprocess.Popen(rf'{plugin_directory}\MapleNecrocer.exe')
-
-    def tools_ngsKill_triggered(self):
-        if BoxPop.question(self, '是否立即结束NGS进程？'):
-            err = SystemCom.kill_black_xchg()
-            if err:
-                BoxPop.err(self, err)
-
     def user_loginOut_triggerd(self):
         from src.window.LoginWin import LoginWin
         QsClient.get_instance().login_out()
         win_login = LoginWin()
         win_login.show()
         self.close()
-
-    def user_info_triggered(self):
-        GLOBAL_CONFIG.win_accountInfo = AccountInfoWin(self, self.nowAccount)
-        GLOBAL_CONFIG.win_accountInfo.notice_refresh.connect(self.get_account_info)
-        GLOBAL_CONFIG.win_accountInfo.exec_()
-
-    def help_open_about_triggered(self):
-        GLOBAL_CONFIG.win_about = AboutWin(self)
-        GLOBAL_CONFIG.win_about.exec_()
-
-    ## ----------------------- 菜单End -----------------------

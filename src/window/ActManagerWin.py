@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QTableWidgetItem, QMenu, QHeaderView, QDialog
 
 from src.config import Config
 from src.config.GlobalConfig import GLOBAL_ACT_TYPE_HK, GLOBAL_ACT_TYPE_TW
-from src.utils import BaseTools, BoxPop
+from src.utils import BoxPop, WinManager
 from src.views.Ui_AccountEdit import Ui_AccountEdit
 from src.views.Ui_ActManager import Ui_ActManager
 
@@ -20,7 +20,7 @@ class ActEditWin(QDialog, Ui_AccountEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.account = ''
         self.editAct = {}
         self.insert = False
@@ -52,7 +52,7 @@ class ActEditWin(QDialog, Ui_AccountEdit):
     def save_clicked(self):
         # 判断
         if not self.lineEdit_account.text():
-            BoxPop.err(self, '账号不能为空!')
+            BoxPop.warn(self, '账号不能为空!')
             return
         self.editAct['account'] = self.lineEdit_account.text()
         self.editAct['password'] = self.lineEdit_password.text()
@@ -70,7 +70,7 @@ class ActManagerWin(QDialog, Ui_ActManager):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.init_ui()
         self.win_actEdit = ActEditWin(self)
 

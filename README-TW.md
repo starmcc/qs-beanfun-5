@@ -1,3 +1,4 @@
+# <p align="center">QsBeanfun 5 - 秋水登錄器</p>
 
 <p align="center">
     <a target="_blank" href="https://github.com/starmcc/qs-beanfun-5">
@@ -22,10 +23,9 @@
     </a>
 </p>
 <p align="center">
-    <span style="font-weight:bold;">简体中文</span>
-    <a href="./README-TW.md">繁體中文</a>
+    <a href="./README.md">简体中文</a>
+    <span style="font-weight:bold;">繁體中文</span>
 </p>
-
 
 ## 介紹
 
@@ -39,9 +39,7 @@ I don't have a lot of energy to do it.
 
 引用LR區域模擬元件，支持32/64bit臺服新楓之谷遊戲運行。
 
-> 支持香港/臺灣遊戲橘子登錄
-
-**遵循MIT開源協議**，如遇問題或 Bug 亦或交流，請移步 Issues。
+> **<p style="font-size:16px">支持 香港 or 臺灣 遊戲橘子登錄</p>**
 
 ## 安裝
 
@@ -110,8 +108,9 @@ certutil -hashfile 該程序路徑
 3. 凡是第三方工具都是遊戲橘子官方明令禁止使用的，最好的方式就是將系統轉為繁體語言後使用網頁登錄，望客官知悉。
 4. 我只是茫茫人海中一個熱愛楓谷懂點皮毛技術的玩家，希望新楓之谷會一直運營下去，長盛不衰！
 
-**<p style="font-size:18px">本軟件僅供學習使用，下載後請24小時內刪除</p>**
-**<p style="font-size:22px">遵循MIT開源協議</p>**
+**<p style="font-size:22px">本軟件僅供學習使用，下載後請24小時內刪除</p>**
+**<p style="font-size:16px">遵循MIT開源協議。</p>**
+**<p style="font-size:16px">如遇問題或 Bug 亦或交流，請移步 Issues。</p>**
 
 最後奉勸那些指鹿為馬的家夥，請心存善念，人生才會充滿陽光。
 

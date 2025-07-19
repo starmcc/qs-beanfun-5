@@ -17,7 +17,6 @@ class _GlobalConfig:
         self.win_twAdv = None
         self.win_intermediateLogin = None
         self.win_qrCode = None
-        self.custom_thread = None
         self.custom_queue = TaskQueue()
         self.now_login_type = ''
 
@@ -28,9 +27,8 @@ GLOBAL_ACT_TYPE_HK = 'HK'
 GLOBAL_ACT_TYPE_TW = 'TW'
 
 GLOBAL_PATH_PLUGIN_LR_ZIP = 'LocaleRemulator.zip'
-GLOBAL_PATH_PLUGIN_ZWW_ZIP = 'MapleNecrocer.zip'
 
-GLOBAL_APP_VERSION = '5.1.3'
+GLOBAL_APP_VERSION = '5.2.0'
 
 GLOBAL_APP_GITHUB = "https://github.com/starmcc/qs-beanfun-5"
 

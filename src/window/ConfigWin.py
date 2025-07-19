@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QFileDialog, QDialog
 
 from src.config import Config
-from src.utils import BaseTools
+from src.utils import WinManager
 from src.views.Ui_Config import Ui_Config
 
 
@@ -9,7 +9,7 @@ class ConfigWin(QDialog, Ui_Config):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.init_ui()
         self.read_config()
 

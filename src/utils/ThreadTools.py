@@ -1,6 +1,7 @@
-from PyQt5.QtCore import QThread, pyqtSignal
+import logging
 
-from src.config.GlobalConfig import GLOBAL_CONFIG
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
+
 from src.window.LoadMask import LoadMask
 
 
@@ -14,18 +15,26 @@ class CustomThread(QThread):
     def run(self):
         result = None
         if self.fnc is not None:
-            result = self.fnc()
+            try:
+                result = self.fnc()
+            except Exception as e:
+                logging.error(f"Thread execution error: {e}")
         self.finished.emit(result)
 
     @staticmethod
     def run_task(fnc=None, re_fnc=None, load_mask: LoadMask = None):
-        GLOBAL_CONFIG.custom_thread = CustomThread(fnc)
+        thread = CustomThread(fnc)
 
         def __result_fnc(data):
             if re_fnc is not None:
                 re_fnc(data)
             if load_mask is not None:
-                load_mask.deleteLater()
+                # 使用deleteLater()确保在UI线程中安全删除
+                QTimer.singleShot(0, load_mask.deleteLater)
+            # 线程结束后清理
+            thread.deleteLater()
 
-        GLOBAL_CONFIG.custom_thread.finished.connect(__result_fnc)
-        GLOBAL_CONFIG.custom_thread.start()
+        thread.finished.connect(__result_fnc)
+        # 线程结束后自动退出
+        thread.finished.connect(thread.quit)
+        thread.start()

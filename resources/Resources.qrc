@@ -9,5 +9,6 @@
         <file alias="images/pwd_open">./images/pwd_o.png</file>
         <file alias="images/pwd_close">./images/pwd_c.png</file>
         <file alias="statics/zhconv">./statics/zhcdict.json</file>
+        <file alias="plugins/LocaleRemulator.zip">./plugins/LocaleRemulator.zip</file>
     </qresource>
 </RCC>

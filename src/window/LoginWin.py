@@ -3,16 +3,16 @@ import re
 import time
 
 import httpx
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QWidget, QButtonGroup
-from PyQt5 import QtWidgets
 
 from src.client import QsClient
 from src.config import Config
 from src.config.GlobalConfig import *
 from src.models.LoginRecord import LoginRecord
-from src.utils import BaseTools, BoxPop
+from src.utils import BoxPop, WinManager
 from src.utils.ThreadTools import CustomThread
 from src.views.Ui_Login import Ui_Login
 from src.window import PyQtBrowser
@@ -21,20 +21,23 @@ from src.window.IntermediateLoginWin import IntermediateLoginWin
 from src.window.LoadMask import LoadMask
 from src.window.MainWin import MainWin
 from src.window.QrCodeLoginWin import QrCodeLoginWin
+from src.window.TrayIcon import TrayIcon
 from src.window.TwAdvWin import TwAdvWin
 
 
 class LoginWin(QWidget, Ui_Login):
+    trayIcon: TrayIcon
     login_go_to_main_event = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.buttonGroup_type = QButtonGroup()
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.init_ui()
 
     def init_ui(self):
+        self.trayIcon = TrayIcon(self)
         # 设置图片
         self.label_logoView.setPixmap(QPixmap(":/images/banner"))
         self.label_qrCode.setPixmap(QPixmap(":/images/qrCode"))
@@ -196,3 +199,7 @@ class LoginWin(QWidget, Ui_Login):
 
         GLOBAL_CONFIG.win_main = MainWin()
         GLOBAL_CONFIG.win_main.show()
+
+    def closeEvent(self, a0):
+        self.trayIcon.deleteLater()
+        super().closeEvent(a0)

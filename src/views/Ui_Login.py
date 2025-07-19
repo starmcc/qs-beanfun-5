@@ -16,7 +16,7 @@ class Ui_Login(object):
         Login.setObjectName("Login")
         Login.resize(350, 230)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(Login)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 5)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.label_logoView = QtWidgets.QLabel(Login)
@@ -27,7 +27,7 @@ class Ui_Login(object):
         self.label_logoView.setObjectName("label_logoView")
         self.verticalLayout_2.addWidget(self.label_logoView)
         self.verticalLayout = QtWidgets.QVBoxLayout()
-        self.verticalLayout.setContentsMargins(18, -1, 18, -1)
+        self.verticalLayout.setContentsMargins(18, -1, 18, 5)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.widget_one = QtWidgets.QWidget(Login)
@@ -118,7 +118,7 @@ class Ui_Login(object):
     def retranslateUi(self, Login):
         _translate = QtCore.QCoreApplication.translate
         Login.setWindowTitle(_translate("Login", "QsBeanfun"))
-        self.label_forgotPassword.setText(_translate("Login", "忘記密碼"))
+        self.label_forgotPassword.setText(_translate("Login", "忘记密码"))
         self.label_register.setText(_translate("Login", "注册账号"))
         self.radioButton_tw.setText(_translate("Login", "台湾地区"))
         self.radioButton_hk.setText(_translate("Login", "香港地区"))

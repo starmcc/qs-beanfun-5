@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QDialog
 
 from src.client import RequestClient, QsClient
 from src.models.LoginRecord import LoginRecord
-from src.utils import BaseTools, SchedulerManager
+from src.utils import SchedulerManager, WinManager
 from src.views.Ui_IntermediateLogin import Ui_IntermediateLogin
 
 
@@ -21,7 +21,7 @@ class IntermediateLoginWin(QDialog, Ui_IntermediateLogin):
         super().__init__(parent)
         self.login_record: LoginRecord = login_record
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.await_num = 0
         self.close_signal.connect(self.handle_close)
         self.task_id = SchedulerManager.do_task(self.polling_login, 1000)
@@ -45,6 +45,7 @@ class IntermediateLoginWin(QDialog, Ui_IntermediateLogin):
 
     def handle_close(self):
         self.close()
+
     def closeEvent(self, event):
         # 如果直接關閉窗口，需要手動停止任務，不然會一直執行
         if self.task_id != -1:

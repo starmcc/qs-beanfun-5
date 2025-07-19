@@ -4,11 +4,12 @@ from PyQt5.QtCore import QUrl, QEventLoop, QDateTime
 from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtNetwork import QNetworkCookie, QNetworkRequest, QNetworkAccessManager, QNetworkReply
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import (QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
+                             QProgressBar)
 
 from src.client import RequestClient
 from src.config.GlobalConfig import GLOBAL_CONFIG
-from src.utils import BaseTools
+from src.utils import WinManager
 
 
 class CustomWebEngineView(QWebEngineView):
@@ -29,7 +30,7 @@ class PyQtBrowser(QDialog):
         self.handle_cookies()
 
     def setup_window(self):
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.setMinimumSize(880, 550)
         self.setWindowTitle("浏览器")
 
@@ -37,52 +38,86 @@ class PyQtBrowser(QDialog):
         # 创建界面组件
         self.web_view = CustomWebEngineView()
         self.url_bar = QLineEdit()
-        self.go_button = QPushButton("Enter")
-        self.back_button = QPushButton("后退")
-        self.forward_button = QPushButton("前进")
-        self.refresh_button = QPushButton("刷新")
+        self.go_button = QPushButton("进入")
+        self.back_button = QPushButton("←")
+        self.forward_button = QPushButton("→")
+        self.refresh_button = QPushButton("↻")
+        self.progress_bar = QProgressBar()
 
-        # 设置样式表
+        # 设置进度条样式
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedHeight(3)
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                background-color: #E5E6EB;
+                border: none;
+                border-radius: 1px;
+            }
+            QProgressBar::chunk {
+                background-color: #165DFF;
+                border-radius: 1px;
+            }
+        """)
+        self.progress_bar.hide()  # 初始隐藏
+
+        # 设置样式表 - 现代风格
         self.setStyleSheet("""
             QPushButton {
-                background-color: #4CAF50;
+                background-color: #165DFF;
                 color: white;
                 border: none;
                 padding: 6px 12px;
-                text-align: center;
-                text-decoration: none;
-                display: inline-block;
-                font-size: 12px;
-                cursor: pointer;
+                font-size: 14px;
                 border-radius: 4px;
+                transition: background-color 0.2s;
             }
             QPushButton:hover {
-                background-color: #45a049;
+                background-color: #4080FF;
+            }
+            QPushButton:pressed {
+                background-color: #0E42D2;
             }
             QLineEdit {
-                padding: 6px;
-                font-size: 12px;
-                border: 1px solid #ccc;
+                padding: 8px 10px;
+                font-size: 14px;
+                border: 1px solid #E5E6EB;
                 border-radius: 4px;
+                background-color: white;
+                transition: border-color 0.2s;
+            }
+            QLineEdit:focus {
+                border-color: #165DFF;
+                outline: none;
             }
             QDialog {
-                background-color: #f4f4f4;
+                background-color: #F7F8FA;
+            }
+            QWidget {
+                font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
             }
         """)
 
         # 布局设置
         main_layout = QVBoxLayout()
         top_layout = QHBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        top_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setContentsMargins(8, 8, 8, 8)
+        top_layout.setContentsMargins(0, 0, 0, 4)
         top_layout.setSpacing(8)
+
+        # 设置按钮最小宽度
+        self.back_button.setMinimumWidth(36)
+        self.forward_button.setMinimumWidth(36)
+        self.refresh_button.setMinimumWidth(36)
+        self.go_button.setMinimumWidth(60)
 
         top_layout.addWidget(self.back_button)
         top_layout.addWidget(self.forward_button)
         top_layout.addWidget(self.refresh_button)
         top_layout.addWidget(self.url_bar)
         top_layout.addWidget(self.go_button)
+
         main_layout.addLayout(top_layout)
+        main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.web_view)
         self.setLayout(main_layout)
 
@@ -94,12 +129,24 @@ class PyQtBrowser(QDialog):
         self.url_bar.returnPressed.connect(self.load_url_from_bar)
         self.web_view.loadFinished.connect(self.on_load_finished)
         self.web_view.titleChanged.connect(self.on_title_changed)
+        self.web_view.loadProgress.connect(self.on_load_progress)
+        self.web_view.loadStarted.connect(self.on_load_started)
 
     def on_title_changed(self, new_title):
         self.setWindowTitle(new_title)
 
+    def on_load_started(self):
+        self.progress_bar.setValue(0)
+        self.progress_bar.show()
+
+    def on_load_progress(self, progress):
+        self.progress_bar.setValue(progress)
+        if progress >= 100:
+            self.progress_bar.hide()
+
     def on_load_finished(self, status):
         self.url_bar.setText(self.web_view.url().url())
+        self.progress_bar.hide()
 
     def load_url_from_bar(self):
         url_str = self.url_bar.text()
@@ -156,6 +203,7 @@ class PyQtBrowser(QDialog):
     def closeEvent(self, event: QCloseEvent):
         self.web_view.deleteLater()
         event.accept()
+
 
 def open_browser(url_path: str, parent=None):
     GLOBAL_CONFIG.win_browser = PyQtBrowser(parent)

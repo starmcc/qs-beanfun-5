@@ -1,4 +1,4 @@
-# QsBeanfun 5 - 秋水登录器
+# <p align="center">QsBeanfun 5 - 秋水登录器</p>
 
 <p align="center">
     <a target="_blank" href="https://github.com/starmcc/qs-beanfun-5">
@@ -39,9 +39,7 @@ I don't have a lot of energy to do it.
 
 引用LR区域模拟元件，支持32/64bit台服新枫之谷游戏运行。
 
-> 支持香港/台湾游戏橘子登录
-
-**遵循MIT开源协议**，如遇问题或 Bug 亦或交流，请移步 Issues。
+> **<p style="font-size:16px">支持 香港 or 台湾 游戏橘子登录</p>**
 
 ## 安装
 
@@ -110,8 +108,9 @@ certutil -hashfile 该程序路径
 3. 凡是第三方工具都是游戏橘子官方明令禁止使用的，最好的方式就是将系统转为繁体语言后使用网页登录，望客官知悉。
 4. 我只是茫茫人海中一个热爱枫谷懂点皮毛技术的玩家，希望新枫之谷会一直运营下去，长盛不衰！
 
-**<p style="font-size:18px">本软件仅供学习使用，下载后请24小时内删除</p>**
-**<p style="font-size:22px">遵循MIT开源协议</p>**
+**<p style="font-size:22px">本软件仅供学习使用，下载后请24小时内删除</p>**
+**<p style="font-size:16px">遵循MIT开源协议。</p>**
+**<p style="font-size:16px">如遇问题或 Bug 亦或交流，请移步 Issues。</p>**
 
 最后奉劝那些指鹿为马的家伙，请心存善念，人生才会充满阳光。
 

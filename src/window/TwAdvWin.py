@@ -5,7 +5,7 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QDialog
 
 from src.client import RequestClient
-from src.utils import BaseTools, BoxPop
+from src.utils import BoxPop, WinManager
 from src.views.Ui_TwAdv import Ui_TwAdv
 
 
@@ -17,7 +17,7 @@ class TwAdvWin(QDialog, Ui_TwAdv):
         self.eventvalidation = ''
         self.viewstateGenerator = ''
         self.setupUi(self)
-        BaseTools.set_basic_window(self)
+        WinManager.set_basic_window(self)
         self.init_ui()
 
     def init_ui(self):
@@ -56,11 +56,11 @@ class TwAdvWin(QDialog, Ui_TwAdv):
 
     def continue_login(self):
         if not self.lineEdit_phone.text():
-            BoxPop.err(self, '请输入手机号码!')
+            BoxPop.warn(self, '请输入手机号码!')
             return
 
         if not self.lineEdit_verifyCode.text():
-            BoxPop.err(self, '请输入验证码!')
+            BoxPop.warn(self, '请输入验证码!')
             self.load_verify_image()
             return
 

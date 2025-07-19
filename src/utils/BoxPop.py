@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QInputDialog
 
-from src.utils import BaseTools
+from src.utils import WinManager
 
 """
 QMessageBox.Information：用于显示一般的信息消息，通常带有一个信息图标。
@@ -13,7 +13,7 @@ QMessageBox.NoIcon：不显示任何图标
 
 
 def err(self, msg) -> bool:
-    return __show_message_box(self, 'Error', msg, QMessageBox.Information) == QMessageBox.Ok
+    return __show_message_box(self, 'Error', msg, QMessageBox.Critical) == QMessageBox.Ok
 
 
 def warn(self, msg) -> bool:
@@ -50,8 +50,8 @@ def __show_message_box(self, title, text, icon_type=QMessageBox.Information, but
     :param buttons: 消息框按钮，可以是 QMessageBox.Ok、QMessageBox.Yes | QMessageBox.No 等组合。
     """
     msg_box = QMessageBox(self)
-    msg_box.setWindowTitle(BaseTools.translate(title))
-    msg_box.setText(BaseTools.translate(text))
+    msg_box.setWindowTitle(WinManager.translate(title))
+    msg_box.setText(WinManager.translate(text))
     msg_box.setIcon(icon_type)
     msg_box.setStandardButtons(buttons)
     return msg_box.exec_()
