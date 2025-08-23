@@ -41,7 +41,7 @@ def check_new_version(win, quiet: bool = True):
     def __check_update_result(status):
         # 安静模式且24小时内提醒过则返回
         if quiet and (dt := Config.update_tips_time()):
-            if (datetime.now() - dt).total_seconds() <= 86400:
+            if (datetime.now() - dt).total_seconds() <= 604800:
                 return
         if not status:
             status = (False, '未知错误')
@@ -54,7 +54,7 @@ def check_new_version(win, quiet: bool = True):
             if quiet:
                 buttons = {
                     "前往更新": QMessageBox.AcceptRole,
-                    "今日不提醒": QMessageBox.ActionRole,
+                    "本周不提醒": QMessageBox.ActionRole,
                     "取消": QMessageBox.RejectRole
                 }
             click_result = BoxPop.custom_question(win, message, buttons)
