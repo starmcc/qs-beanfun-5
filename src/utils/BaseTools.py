@@ -4,15 +4,16 @@ import os
 import shutil
 import sys
 import webbrowser
-import zipfile
+from datetime import datetime
 
-from PyQt5.QtCore import QFile, QIODevice
+from PyQt5.QtWidgets import QMessageBox
 from packaging import version
 
 from src.client import RequestClient
-from src.config import GlobalConfig
+from src.config import GlobalConfig, Config
 from src.config.GlobalConfig import GLOBAL_APP_GITHUB_API, GLOBAL_APP_GITHUB
 from src.utils import BoxPop
+from src.utils.ThreadTools import CustomThread
 
 
 def hidden_str(s):
@@ -35,54 +36,60 @@ def build_path(path: str, env: bool = False):
     return rf'{p}\{path}'
 
 
-def extract_build_plugin(plugin_name):
-    # 创建目标目录
-    plugin_directory = build_path(rf'plugins\{os.path.splitext(plugin_name)[0]}')
-    os.makedirs(plugin_directory, exist_ok=True)
+def check_new_version(win, quiet: bool = True):
+    # 检查更新
+    def __check_update_result(status):
+        # 安静模式且24小时内提醒过则返回
+        if quiet and (dt := Config.update_tips_time()):
+            if (datetime.now() - dt).total_seconds() <= 86400:
+                return
+        if not status:
+            status = (False, '未知错误')
+        status_flag, message = status
+        if status_flag:
+            buttons = {
+                "前往更新": QMessageBox.AcceptRole,
+                "取消": QMessageBox.RejectRole
+            }
+            if quiet:
+                buttons = {
+                    "前往更新": QMessageBox.AcceptRole,
+                    "今日不提醒": QMessageBox.ActionRole,
+                    "取消": QMessageBox.RejectRole
+                }
+            click_result = BoxPop.custom_question(win, message, buttons)
 
-    # 从qrc资源中读取ZIP文件内容
-    qrc_file_path = f":/plugins/{plugin_name}"
-    qfile = QFile(qrc_file_path)
+            if click_result == 0:
+                webbrowser.open(f"{GLOBAL_APP_GITHUB}/releases")
+            if quiet and click_result == 1:
+                Config.update_tips_time(datetime.now())
 
-    if not qfile.open(QIODevice.ReadOnly):
-        raise FileNotFoundError(f"无法从qrc中读取插件: {qrc_file_path}")
+        elif not quiet:
+            BoxPop.info(win, message)
 
-    # 将ZIP文件内容写入临时文件
-    temp_zip_path = os.path.join(plugin_directory, f"temp_{plugin_name}")
-    with open(temp_zip_path, 'wb') as f:
-        f.write(qfile.readAll().data())
-    qfile.close()
-
-    # 解压逻辑
-    with zipfile.ZipFile(temp_zip_path, 'r') as zip_ref:
-        zip_ref.extractall(plugin_directory)
-
-    # 删除临时文件
-    os.remove(temp_zip_path)
-
-    return plugin_directory
+    CustomThread.run_task(__check_version, __check_update_result)
 
 
-def check_version(self):
+def __check_version() -> (bool, str):
+    # bool = 是否有更新
+    # str = 更新内容,错误消息
+    msg = '无法获取版本信息'
     try:
         response = RequestClient.get_instance().get(f"{GLOBAL_APP_GITHUB_API}/releases/latest")
         response.raise_for_status()
         data = response.json()
         latest_version = data.get('tag_name')
         if latest_version is None:
-            BoxPop.err(self, "无法获取版本信息")
-            return
-        try:
-            if version.parse(GlobalConfig.GLOBAL_APP_VERSION) >= version.parse(latest_version):
-                BoxPop.info(self, "当前已是最新版本")
-            elif BoxPop.question(self, f"发现新版本 {latest_version}，是否前往更新？"):
-                webbrowser.open(f'{GLOBAL_APP_GITHUB}/releases')
-        except version.InvalidVersion as e:
-            logging.error(f"解析版本失败{e}")
-            BoxPop.err(self, "解析版本失败")
-    except ValueError as e:
-        logging.error(f"解析 JSON 出错: {e}")
-        BoxPop.err(self, "解析版本失败2")
+            return False, msg
+        if version.parse(GlobalConfig.GLOBAL_APP_VERSION) >= version.parse(latest_version):
+            return False, '当前是最新版本'
+        else:
+            body = data.get('body')
+            msg = f'发现新版本：{latest_version}\n{body}\n是否前往更新?'
+            return True, msg
+    except Exception as e:
+        logging.error(f"检查版本更新出现错误：\n {str(e)}")
+        return False, msg
 
 
 def build_chrome():
@@ -90,13 +97,13 @@ def build_chrome():
     spec = importlib.util.find_spec('PyQt5')
     if spec and spec.submodule_search_locations:
         pyqt5_dir = spec.submodule_search_locations[0]
+        # 构建目标文件路径
         possible_path = os.path.join(pyqt5_dir, 'Qt5', 'bin', 'QtWebEngineProcess.exe')
-        if os.path.exists(possible_path):
-            # 构建目标文件路径
-            target_path = os.path.join(os.path.dirname(possible_path), 'chrome.exe')
+        target_path = os.path.join(os.path.dirname(possible_path), 'chrome.exe')
+        if os.path.exists(possible_path) and not os.path.exists(target_path):
             # 复制文件
-            if not os.path.exists(target_path):
-                shutil.copy2(possible_path, target_path)
-                logging.info(f"已初始化 {target_path}")
+            shutil.copy2(possible_path, target_path)
+            os.chmod(target_path, 0o777)
+            logging.info(f"已初始化 {target_path}")
             return target_path
     return None

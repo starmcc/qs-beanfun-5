@@ -8,7 +8,9 @@ import psutil
 import pyautogui
 
 from src.config import Config
-from src.config.GlobalConfig import GLOBAL_PATH_PLUGIN_LR_ZIP, GLOBAL_CONFIG
+from src.config.GlobalConfig import GLOBAL_CONFIG
+from src.plugins import PluginTools
+from src.plugins.LocaleRemulator import LocaleRemulator
 from src.utils import BaseTools, SchedulerManager
 
 # 加载 user32 DLL
@@ -33,9 +35,19 @@ user32.ClientToScreen.restype = wintypes.BOOL
 
 # 运行游戏的函数
 def run_game(act: str = None, pwd: str = None, res_fnc=None):
+    # -999 = 系统异常
+    # -1  = 免输入模式错误
+    # 0 = 游戏正在运行,不执行
+    # 1  = 设置游戏目录
+    # 2 = 自动阻止更新成功
     try:
+        # 如果游戏正在运行,弹出询问是否强制结束进程
+        if check_game_running():
+            GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (0, '游戏正在运行中'))
+            return
+
         # 加载插件
-        BaseTools.extract_build_plugin(GLOBAL_PATH_PLUGIN_LR_ZIP)
+        PluginTools.build_plugin(LocaleRemulator())
 
         directory_path = Config.game_path()
         if directory_path == '':
@@ -48,7 +60,7 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
             if act and pwd:
                 runParam = f'{runParam} tw.login.maplestory.beanfun.com 8484 BeanFun {act} {pwd}'
             else:
-                GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (2, '免输入模式错误：数据不足!'))
+                GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (-1, '免输入模式错误：数据不足!'))
                 return
 
         lr_exe = BaseTools.build_path(r'plugins\LocaleRemulator\LRProc.exe')
@@ -66,7 +78,7 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
                 if hwnd:
                     user32.PostMessageW(hwnd, 0x0010, 0, 0)  # WM_CLOSE = 0x0010
             except Exception as e:
-                GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (-1, str(e)))
+                GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (-999, str(e)))
             finally:
                 if hwnd or time.time() - RUN_TIME >= 5:
                     # 如果获取到了，且超过5秒则结束任务
@@ -81,9 +93,9 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
                 result = subprocess.run(command, shell=True, check=True)
                 SchedulerManager.stop_task(taskId)
                 if result.returncode == 0:
-                    GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (3, '已阻止自动更新'))
+                    GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (2, '程式自动拦截游戏自动更新程序\n建议使用官方补丁进行手动更新\n如需要使用游戏内置自动更新功能\n请前往设置取消阻止自动更新配置'))
                 else:
-                    GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (4, result.stderr.decode('gbk')))
+                    GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (-999, result.stderr.decode('gbk')))
                 break
             if time.time() - RUN_TIME >= 10:
                 SchedulerManager.stop_task(taskId)
@@ -96,7 +108,7 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
         if Config.stop_update():
             SchedulerManager.do_task(__stopAutoPatcher, 200)
     except Exception as e:
-        res_fnc(-1, str(e))
+        GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (-999, str(e)))
 
 
 def check_game_running():
@@ -112,7 +124,8 @@ def check_game_isZoomed():
 
 
 def getMapleStoryHwnd():
-    return user32.FindWindowW("MapleStoryClassTW", "MapleStory")
+    hwnd = user32.FindWindowW("MapleStoryClassTW", "MapleStory")
+    return hwnd if hwnd else 0
 
 
 def auto_input_act_pwd(act, pwd) -> (int, str):
@@ -159,10 +172,19 @@ def __postChars(hwnd, str_text):
         user32.PostMessageW(hwnd, 0x0102, v_key, 0)  # WM_CHAR = 0x0102
 
 
+def kill_mapleStory() -> str:
+    # taskkill /f /im MapleStory.exe
+    return __kill_process('MapleStory.exe')
+
+
 def kill_black_xchg() -> str:
     # taskkill /f /im BlackXchg.aes
+    return __kill_process('BlackXchg.aes')
+
+
+def __kill_process(pro_name: str) -> str:
     try:
-        result = subprocess.run('taskkill /f /im BlackXchg.aes', shell=True, capture_output=True)
+        result = subprocess.run(f'taskkill /f /im {pro_name}', shell=True, capture_output=True)
         if result.returncode == 0:
             return ''
         else:

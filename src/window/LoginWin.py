@@ -12,7 +12,7 @@ from src.client import QsClient
 from src.config import Config
 from src.config.GlobalConfig import *
 from src.models.LoginRecord import LoginRecord
-from src.utils import BoxPop, WinManager
+from src.utils import BoxPop, WinManager, BaseTools
 from src.utils.ThreadTools import CustomThread
 from src.views.Ui_Login import Ui_Login
 from src.window import PyQtBrowser
@@ -35,6 +35,8 @@ class LoginWin(QWidget, Ui_Login):
         self.setupUi(self)
         WinManager.set_basic_window(self)
         self.init_ui()
+        # 自动检查更新
+        BaseTools.check_new_version(self, True)
 
     def init_ui(self):
         self.trayIcon = TrayIcon(self)

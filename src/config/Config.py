@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import datetime
 
 from src.utils import DeUtils, BaseTools
 
@@ -93,6 +94,18 @@ def auto_input(value: bool = None):
         # 读取
         return __get_config(key, True)
     __save_config(key, value)
+    return None
+
+
+def update_tips_time(value: datetime = None):
+    key = 'update_tips_time'
+    if value is None:
+        # 读取
+        time_str = __get_config(key, None)
+        if not time_str:
+            return None
+        return datetime.fromisoformat(time_str)
+    __save_config(key, value.isoformat())
     return None
 
 

@@ -8,13 +8,12 @@ from PyQt5.QtWidgets import (QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBox
                              QProgressBar)
 
 from src.client import RequestClient
-from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.utils import WinManager
 
 
 class CustomWebEngineView(QWebEngineView):
-    def createWindow(self, web_window_type):
-        return self
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
 
 class PyQtBrowser(QDialog):
@@ -36,7 +35,7 @@ class PyQtBrowser(QDialog):
 
     def init_ui(self):
         # 创建界面组件
-        self.web_view = CustomWebEngineView()
+        self.web_view = CustomWebEngineView(self)
         self.url_bar = QLineEdit()
         self.go_button = QPushButton("进入")
         self.back_button = QPushButton("←")
@@ -206,12 +205,7 @@ class PyQtBrowser(QDialog):
 
 
 def open_browser(url_path: str, parent=None):
-    GLOBAL_CONFIG.win_browser = PyQtBrowser(parent)
-    GLOBAL_CONFIG.win_browser.load_url(url_path)
-    GLOBAL_CONFIG.win_browser.show()
-
-
-def open_browser_html(html: str, parent=None):
-    GLOBAL_CONFIG.win_browser = PyQtBrowser(parent)
-    GLOBAL_CONFIG.win_browser.load_html(html)
-    GLOBAL_CONFIG.win_browser.show()
+    win_browser = PyQtBrowser(parent)
+    win_browser.load_url(url_path)
+    win_browser.show()
+    return win_browser

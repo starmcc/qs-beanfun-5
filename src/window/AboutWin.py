@@ -25,4 +25,4 @@ class AboutWin(QDialog, Ui_About):
         webbrowser.open('https://tool.gljlw.com/qq/?qq=1140526018')
 
     def version_mousePressEvent(self, event):
-        BaseTools.check_version(self)
+        BaseTools.check_new_version(self, False)

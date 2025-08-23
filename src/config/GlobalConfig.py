@@ -9,7 +9,6 @@ class _GlobalConfig:
     def __init__(self):
         self.bf_web_token: str
         self.win_main = None
-        self.win_browser = None
         self.win_actManager = None
         self.win_config = None
         self.win_accountInfo = None
@@ -26,9 +25,7 @@ GLOBAL_CONFIG = _GlobalConfig()
 GLOBAL_ACT_TYPE_HK = 'HK'
 GLOBAL_ACT_TYPE_TW = 'TW'
 
-GLOBAL_PATH_PLUGIN_LR_ZIP = 'LocaleRemulator.zip'
-
-GLOBAL_APP_VERSION = '5.2.0'
+GLOBAL_APP_VERSION = '5.2.1'
 
 GLOBAL_APP_GITHUB = "https://github.com/starmcc/qs-beanfun-5"
 

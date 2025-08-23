@@ -109,19 +109,19 @@ class MainWin(QWidget, Ui_Main):
                     BoxPop.err(self, msg)
         except Exception as e:
             logging.error(e)
-            BoxPop.err(self, '自动输入失败,请手动输入!')
+            BoxPop.err(self, '自动输入失败,请手动复制输入!')
 
     def start_clicked(self):
+        if Config.pass_input():
+            dp_result = self.get_dynamic_password()
+            if dp_result != 0:
+                BoxPop.err(self, f'请求动态密令失败[{dp_result}]')
+                return
         try:
-            if Config.pass_input():
-                dp_result = self.get_dynamic_password()
-                if dp_result != 0:
-                    BoxPop.err(self, f'请求动态密令失败[{dp_result}]')
-                    return
             SystemCom.run_game(self.nowAccount.id, self.nowAccount.dynamic_pwd, self.run_game_result)
         except Exception as e:
             logging.error(e)
-            BoxPop.err(self, '启动异常!')
+            BoxPop.err(self, f'启动游戏出现了问题:\n {str(e)}')
 
     def get_dynamic_password(self) -> int:
         try:
@@ -136,15 +136,12 @@ class MainWin(QWidget, Ui_Main):
 
     def run_game_result(self, data):
         status, msg = data
-        # -1 = 异常
+        # -999 = 系统异常
+        # -1  = 免输入模式错误
+        # 0 = 游戏正在运行,不执行
         # 1  = 设置游戏目录
-        # 2  = 免输入模式错误
-        # 3  = 自动阻止更新成功
-        # 4  = 自动阻止更新失败
-        if status == 0 or status == -1 or status == 2 or status == 4:
-            logging.error(msg)
-            BoxPop.warn(self, msg)
-        elif status == 1:
+        # 2 = 自动阻止更新成功
+        if status == 1:
             if not BoxPop.question(self, msg):
                 return
             options = QFileDialog.Options()
@@ -154,8 +151,17 @@ class MainWin(QWidget, Ui_Main):
             Config.game_path(directory)
             # 重新打开
             self.start_clicked()
-        elif status == 3:
+        elif status == 0:
+            # 游戏正在运行
+            if BoxPop.question(self, '检测到游戏运行中,是否强制结束后重新启动游戏?'):
+                SystemCom.kill_mapleStory()
+                self.start_clicked()
+        elif status == 2:
+            logging.info(msg)
             BoxPop.info(self, msg)
+        else:
+            logging.error(msg)
+            BoxPop.warn(self, msg)
 
     def get_account_info(self, event=None):
         """
@@ -205,7 +211,7 @@ class MainWin(QWidget, Ui_Main):
             self.label_status.setText('正常')
             palette.setColor(QPalette.WindowText, QColor(0, 0, 255))
         else:
-            self.label_status.setText('禁止')
+            self.label_status.setText('封禁')
             palette.setColor(QPalette.WindowText, QColor(255, 0, 0))
         self.label_status.setPalette(palette)
         self.lineEdit_numAct.setText(BaseTools.hidden_str(self.nowAccount.id))

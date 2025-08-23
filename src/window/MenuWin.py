@@ -37,7 +37,6 @@ def init_menu(self):
             CustomMenu(menu_id=1, title="作者B站", handler=lambda: webbrowser.open('https://space.bilibili.com/391919722')),
         ]),
         CustomMenu(menu_id=2, title="实用工具", children=[
-            CustomMenu(menu_id=2, title="强制结束NGS进程", handler=lambda: tools_ngsKill_triggered(self)),
             CustomMenu(menu_id=2, title="Hexa计算器", handler=lambda: PyQtBrowser.open_browser('https://starmcc.github.io/MapleStoryCoreCalc/', self)),
             CustomMenu(menu_id=2, title="星力模拟器", handler=lambda: PyQtBrowser.open_browser('https://maplehexa.cisyy.cc/starforceEmulator/', self)),
             CustomMenu(menu_id=2, title="枫之谷小工具", handler=lambda: PyQtBrowser.open_browser('https://mstoolbox.netlify.app/', self)),
@@ -46,8 +45,12 @@ def init_menu(self):
             CustomMenu(menu_id=2, title="汇率换算", handler=lambda: PyQtBrowser.open_browser('https://zh.coinmill.com/CNY_calculator.html', self)),
             CustomMenu(menu_id=2, title="系统计算器", handler=lambda: subprocess.Popen('calc.exe')),
         ]),
-        CustomMenu(menu_id=3, title="关于作者..", handler=lambda: help_open_about_triggered(self)),
-        CustomMenu(menu_id=3, title="检测更新", handler=lambda: BaseTools.check_version(self)),
+        CustomMenu(menu_id=3, title="实用功能", children=[
+            CustomMenu(menu_id=3, title="强制结束NGS进程", handler=lambda: tools_ngsKill_triggered(self)),
+            CustomMenu(menu_id=3, title="强制结束游戏", handler=lambda: tools_gameKill_triggered(self)),
+        ]),
+        CustomMenu(menu_id=4, title="关于作者..", handler=lambda: help_open_about_triggered(self)),
+        CustomMenu(menu_id=4, title="检测更新", handler=lambda: BaseTools.check_new_version(self, False)),
         CustomMenu(menu_id=999, title="退出", handler=sys.exit),
     ]
 
@@ -83,6 +86,11 @@ def tools_ngsKill_triggered(self):
         if err:
             BoxPop.err(self, err)
 
+def tools_gameKill_triggered(self):
+    if BoxPop.question(self, '是否立即结束NGS进程？'):
+        err = SystemCom.kill_mapleStory()
+        if err:
+            BoxPop.err(self, err)
 
 def help_open_about_triggered(self):
     GLOBAL_CONFIG.win_about = AboutWin(self)

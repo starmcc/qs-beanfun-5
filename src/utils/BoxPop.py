@@ -13,19 +13,31 @@ QMessageBox.NoIcon：不显示任何图标
 
 
 def err(self, msg) -> bool:
-    return __show_message_box(self, 'Error', msg, QMessageBox.Critical) == QMessageBox.Ok
+    return __show_message_box(self, '错误', msg, QMessageBox.Critical) == QMessageBox.Ok
 
 
 def warn(self, msg) -> bool:
-    return __show_message_box(self, 'Warning', msg, QMessageBox.Warning) == QMessageBox.Ok
+    return __show_message_box(self, '警告', msg, QMessageBox.Warning) == QMessageBox.Ok
 
 
 def info(self, msg) -> bool:
-    return __show_message_box(self, 'tips', msg, QMessageBox.Information) == QMessageBox.Ok
+    return __show_message_box(self, '提示', msg, QMessageBox.Information) == QMessageBox.Ok
 
 
 def question(self, msg) -> bool:
-    return __show_message_box(self, 'select', msg, QMessageBox.Question, QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes
+    return __show_message_box(self, '请选择', msg, QMessageBox.Question, QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes
+
+
+def custom_question(self, msg, buttons: dict[str, int]) -> int:
+    msg_box = QMessageBox(self)
+    msg_box.setWindowTitle(WinManager.translate('请选择'))
+    msg_box.setText(WinManager.translate(msg))
+    msg_box.setIcon(QMessageBox.Information)
+    # 添加自定义按钮
+    for key, val in buttons.items():
+        print(key)
+        msg_box.addButton(key, val)
+    return msg_box.exec_()
 
 
 def input_dialog(parent, title: str, label: str) -> (str, bool):
