@@ -105,5 +105,5 @@ def build_chrome():
             shutil.copy2(possible_path, target_path)
             os.chmod(target_path, 0o777)
             logging.info(f"已初始化 {target_path}")
-            return target_path
+        return target_path
     return None

@@ -35,7 +35,6 @@ def custom_question(self, msg, buttons: dict[str, int]) -> int:
     msg_box.setIcon(QMessageBox.Information)
     # 添加自定义按钮
     for key, val in buttons.items():
-        print(key)
         msg_box.addButton(key, val)
     return msg_box.exec_()
 

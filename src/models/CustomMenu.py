@@ -4,12 +4,13 @@ from typing import Optional, Callable, List
 class CustomMenu:
     def __init__(
             self,
-            menu_id: int,
+            name: str,
             title: str,
             handler: Optional[Callable] = None,
             children: Optional[List["CustomMenu"]] = None
     ):
-        self.menu_id = menu_id
+        super().__init__()
+        self.name = name
         self.title = title
         self.handler = handler
         self.children = children or []

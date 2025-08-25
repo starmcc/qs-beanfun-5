@@ -8,8 +8,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QSpacerItem, QSiz
 
 from src.config.GlobalConfig import GLOBAL_APP_VERSION
 from src.config.TitleBarConfig import TitleBarConfig
-from src.window import MenuWin
-from src.window.MainWin import MainWin
+from src.utils import MenuManager
 from src.zhconv import zhconv
 
 
@@ -183,12 +182,16 @@ def __create_title_bar(window, config, height):
     # 添加菜单按钮
     menu_btn = __create_menu_button(window)
     title_layout.addWidget(menu_btn)
-    title_menu = MenuWin.init_menu(window)
-    # 5. 按钮点击事件：显示菜单（位置在按钮下方）
+    title_menu = MenuManager.init_menu(window)
+    # 动态获取菜单
+    MenuManager.build_dynamic_menu(window, title_menu)
+
+    # 按钮点击事件：显示菜单
     def show_menu_by_button():
         # # 菜单显示在按钮的左下角（相对于按钮）
         button_pos = menu_btn.mapToGlobal(QtCore.QPoint(0, menu_btn.height()))
         title_menu.exec_(button_pos)
+
     menu_btn.clicked.connect(show_menu_by_button)
 
     # 添加标题文本
