@@ -14,6 +14,7 @@ from src.config import GlobalConfig, Config
 from src.config.GlobalConfig import GLOBAL_APP_GITHUB_API, GLOBAL_APP_GITHUB
 from src.utils import BoxPop
 from src.utils.ThreadTools import CustomThread
+from src.window.LoadingTask import LoadingMask
 
 
 def hidden_str(s):
@@ -67,7 +68,7 @@ def check_new_version(win, quiet: bool = True):
         elif not quiet:
             BoxPop.info(win, message)
 
-    CustomThread.run_task(__check_version, __check_update_result)
+    CustomThread.run_task(__check_version, __check_update_result, None if quiet else LoadingMask(win))
 
 
 def __check_version() -> (bool, str):

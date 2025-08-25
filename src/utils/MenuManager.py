@@ -163,14 +163,14 @@ def __build_dynamic_menu(self, entry, nav_menu: QMenu):
 
 # =======================
 def tools_ngsKill_triggered(self):
-    if BoxPop.question(self, '是否立即结束NGS进程？'):
+    if BoxPop.question(self, '是否立即结束Ngs进程?'):
         err = SystemCom.kill_black_xchg()
         if err:
             BoxPop.err(self, err)
 
 
 def tools_gameKill_triggered(self):
-    if BoxPop.question(self, '是否立即结束NGS进程？'):
+    if BoxPop.question(self, '是否强制结束游戏?'):
         err = SystemCom.kill_mapleStory()
         if err:
             BoxPop.err(self, err)

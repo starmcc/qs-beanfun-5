@@ -2,7 +2,7 @@ import logging
 
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 
-from src.window.LoadMask import LoadMask
+from src.window.LoadingTask import LoadingMask
 
 
 class CustomThread(QThread):
@@ -22,7 +22,7 @@ class CustomThread(QThread):
         self.finished.emit(result)
 
     @staticmethod
-    def run_task(fnc=None, re_fnc=None, load_mask: LoadMask = None):
+    def run_task(fnc=None, re_fnc=None, load_mask: LoadingMask = None) -> QThread:
         thread = CustomThread(fnc)
 
         def __result_fnc(data):
@@ -38,3 +38,4 @@ class CustomThread(QThread):
         # 线程结束后自动退出
         thread.finished.connect(thread.quit)
         thread.start()
+        return thread

@@ -230,10 +230,10 @@ def __create_menu_button(window):
             background-color: transparent; 
         }
         QPushButton:hover {
-            background-color: rgba(255, 255, 255, 0.1); 
+            background-color: rgba(255, 255, 255, 0.2); 
         }
         QPushButton:pressed {
-            background-color: rgba(255, 255, 255, 0.2); 
+            background-color: rgba(255, 255, 255, 0.3); 
         }
     """)
     return menu_btn
@@ -251,10 +251,10 @@ def __create_minimize_button(window):
             background-color: transparent; 
         }
         QPushButton:hover {
-            background-color: rgba(255, 255, 255, 0.1); 
+            background-color: rgba(255, 255, 255, 0.2); 
         }
         QPushButton:pressed {
-            background-color: rgba(255, 255, 255, 0.2); 
+            background-color: rgba(255, 255, 255, 0.3); 
         }
     """)
 
@@ -279,10 +279,10 @@ def __create_maximize_button(window):
             background-color: transparent; 
         }
         QPushButton:hover {
-            background-color: rgba(255, 255, 255, 0.1); 
+            background-color: rgba(255, 255, 255, 0.2); 
         }
         QPushButton:pressed {
-            background-color: rgba(255, 255, 255, 0.2); 
+            background-color: rgba(255, 255, 255, 0.3); 
         }
     """)
 
@@ -316,10 +316,10 @@ def __create_close_button(window):
             background-color: transparent; 
         }
         QPushButton:hover {
-            background-color: rgba(255, 255, 255, 0.1); 
+            background-color: rgba(255, 255, 255, 0.2); 
         }
         QPushButton:pressed {
-            background-color: rgba(255, 255, 255, 0.2); 
+            background-color: rgba(255, 255, 255, 0.3); 
         }
     """)
     close_btn.clicked.connect(window.close)

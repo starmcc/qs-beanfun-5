@@ -18,7 +18,7 @@ from src.views.Ui_Login import Ui_Login
 from src.window import PyQtBrowser
 from src.window.ActManagerWin import ActManagerWin
 from src.window.IntermediateLoginWin import IntermediateLoginWin
-from src.window.LoadMask import LoadMask
+from src.window.LoadingTask import LoadingMask
 from src.window.MainWin import MainWin
 from src.window.QrCodeLoginWin import QrCodeLoginWin
 from src.window.TrayIcon import TrayIcon
@@ -107,7 +107,7 @@ class LoginWin(QWidget, Ui_Login):
             self.radioButton_tw.click()
 
     def login_clicked(self):
-        CustomThread.run_task(self.task_login, self.task_login_result, LoadMask(self))
+        CustomThread.run_task(self.task_login, self.task_login_result, LoadingMask(self))
 
     def task_login(self):
         try:

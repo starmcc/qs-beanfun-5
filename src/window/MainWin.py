@@ -10,11 +10,12 @@ from src.client import QsClient
 from src.config import Config
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.Account import Account
+from src.models.ActInfoResult import ActInfoResult
 from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager, WinManager
 from src.utils.ThreadTools import CustomThread
 from src.views.Ui_Main import Ui_Main
 from src.window.ConfigWin import ConfigWin
-from src.window.LoadMask import LoadMask
+from src.window.LoadingTask import LoadingMask
 from src.window.TrayIcon import TrayIcon
 
 
@@ -97,42 +98,56 @@ class MainWin(QWidget, Ui_Main):
         Config.auto_input(self.checkBox_autoInput.isChecked())
 
     def dynamicPwd_clicked(self):
-        dp_result = self.get_dynamic_password()
-        if dp_result != 0:
-            BoxPop.err(self, f'获取动态密令失败[{dp_result}]')
-            return
-        try:
-            # 需要运行游戏才能执行自动输入
-            if self.checkBox_autoInput.isChecked() and SystemCom.check_game_running():
-                status, msg = SystemCom.auto_input_act_pwd(self.nowAccount.id, self.nowAccount.dynamic_pwd)
-                if status != 0:
-                    BoxPop.err(self, msg)
-        except Exception as e:
-            logging.error(e)
-            BoxPop.err(self, '自动输入失败,请手动复制输入!')
+        def __task():
+            self.get_dynamic_password()
+            if not self.nowAccount.dynamic_pwd:
+                BoxPop.err(self, f'获取动态密令失败')
+                return False
+            return True
+
+        def __result(status: bool):
+            try:
+                if not status:
+                    return
+                # 需要运行游戏才能执行自动输入
+                if self.checkBox_autoInput.isChecked() and SystemCom.check_game_running():
+                    status, msg = SystemCom.auto_input_act_pwd(self.nowAccount.id, self.nowAccount.dynamic_pwd)
+                    if status != 0:
+                        BoxPop.err(self, msg)
+            except Exception as e:
+                logging.error(e)
+                BoxPop.err(self, '自动输入失败,请手动复制输入!')
+
+        CustomThread.run_task(__task, __result, LoadingMask(self))
 
     def start_clicked(self):
-        if Config.pass_input():
-            dp_result = self.get_dynamic_password()
-            if dp_result != 0:
-                BoxPop.err(self, f'请求动态密令失败[{dp_result}]')
-                return
-        try:
-            SystemCom.run_game(self.nowAccount.id, self.nowAccount.dynamic_pwd, self.run_game_result)
-        except Exception as e:
-            logging.error(e)
-            BoxPop.err(self, f'启动游戏出现了问题:\n {str(e)}')
+        def __task():
+            if Config.pass_input():
+                self.get_dynamic_password()
+                if not self.nowAccount.dynamic_pwd:
+                    BoxPop.err(self, f'请求动态密令失败')
+                    return False
+            return True
 
-    def get_dynamic_password(self) -> int:
+        def __result(status: bool):
+            try:
+                if not status:
+                    return
+                SystemCom.run_game(self.nowAccount.id, self.nowAccount.dynamic_pwd, self.run_game_result)
+            except Exception as e:
+                logging.error(e)
+                BoxPop.err(self, f'启动游戏出现了问题:\n {str(e)}')
+
+        CustomThread.run_task(__task, __result, LoadingMask(self))
+
+    def get_dynamic_password(self):
         try:
-            self.nowAccount.dynamic_pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)
-            if not self.nowAccount.dynamic_pwd:
-                return 1
-            self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(self.nowAccount.dynamic_pwd))
+            pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)
+            pwd = pwd if pwd else None
+            self.nowAccount.dynamic_pwd = pwd
+            self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(pwd))
         except Exception as e:
             logging.error(e)
-            return 2
-        return 0
 
     def run_game_result(self, data):
         status, msg = data
@@ -167,8 +182,18 @@ class MainWin(QWidget, Ui_Main):
         """
         获取账号信息
         """
-        try:
-            result = QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
+
+        def __task():
+            try:
+                return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
+            except Exception as e:
+                logging.error(e)
+                BoxPop.err(self, '获取账号信息失败!')
+            return None
+
+        def __result(result: ActInfoResult):
+            if not result:
+                return
             self.children_accounts = result.accounts
             self.auth_cert = result.auth_cert
             self.comboBox_gameAct.clear()
@@ -189,9 +214,8 @@ class MainWin(QWidget, Ui_Main):
             self.comboBox_gameAct.setCurrentIndex(0)
             self.nowAccount = self.children_accounts[0]
             self.refresh_account_info(0)
-        except Exception as e:
-            logging.error(e)
-            BoxPop.err(self, '获取账号信息失败!')
+
+        CustomThread.run_task(__task, __result, LoadingMask(self))
 
     def refresh_account_info(self, index):
         """
@@ -209,7 +233,7 @@ class MainWin(QWidget, Ui_Main):
         palette = self.label_status.palette()
         if self.nowAccount.status:
             self.label_status.setText('正常')
-            palette.setColor(QPalette.WindowText, QColor(0, 0, 255))
+            palette.setColor(QPalette.WindowText, QColor(0, 0, 0))
         else:
             self.label_status.setText('封禁')
             palette.setColor(QPalette.WindowText, QColor(255, 0, 0))
@@ -226,12 +250,15 @@ class MainWin(QWidget, Ui_Main):
             try:
                 points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
                 points_game = math.floor(Decimal(points) / Decimal('2.5'))
-                template = f"{points}[{points_game}]"
-                self.label_points.setText(template)
+                return f"{points}[{points_game}]"
             except Exception as e:
                 logging.error(e)
+            return ""
 
-        CustomThread.run_task(__task, None, LoadMask(self))
+        def __result(template: str):
+            self.label_points.setText(template)
+
+        CustomThread.run_task(__task, __result, LoadingMask(self))
 
     def user_loginOut_triggerd(self):
         from src.window.LoginWin import LoginWin
