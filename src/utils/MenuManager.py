@@ -74,51 +74,52 @@ def __build_menu(window, menu: QMenu, config_items: list):
             menu.addAction(action)
 
 
-def build_dynamic_menu(self, menu: QMenu):
-    def build_result(entry: typing.Any):
-        if not entry:
-            return
-        submenu = QMenu(WinManager.translate("便捷导航"), self)
+def build_dynamic_menu(window, menu: QMenu):
+    def __build_result(data):
+        entry, win = data
+        logging.error(f"測試={entry}")
+        submenu = QMenu(WinManager.translate("便捷导航"), win)
         submenu.setObjectName("nav")
         actions = menu.actions()
         index = len(actions) - 3
         index = index if index > 0 else 0
         menu.insertMenu(actions[index], submenu)
-        __build_dynamic_menu(self, entry, submenu)
+        if entry:
+            __build_dynamic_menu(win, entry, submenu)
         action = QAction(WinManager.translate("更新导航数据"), submenu)
         action.setObjectName("nav_update_list")
 
         def re_deleteLater():
             submenu.deleteLater()
-            build_dynamic_menu(self, menu)
+            build_dynamic_menu(win, menu)
             return
 
         action.triggered.connect(re_deleteLater)
         submenu.addAction(action)
 
-    CustomThread.run_task(__get_dynamic_menu_config, build_result)
+    CustomThread.run_task(__get_dynamic_menu_config, __build_result, None, window=window)
 
 
-def __get_dynamic_menu_config() -> typing.Any:
+def __get_dynamic_menu_config(window) -> typing.Any:
     # 先读取网络配置，再进行菜单配置
     try:
         response = RequestClient.get_instance().get("https://gitee.com/starmcc/qs-beanfun-menu/raw/master/config.json")
         if response.status_code != 200:
-            return None
+            return None, window
         try:
             # 解析JSON响应
             entry = response.json()
         except ValueError as e:
             logging.error(f"JSON解析失败:\n{str(e)}")
-            return None
+            return None, window
             # 检查响应数据结构完整性
         if not isinstance(entry, list):
             logging.error("获取二维码失败,错误代码[0]")
-            return None
-        return entry
+            return None, window
+        return entry, window
     except Exception as e:
         logging.error(f"请求出错 error{str(e)}")
-        return None
+        return None, window
 
 
 def __build_dynamic_menu(self, entry, nav_menu: QMenu):

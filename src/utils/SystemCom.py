@@ -190,4 +190,4 @@ def __kill_process(pro_name: str) -> str:
         else:
             return result.stderr.decode('gbk')
     except Exception as e:
-        return f'{e}'
+        return f'发生错误:\n{str(e)}'

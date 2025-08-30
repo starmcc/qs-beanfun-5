@@ -37,10 +37,14 @@ if __name__ == '__main__':
     file_handler = logging.FileHandler(BaseTools.build_path('app.log'), encoding='utf-8')
     # 配置控制台日志处理器
     console_handler = logging.StreamHandler(sys.stdout)
+    level = logging.DEBUG
+    if getattr(sys, 'frozen', False):
+        # 生产环境下改成Info
+        level = logging.INFO
     logging_config = {
         'format': '%(asctime)s | %(levelname)s:  %(message)s | %(filename)s : %(module)s : %(lineno)d',
         'datefmt': '%Y-%m-%d %H:%M:%S',
-        'level': logging.INFO,
+        'level': level,
         'handlers': [file_handler, console_handler],
     }
     logging.basicConfig(**logging_config)
@@ -54,7 +58,7 @@ if __name__ == '__main__':
             # 设置QtWebEngineProcess的环境变量让其读取chrome.exe
             os.environ["QTWEBENGINEPROCESS_PATH"] = chrome_path
     except Exception as e:
-        logging.error(f"file chrome.exe build error {e}")
+        logging.error(f"file chrome.exe build error {str(e)}")
 
     app = QsBeanfun(sys.argv)
     win_login = LoginWin()

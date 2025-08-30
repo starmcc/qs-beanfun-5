@@ -6,6 +6,7 @@ import sys
 import webbrowser
 from datetime import datetime
 
+from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QMessageBox
 from packaging import version
 
@@ -24,8 +25,8 @@ def hidden_str(s):
         return s
 
 
-def build_path(path: str, env: bool = False):
-    if not env and getattr(sys, 'frozen', False):
+def build_path(path: str):
+    if getattr(sys, 'frozen', False):
         # 如果是打包后的可执行文件
         p = os.path.dirname(sys.executable)
         return rf'{p}\{path}'

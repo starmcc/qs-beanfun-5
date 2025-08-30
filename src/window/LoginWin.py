@@ -59,7 +59,6 @@ class LoginWin(QWidget, Ui_Login):
         self.init_account_info()
         self.checkBox_remember.setChecked(Config.remember())
 
-        self.login_go_to_main_event.connect(self.login_go_to_main_win)
         # 初始状态为隐藏密码
         self.is_password_visible = False
         # 创建显示密码动作按钮
@@ -107,36 +106,41 @@ class LoginWin(QWidget, Ui_Login):
             self.radioButton_tw.click()
 
     def login_clicked(self):
-        CustomThread.run_task(self.task_login, self.task_login_result, LoadingMask(self))
-
-    def task_login(self):
-        try:
-            act = self.lineEdit_account.text()
-            pwd = self.lineEdit_password.text()
-            return QsClient.get_instance().login(act, pwd)
-        except httpx.RequestError as e:
-            logging.error(e)
+        def __task_login(act, pwd):
+            try:
+                return QsClient.get_instance().login(act, pwd)
+            except Exception as e:
+                logging.error(f"未知错误:\n{str(e)}")
             return LoginRecord(status=False, message='网络错误')
 
+        CustomThread.run_task(__task_login, self.task_login_result, LoadingMask(self), act=self.lineEdit_account.text(), pwd=self.lineEdit_password.text())
+
     def task_login_result(self, login_record):
+
+        def __dual_very_login(record):
+            return QsClient.get_instance().dual_very_login(record)
+
+        def __dual_very_login_result(record):
+            if not record.status:
+                if record.message:
+                    BoxPop.err(self, record.message)
+                if record.daul_status:
+                    # 如果是验证码错误，则递归继续执行
+                    self.task_login_result(record)
+                return
+            self.save_login_data_result(record)
+
         if login_record.daul_status:
             # 双重验证
             code = self._login_double_input()
             if not code:
                 return
             login_record.dual_code = code
-            login_record = QsClient.get_instance().dual_very_login(login_record)
-        if not login_record.status:
-            if login_record.message:
-                BoxPop.err(self, login_record.message)
-            if login_record.daul_status:
-                # 如果是双重验证，但验证码错误，则递归继续执行
-                self.task_login_result(login_record)
+            CustomThread.run_task(__dual_very_login, __dual_very_login_result, LoadingMask(self), record=login_record)
             return
 
-        if login_record.daul_status:
-            # 如果是双重验证，但验证码错误，则递归继续执行
-            self.task_login_result(login_record)
+        if not login_record.status:
+            BoxPop.err(self, login_record.message)
             return
 
         if login_record.adv_status:
@@ -151,6 +155,10 @@ class LoginWin(QWidget, Ui_Login):
             GLOBAL_CONFIG.win_intermediateLogin.data_sent.connect(self.task_login_result)
             GLOBAL_CONFIG.win_intermediateLogin.exec_()
             return
+
+        self.save_login_data_result(login_record)
+
+    def save_login_data_result(self, login_record):
 
         # 登录成功后保存数据
         GLOBAL_CONFIG.bf_web_token = login_record.bfWebToken
@@ -198,7 +206,6 @@ class LoginWin(QWidget, Ui_Login):
 
     def login_go_to_main_win(self):
         self.close()
-
         GLOBAL_CONFIG.win_main = MainWin()
         GLOBAL_CONFIG.win_main.show()
 

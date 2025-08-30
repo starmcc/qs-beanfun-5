@@ -21,7 +21,7 @@ class _RequestClient:
                     try:
                         cls._instance.init_client()
                     except Exception as e:
-                        logging.error(f"Failed to initialize client: {e}")
+                        logging.error(f"Failed to initialize client: {str(e)}")
         return cls._instance
 
     def init_client(self):
@@ -35,35 +35,24 @@ class _RequestClient:
             "Accept-Encoding": "identity",
             "Connection": "Keep-Alive",
         }
-        try:
-            self.client = httpx.Client(follow_redirects=True,
-                                       verify=False,
-                                       proxies=proxies,
-                                       headers=headers,
-                                       timeout=10)
-        except httpx.RequestError as req_err:
-            logging.error(f"Error creating HTTP client: {req_err}")
-        except Exception as e:
-            logging.error(f"Unexpected error while creating client: {e}")
+        self.client = httpx.Client(follow_redirects=True,
+                                   verify=False,
+                                   proxies=proxies,
+                                   headers=headers,
+                                   timeout=10)
 
     def get(self, url, **kwargs) -> Response:
         try:
             return self.client.get(url, **kwargs)
-        except httpx.RequestError as req_err:
-            logging.error(f"Error occurred during GET request to {url}: {req_err}")
-            return Response(408)
         except Exception as e:
-            logging.error(f"Unexpected error during GET request to {url}: {e}")
+            logging.error(f"Unexpected error during GET request to {url}: {str(e)}")
             return Response(500)
 
     def post(self, url, **kwargs) -> Response:
         try:
             return self.client.post(url, **kwargs)
-        except httpx.RequestError as req_err:
-            logging.error(f"Error occurred during POST request to {url}: {req_err}")
-            return Response(408)
         except Exception as e:
-            logging.error(f"Unexpected error during POST request to {url}: {e}")
+            logging.error(f"Unexpected error during POST request to {url}: {str(e)}")
             return Response(500)
 
 
@@ -80,7 +69,7 @@ def get_ck_val(key) -> str or None:
                 if cookie.name == key:
                     return cookie.value
         except Exception as e:
-            logging.error(f"Error getting cookie value: {e}")
+            logging.error(f"Error getting cookie value: {str(e)}")
     return None
 
 
@@ -94,5 +83,5 @@ def get_cookies() -> list or None:
                 cookie_list.append((cookie.name, cookie.value))
             return cookie_list
         except Exception as e:
-            logging.error(f"Error getting cookies: {e}")
+            logging.error(f"Error getting cookies: {str(e)}")
     return None

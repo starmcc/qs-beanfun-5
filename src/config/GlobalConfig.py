@@ -1,10 +1,8 @@
 # 加载 UI 文件
 from src.utils.TaskQueue import TaskQueue
-from src.window import LoadMask
 
 
 class _GlobalConfig:
-    mask: LoadMask
 
     def __init__(self):
         self.bf_web_token: str
@@ -25,7 +23,7 @@ GLOBAL_CONFIG = _GlobalConfig()
 GLOBAL_ACT_TYPE_HK = 'HK'
 GLOBAL_ACT_TYPE_TW = 'TW'
 
-GLOBAL_APP_VERSION = '5.2.4'
+GLOBAL_APP_VERSION = '5.2.6'
 
 GLOBAL_APP_GITHUB = "https://github.com/starmcc/qs-beanfun-5"
 

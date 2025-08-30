@@ -405,5 +405,5 @@ def __is_windows_simplified_chinese():
         }
         return lang in simplified_codes
     except Exception as e:
-        logging.error(f"获取系统语言时出现异常: {e}")
+        logging.error(f"获取系统语言时出现异常: {str(e)}")
         return False

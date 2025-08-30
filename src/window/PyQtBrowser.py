@@ -200,7 +200,7 @@ class PyQtBrowser(QDialog):
                 q_cookie.setSecure(cookie.secure)
                 cookie_store.setCookie(q_cookie)
         except Exception as e:
-            logging.error(f"处理 cookies 时出现错误: {e}")
+            logging.error(f"处理 cookies 时出现错误: {str(e)}")
 
     def closeEvent(self, event: QCloseEvent):
         self.web_view.deleteLater()

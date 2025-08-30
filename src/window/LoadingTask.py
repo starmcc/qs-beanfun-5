@@ -63,8 +63,6 @@ class LoadingMask(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(self.container)
 
-        self.show()
-
     def closeEvent(self, a0):
         self.hide()
         self.deleteLater()
