@@ -34,12 +34,12 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
     def refresh_qrCode(self, event=None):
         self.loaded_loading_gif()
 
-        def load_qr_code():
+        def __load_qr_code():
             if self.task_id:
                 SchedulerManager.stop_task(self.task_id)
             return QsQrClient.get_instance().get_qr_code_image()
 
-        def load_qr_code_result(result: QrCodeResult):
+        def __load_qr_code_result(result: QrCodeResult):
             if not result.status:
                 BoxPop.err(self, result.msg)
                 return
@@ -49,7 +49,7 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
                 self.label_qrCode.setPixmap(pixmap)
                 self.task_id = SchedulerManager.do_task(self.check_login, 2000, result)
 
-        CustomThread().run_task(load_qr_code, load_qr_code_result)
+        CustomThread().run_task(__load_qr_code, __load_qr_code_result)
 
     def check_login(self, task_id, result: QrCodeResult):
         status = QsQrClient.get_instance().verify_qr_code_success(result.str_encrypt_data)

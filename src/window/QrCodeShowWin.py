@@ -29,7 +29,7 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
     def refresh_qrCode(self, event=None):
         self.loaded_loading_gif()
 
-        def load_qr_code():
+        def __load_qr_code():
             qr_code_result = QrCodeResult()
             rsp = RequestClient.get_instance().get(self.data)
             # 检查HTTP响应状态码
@@ -40,7 +40,7 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
             qr_code_result.status = True
             return qr_code_result
 
-        def load_qr_code_result(result: QrCodeResult):
+        def __load_qr_code_result(result: QrCodeResult):
             if not result.status:
                 BoxPop.err(self, result.msg)
                 return
@@ -49,7 +49,7 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
             if pixmap.loadFromData(image_data.getvalue()):
                 self.label_qrCode.setPixmap(pixmap)
 
-        CustomThread().run_task(load_qr_code, load_qr_code_result)
+        CustomThread().run_task(__load_qr_code, __load_qr_code_result)
 
     def loaded_loading_gif(self):
         movie = QMovie(":/images/qrLoading")

@@ -6,7 +6,6 @@ import sys
 import webbrowser
 from datetime import datetime
 
-from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QMessageBox
 from packaging import version
 
@@ -46,8 +45,8 @@ def check_new_version(win, quiet: bool = True):
             if (datetime.now() - dt).total_seconds() <= 604800:
                 return
         if not status:
-            status = (False, '未知错误')
-        status_flag, message = status
+            status = (False, '未知错误', None)
+        status_flag, message, window = status
         if status_flag:
             buttons = {
                 "前往更新": QMessageBox.AcceptRole,
@@ -59,7 +58,7 @@ def check_new_version(win, quiet: bool = True):
                     "本周不提醒": QMessageBox.ActionRole,
                     "取消": QMessageBox.RejectRole
                 }
-            click_result = BoxPop.custom_question(win, message, buttons)
+            click_result = BoxPop.custom_question(window, message, buttons)
 
             if click_result == 0:
                 webbrowser.open(f"{GLOBAL_APP_GITHUB}/releases")
@@ -67,12 +66,12 @@ def check_new_version(win, quiet: bool = True):
                 Config.update_tips_time(datetime.now())
 
         elif not quiet:
-            BoxPop.info(win, message)
+            BoxPop.info(window, message)
 
-    CustomThread.run_task(__check_version, __check_update_result, None if quiet else LoadingMask(win))
+    CustomThread.run_task(__check_version, __check_update_result, None if quiet else LoadingMask(win), win=win)
 
 
-def __check_version() -> (bool, str):
+def __check_version(win) -> (bool, str):
     # bool = 是否有更新
     # str = 更新内容,错误消息
     msg = '无法获取版本信息'
@@ -82,16 +81,16 @@ def __check_version() -> (bool, str):
         data = response.json()
         latest_version = data.get('tag_name')
         if latest_version is None:
-            return False, msg
+            return False, msg, win
         if version.parse(GlobalConfig.GLOBAL_APP_VERSION) >= version.parse(latest_version):
-            return False, '当前是最新版本'
+            return False, '当前是最新版本', win
         else:
             body = data.get('body')
             msg = f'发现新版本：{latest_version}\n{body}\n是否前往更新?'
-            return True, msg
+            return True, msg, win
     except Exception as e:
         logging.error(f"检查版本更新出现错误：\n {str(e)}")
-        return False, msg
+        return False, msg, win
 
 
 def build_chrome():
