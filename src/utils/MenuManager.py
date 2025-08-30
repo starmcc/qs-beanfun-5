@@ -191,5 +191,5 @@ def user_loginOut_triggerd(self):
 
 def user_info_triggered(self):
     GLOBAL_CONFIG.win_accountInfo = AccountInfoWin(self, self.nowAccount)
-    GLOBAL_CONFIG.win_accountInfo.notice_refresh.connect(self.get_account_info)
+    GLOBAL_CONFIG.win_accountInfo.notice_refresh.connect(self.get_account_info_clicked)
     GLOBAL_CONFIG.win_accountInfo.exec_()

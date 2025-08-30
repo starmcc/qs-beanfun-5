@@ -57,8 +57,8 @@ class MainWin(QWidget, Ui_Main):
         self.lineEdit_dynamicPwd.installEventFilter(self)
         self.checkBox_autoInput.stateChanged.connect(self.autoInput_stateChanged)
         self.comboBox_gameAct.currentIndexChanged.connect(self.refresh_account_info)
-        self.label_points.mousePressEvent = self.refresh_points
-        self.label_status.mousePressEvent = self.get_account_info
+        self.label_points.mousePressEvent = self.refresh_points_clicked
+        self.label_status.mousePressEvent = self.get_account_info_clicked
         self.pushButton_loginOut.setFocus()
 
     def eventFilter(self, obj, event):
@@ -89,7 +89,7 @@ class MainWin(QWidget, Ui_Main):
                 BoxPop.err(self, msg)
             else:
                 BoxPop.info(self, msg)
-                self.get_account_info()
+                self.get_account_info_clicked()
         except Exception as e:
             logging.error(e)
             BoxPop.info(self, '操作异常！')
@@ -182,7 +182,31 @@ class MainWin(QWidget, Ui_Main):
         """
         获取账号信息
         """
+        actInfoResult: ActInfoResult = QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
+        if not actInfoResult:
+            return
+        self.children_accounts = actInfoResult.accounts
+        self.auth_cert = actInfoResult.auth_cert
+        self.comboBox_gameAct.clear()
+        self.pushButton_createAct.setVisible(actInfoResult.new_user)
+        self.pushButton_dynamicPwd.setEnabled(not actInfoResult.new_user)
+        self.lineEdit_numAct.setText('')
+        self.lineEdit_dynamicPwd.setText('')
+        if actInfoResult.new_user is True or len(self.children_accounts) == 0:
+            # 新账号
+            if not self.auth_cert:
+                BoxPop.info(self, '此账号尚未完成电话进阶认证\n请前往会员中心完成后重新登录！')
+                # 不允许创建账号和查看账号详情
+                self.pushButton_createAct.setEnabled(False)
+                self.action_user_info.setEnabled(False)
+            return
+        for entry in self.children_accounts:
+            self.comboBox_gameAct.addItem(entry.name, userData=entry.id)
+        self.comboBox_gameAct.setCurrentIndex(0)
+        self.nowAccount = self.children_accounts[0]
+        self.refresh_account_info(0)
 
+    def get_account_info_clicked(self, event=None):
         def __task():
             try:
                 return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
@@ -191,17 +215,17 @@ class MainWin(QWidget, Ui_Main):
                 BoxPop.err(self, '获取账号信息失败!')
             return None
 
-        def __result(result: ActInfoResult):
-            if not result:
+        def __result(actInfoResult: ActInfoResult):
+            if not actInfoResult:
                 return
-            self.children_accounts = result.accounts
-            self.auth_cert = result.auth_cert
+            self.children_accounts = actInfoResult.accounts
+            self.auth_cert = actInfoResult.auth_cert
             self.comboBox_gameAct.clear()
-            self.pushButton_createAct.setVisible(result.new_user)
-            self.pushButton_dynamicPwd.setEnabled(not result.new_user)
+            self.pushButton_createAct.setVisible(actInfoResult.new_user)
+            self.pushButton_dynamicPwd.setEnabled(not actInfoResult.new_user)
             self.lineEdit_numAct.setText('')
             self.lineEdit_dynamicPwd.setText('')
-            if result.new_user is True or len(self.children_accounts) == 0:
+            if actInfoResult.new_user is True or len(self.children_accounts) == 0:
                 # 新账号
                 if not self.auth_cert:
                     BoxPop.info(self, '此账号尚未完成电话进阶认证\n请前往会员中心完成后重新登录！')
@@ -246,6 +270,14 @@ class MainWin(QWidget, Ui_Main):
         GLOBAL_CONFIG.win_config.exec_()
 
     def refresh_points(self, event=None):
+        try:
+            points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
+            points_game = math.floor(Decimal(points) / Decimal('2.5'))
+            self.label_points.setText(f"{points}[{points_game}]")
+        except Exception as e:
+            logging.error(e)
+
+    def refresh_points_clicked(self, event=None):
         def __task():
             try:
                 points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
