@@ -11,7 +11,6 @@ from src.client import QsClient
 from src.config import Config
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.Account import Account
-from src.models.ActInfoResult import ActInfoResult
 from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager, WinManager
 from src.utils.ThreadTools import CustomThread
 from src.views.Ui_Main import Ui_Main
@@ -57,8 +56,8 @@ class MainWin(QWidget, Ui_Main):
         self.lineEdit_dynamicPwd.installEventFilter(self)
         self.checkBox_autoInput.stateChanged.connect(self.autoInput_stateChanged)
         self.comboBox_gameAct.currentIndexChanged.connect(self.refresh_account_info)
-        self.label_points.mousePressEvent = self.refresh_points
-        self.label_status.mousePressEvent = self.get_account_info
+        self.label_points.mousePressEvent = self.refresh_points_clicked
+        self.label_status.mousePressEvent = self.get_account_info_clicked
         self.pushButton_loginOut.setFocus()
 
     def eventFilter(self, obj, event):
@@ -96,7 +95,7 @@ class MainWin(QWidget, Ui_Main):
             status, msg = args
             if status:
                 BoxPop.info(self, msg)
-                self.get_account_info()
+                self.get_account_info(True)
             else:
                 BoxPop.err(self, msg)
 
@@ -186,26 +185,32 @@ class MainWin(QWidget, Ui_Main):
             logging.error(msg)
             BoxPop.warn(self, msg)
 
-    def get_account_info(self, event=None):
+    def get_account_info_clicked(self, event=None):
+        self.get_account_info(True)
+
+    def get_account_info(self, thread_run=False):
         def __task():
             try:
-                return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
+                return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token), None
             except Exception as e:
-                logging.error(e)
-                BoxPop.err(self, '获取账号信息失败!')
-            return None
+                logging.error(f"发生错误:\n{str(e)}")
+            return None, "获取账号信息失败!"
 
-        def __result(actInfoResult: ActInfoResult = None):
-            if not actInfoResult:
+        def __result(data):
+            infoResult, msg = data
+            if msg:
+                BoxPop.err(self, '获取账号信息失败!')
                 return
-            self.children_accounts = actInfoResult.accounts
-            self.auth_cert = actInfoResult.auth_cert
+            if not infoResult:
+                return
+            self.children_accounts = infoResult.accounts
+            self.auth_cert = infoResult.auth_cert
             self.comboBox_gameAct.clear()
-            self.pushButton_createAct.setVisible(actInfoResult.new_user)
-            self.pushButton_dynamicPwd.setEnabled(not actInfoResult.new_user)
+            self.pushButton_createAct.setVisible(infoResult.new_user)
+            self.pushButton_dynamicPwd.setEnabled(not infoResult.new_user)
             self.lineEdit_numAct.setText('')
             self.lineEdit_dynamicPwd.setText('')
-            if actInfoResult.new_user is True or len(self.children_accounts) == 0:
+            if infoResult.new_user is True or len(self.children_accounts) == 0:
                 # 新账号
                 if not self.auth_cert:
                     BoxPop.info(self, '此账号尚未完成电话进阶认证\n请前往会员中心完成后重新登录！')
@@ -219,7 +224,10 @@ class MainWin(QWidget, Ui_Main):
             self.nowAccount = self.children_accounts[0]
             self.refresh_account_info(0)
 
-        CustomThread.run_task(__task, __result, LoadingMask(self))
+        if thread_run:
+            CustomThread.run_task(__task, __result, LoadingMask(self))
+        else:
+            __result(__task())
 
     def refresh_account_info(self, index):
         """
@@ -250,14 +258,17 @@ class MainWin(QWidget, Ui_Main):
         GLOBAL_CONFIG.win_config = ConfigWin(self)
         GLOBAL_CONFIG.win_config.exec_()
 
-    def refresh_points(self, event=None):
+    def refresh_points_clicked(self, event=None):
+        self.refresh_points(True)
+
+    def refresh_points(self, thread_run=False):
         def __task():
             try:
                 points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
                 points_game = math.floor(Decimal(points) / Decimal('2.5'))
                 return f"{points}[{points_game}]"
             except Exception as e:
-                logging.error(e)
+                logging.error(f"发生错误:\n{str(e)}")
             return None
 
         def __result(template: str = None):
@@ -265,7 +276,10 @@ class MainWin(QWidget, Ui_Main):
                 template = ""
             self.label_points.setText(template)
 
-        CustomThread.run_task(__task, __result, LoadingMask(self))
+        if thread_run:
+            CustomThread.run_task(__task, __result, LoadingMask(self))
+        else:
+            __result(__task())
 
     def user_loginOut_triggerd(self):
         from src.window.LoginWin import LoginWin
