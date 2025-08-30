@@ -55,6 +55,7 @@ class LoginWin(QWidget, Ui_Login):
         self.buttonGroup_type.addButton(self.radioButton_tw)
         self.buttonGroup_type.addButton(self.radioButton_hk)
         self.buttonGroup_type.buttonClicked.connect(self.buttonGroup_type_clicked)
+        self.login_go_to_main_event.connect(self.login_go_to_main_win)
 
         self.init_account_info()
         self.checkBox_remember.setChecked(Config.remember())
