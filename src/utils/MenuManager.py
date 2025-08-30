@@ -101,21 +101,24 @@ def build_dynamic_menu(self, menu: QMenu):
 
 def __get_dynamic_menu_config() -> typing.Any:
     # 先读取网络配置，再进行菜单配置
-    # response = RequestClient.get_instance().get("https://cdn.jsdelivr.net/gh/starmcc/qs-beanfun-menu@master/config.json")
-    response = RequestClient.get_instance().get("https://gitee.com/starmcc/qs-beanfun-menu/raw/master/config.json")
-    if response.status_code != 200:
-        return None
     try:
-        # 解析JSON响应
-        entry = response.json()
-    except ValueError as e:
-        logging.error(f"JSON解析失败:\n{str(e)}")
+        response = RequestClient.get_instance().get("https://gitee.com/starmcc/qs-beanfun-menu/raw/master/config.json")
+        if response.status_code != 200:
+            return None
+        try:
+            # 解析JSON响应
+            entry = response.json()
+        except ValueError as e:
+            logging.error(f"JSON解析失败:\n{str(e)}")
+            return None
+            # 检查响应数据结构完整性
+        if not isinstance(entry, list):
+            logging.error("获取二维码失败,错误代码[0]")
+            return None
+        return entry
+    except Exception as e:
+        logging.error(f"请求出错 error{str(e)}")
         return None
-        # 检查响应数据结构完整性
-    if not isinstance(entry, list):
-        logging.error("获取二维码失败,错误代码[0]")
-        return None
-    return entry
 
 
 def __build_dynamic_menu(self, entry, nav_menu: QMenu):

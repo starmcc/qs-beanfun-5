@@ -57,7 +57,7 @@ class MainWin(QWidget, Ui_Main):
         self.lineEdit_dynamicPwd.installEventFilter(self)
         self.checkBox_autoInput.stateChanged.connect(self.autoInput_stateChanged)
         self.comboBox_gameAct.currentIndexChanged.connect(self.refresh_account_info)
-        self.label_points.mousePressEvent = self.refresh_points_clicked
+        self.label_points.mousePressEvent = self.refresh_points
         self.label_status.mousePressEvent = self.get_account_info_clicked
         self.pushButton_loginOut.setFocus()
 
@@ -270,14 +270,6 @@ class MainWin(QWidget, Ui_Main):
         GLOBAL_CONFIG.win_config.exec_()
 
     def refresh_points(self, event=None):
-        try:
-            points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
-            points_game = math.floor(Decimal(points) / Decimal('2.5'))
-            self.label_points.setText(f"{points}[{points_game}]")
-        except Exception as e:
-            logging.error(e)
-
-    def refresh_points_clicked(self, event=None):
         def __task():
             try:
                 points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
