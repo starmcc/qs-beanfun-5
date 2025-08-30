@@ -77,7 +77,6 @@ def __build_menu(window, menu: QMenu, config_items: list):
 def build_dynamic_menu(window, menu: QMenu):
     def __build_result(data):
         entry, win = data
-        logging.error(f"測試={entry}")
         submenu = QMenu(WinManager.translate("便捷导航"), win)
         submenu.setObjectName("nav")
         actions = menu.actions()

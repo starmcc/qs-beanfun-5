@@ -22,7 +22,7 @@ def __get_config(key: str, default=None):
             config = json.load(file).get(key)
             return config if config is not None else default
         except json.JSONDecodeError as e:
-            logging.error(e)
+            logging.error(f"发生错误:\n{str(e)}")
             return default
 
 
@@ -41,7 +41,7 @@ def __save_config(key: str, value):
             with open(config_path, 'r') as file:
                 conf = json.load(file)
         except json.JSONDecodeError as e:
-            logging.error(e)
+            logging.error(f"发生错误:\n{str(e)}")
             conf = {}
     with open(config_path, 'w') as file:
         conf.setdefault(key)

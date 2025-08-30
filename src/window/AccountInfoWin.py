@@ -56,5 +56,5 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
             self.notice_refresh.emit()
             self.close()
         except Exception as e:
-            logging.error(e)
+            logging.error(f"发生错误:\n{str(e)}")
             BoxPop.info(self, '操作异常！')

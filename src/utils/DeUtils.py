@@ -25,7 +25,7 @@ def __get_cpu_disk_code():
             return default_key
         return hashlib.md5((cpu_info + disk_info).encode('utf-8')).hexdigest()
     except Exception as e:
-        logging.error(e)
+        logging.error(f"发生错误:\n{str(e)}")
         return default_key
 
 
@@ -61,7 +61,7 @@ def decrypt_aes(text: str) -> str:
         data = unpad(plaintext, AES.block_size)
         return data.decode('utf-8')
     except Exception as e:
-        logging.error(e)
+        logging.error(f"发生错误:\n{str(e)}")
         return ''
 
 
@@ -77,5 +77,5 @@ def encrypt_aes(text: str) -> str:
         data = cipher.encrypt(padded_text)
         return base64.b64encode(data).decode('utf-8')
     except Exception as e:
-        logging.error(e)
+        logging.error(f"发生错误:\n{str(e)}")
         return ''

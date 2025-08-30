@@ -73,5 +73,5 @@ class IntermediateLoginWin(QDialog, Ui_IntermediateLogin):
             akey = data_list[0] if data_list else ''
             return int_result, akey
         except Exception as e:
-            logging.error(e)
+            logging.error(f"发生错误:\n{str(e)}")
             return -500, akey

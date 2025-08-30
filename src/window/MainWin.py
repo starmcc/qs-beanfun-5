@@ -11,6 +11,7 @@ from src.client import QsClient
 from src.config import Config
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.Account import Account
+from src.models.ActInfoResult import ActInfoResult
 from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager, WinManager
 from src.utils.ThreadTools import CustomThread
 from src.views.Ui_Main import Ui_Main
@@ -56,8 +57,8 @@ class MainWin(QWidget, Ui_Main):
         self.lineEdit_dynamicPwd.installEventFilter(self)
         self.checkBox_autoInput.stateChanged.connect(self.autoInput_stateChanged)
         self.comboBox_gameAct.currentIndexChanged.connect(self.refresh_account_info)
-        self.label_points.mousePressEvent = self.refresh_points_clicked
-        self.label_status.mousePressEvent = self.get_account_info_clicked
+        self.label_points.mousePressEvent = self.refresh_points
+        self.label_status.mousePressEvent = self.get_account_info
         self.pushButton_loginOut.setFocus()
 
     def eventFilter(self, obj, event):
@@ -86,7 +87,7 @@ class MainWin(QWidget, Ui_Main):
             try:
                 return QsClient.get_instance().add_account(text)
             except Exception as e:
-                logging.error(f"添加账号异常\n{str(e)}")
+                logging.error(f"添加账号异常:\n{str(e)}")
             return False, "添加账号异常!"
 
         def __result(args: Tuple[bool, str] = None):
@@ -95,7 +96,7 @@ class MainWin(QWidget, Ui_Main):
             status, msg = args
             if status:
                 BoxPop.info(self, msg)
-                self.get_account_info(True)
+                self.get_account_info()
             else:
                 BoxPop.err(self, msg)
 
@@ -122,7 +123,7 @@ class MainWin(QWidget, Ui_Main):
                     if status != 0:
                         BoxPop.err(self, msg)
             except Exception as e:
-                logging.error(e)
+                logging.error(f"发生错误:\n{str(e)}")
                 BoxPop.err(self, '自动输入失败,请手动复制输入!')
 
         CustomThread.run_task(__task, __result, LoadingMask(self))
@@ -142,7 +143,7 @@ class MainWin(QWidget, Ui_Main):
                     return
                 SystemCom.run_game(self.nowAccount.id, self.nowAccount.dynamic_pwd, self.run_game_result)
             except Exception as e:
-                logging.error(e)
+                logging.error(f"发生错误:\n{str(e)}")
                 BoxPop.err(self, f'启动游戏出现了问题:\n {str(e)}')
 
         CustomThread.run_task(__task, __result, LoadingMask(self))
@@ -154,7 +155,7 @@ class MainWin(QWidget, Ui_Main):
             self.nowAccount.dynamic_pwd = pwd
             self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(pwd))
         except Exception as e:
-            logging.error(e)
+            logging.error(f"发生错误:\n{str(e)}")
 
     def run_game_result(self, data):
         status, msg = data
@@ -185,32 +186,26 @@ class MainWin(QWidget, Ui_Main):
             logging.error(msg)
             BoxPop.warn(self, msg)
 
-    def get_account_info_clicked(self, event=None):
-        self.get_account_info(True)
-
-    def get_account_info(self, thread_run=False):
+    def get_account_info(self, event=None):
         def __task():
             try:
-                return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token), None
+                return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
             except Exception as e:
                 logging.error(f"发生错误:\n{str(e)}")
-            return None, "获取账号信息失败!"
+            return None
 
-        def __result(data):
-            infoResult, msg = data
-            if msg:
+        def __result(actInfoResult: ActInfoResult = None):
+            if not actInfoResult:
                 BoxPop.err(self, '获取账号信息失败!')
                 return
-            if not infoResult:
-                return
-            self.children_accounts = infoResult.accounts
-            self.auth_cert = infoResult.auth_cert
+            self.children_accounts = actInfoResult.accounts
+            self.auth_cert = actInfoResult.auth_cert
             self.comboBox_gameAct.clear()
-            self.pushButton_createAct.setVisible(infoResult.new_user)
-            self.pushButton_dynamicPwd.setEnabled(not infoResult.new_user)
+            self.pushButton_createAct.setVisible(actInfoResult.new_user)
+            self.pushButton_dynamicPwd.setEnabled(not actInfoResult.new_user)
             self.lineEdit_numAct.setText('')
             self.lineEdit_dynamicPwd.setText('')
-            if infoResult.new_user is True or len(self.children_accounts) == 0:
+            if actInfoResult.new_user is True or len(self.children_accounts) == 0:
                 # 新账号
                 if not self.auth_cert:
                     BoxPop.info(self, '此账号尚未完成电话进阶认证\n请前往会员中心完成后重新登录！')
@@ -224,10 +219,7 @@ class MainWin(QWidget, Ui_Main):
             self.nowAccount = self.children_accounts[0]
             self.refresh_account_info(0)
 
-        if thread_run:
-            CustomThread.run_task(__task, __result, LoadingMask(self))
-        else:
-            __result(__task())
+        CustomThread.run_task(__task, __result, LoadingMask(self))
 
     def refresh_account_info(self, index):
         """
@@ -258,10 +250,7 @@ class MainWin(QWidget, Ui_Main):
         GLOBAL_CONFIG.win_config = ConfigWin(self)
         GLOBAL_CONFIG.win_config.exec_()
 
-    def refresh_points_clicked(self, event=None):
-        self.refresh_points(True)
-
-    def refresh_points(self, thread_run=False):
+    def refresh_points(self, event=None):
         def __task():
             try:
                 points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
@@ -276,10 +265,7 @@ class MainWin(QWidget, Ui_Main):
                 template = ""
             self.label_points.setText(template)
 
-        if thread_run:
-            CustomThread.run_task(__task, __result, LoadingMask(self))
-        else:
-            __result(__task())
+        CustomThread.run_task(__task, __result, LoadingMask(self))
 
     def user_loginOut_triggerd(self):
         from src.window.LoginWin import LoginWin

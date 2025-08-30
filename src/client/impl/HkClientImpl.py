@@ -341,7 +341,7 @@ class HkClientImpl(QsClient):
         try:
             return int(points)
         except Exception as e:
-            logging.error(e)
+            logging.error(f"发生错误:\n{str(e)}")
             return 0
 
     def regex_login_request_params(self, text: str) -> (str, str, str):
