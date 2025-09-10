@@ -145,9 +145,9 @@ def auto_input_act_pwd(act, pwd) -> (int, str):
     # 关闭错误提示框
     pyautogui.press('esc')
     pyautogui.sleep(0.1)
-    point = wintypes.POINT(510, 310)
+    point = wintypes.POINT(555, 310)
     user32.ClientToScreen(hwnd, ctypes.byref(point))
-    pyautogui.click(point.x, point.y)
+    pyautogui.doubleClick(point.x, point.y)
     pyautogui.sleep(0.1)
     pyautogui.press('end')
     for _ in range(50):

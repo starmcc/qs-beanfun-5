@@ -73,7 +73,7 @@ def __build_default_global_style(window):
 
     window.setStyleSheet("""
         * {
-        font-family: '微软雅黑';
+        font-family: 'Microsoft YaHei', 'SimHei', 'Arial', sans-serif;
         }
 
         QLineEdit {
