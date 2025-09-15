@@ -5,7 +5,7 @@ from typing import Tuple
 
 from PyQt5.QtCore import QEvent
 from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QFileDialog, QWidget
+from PyQt5.QtWidgets import QWidget
 
 from src.client import QsClient
 from src.config import Config
@@ -16,7 +16,6 @@ from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager, WinManager
 from src.utils.ThreadTools import CustomThread
 from src.views.Ui_Main import Ui_Main
 from src.window.ConfigWin import ConfigWin
-from src.window.LoadingTask import LoadingMask
 from src.window.TrayIcon import TrayIcon
 
 
@@ -84,142 +83,104 @@ class MainWin(QWidget, Ui_Main):
             return
 
         def __task():
-            try:
-                return QsClient.get_instance().add_account(text)
-            except Exception as e:
-                logging.error(f"添加账号异常:\n{str(e)}")
-            return False, "添加账号异常!"
+            return QsClient.get_instance().add_account(text)
 
-        def __result(args: Tuple[bool, str] = None):
+        def __result(win, args: Tuple[bool, str], e):
             if not args:
                 args = (False, "未知错误!")
             status, msg = args
+            if e:
+                msg = "添加账号异常!"
             if status:
-                BoxPop.info(self, msg)
-                self.get_account_info()
+                BoxPop.info(win, msg)
+                win.get_account_info()
             else:
-                BoxPop.err(self, msg)
+                BoxPop.err(win, msg)
 
-        CustomThread.run_task(__task, __result, LoadingMask(self))
+        CustomThread.run_task(__task, __result, self, True)
 
     def autoInput_stateChanged(self):
         Config.auto_input(self.checkBox_autoInput.isChecked())
 
     def dynamicPwd_clicked(self):
-        def __task():
-            self.get_dynamic_password()
-            if not self.nowAccount.dynamic_pwd:
-                BoxPop.err(self, f'获取动态密令失败')
+        def __task(win):
+            win.get_dynamic_password()
+            if not win.nowAccount.dynamic_pwd:
                 return False
             return True
 
-        def __result(status: bool):
+        def __result(win, status, e):
+            if not status or e:
+                BoxPop.err(win, "获取动态密令失败")
+                return
             try:
-                if not status:
-                    return
                 # 需要运行游戏才能执行自动输入
-                if self.checkBox_autoInput.isChecked() and SystemCom.check_game_running():
-                    status, msg = SystemCom.auto_input_act_pwd(self.nowAccount.id, self.nowAccount.dynamic_pwd)
+                if win.checkBox_autoInput.isChecked() and SystemCom.check_game_running():
+                    status, msg = SystemCom.auto_input_act_pwd(win.nowAccount.id, win.nowAccount.dynamic_pwd)
                     if status != 0:
-                        BoxPop.err(self, msg)
+                        BoxPop.err(win, msg)
             except Exception as e:
                 logging.error(f"发生错误:\n{str(e)}")
-                BoxPop.err(self, '自动输入失败,请手动复制输入!')
+                BoxPop.err(win, '自动输入失败,请手动复制输入!')
 
-        CustomThread.run_task(__task, __result, LoadingMask(self))
+        CustomThread.run_task(__task, __result, self, True, win=self)
 
     def start_clicked(self):
-        def __task():
+        def __task(win):
             if Config.pass_input():
-                self.get_dynamic_password()
-                if not self.nowAccount.dynamic_pwd:
-                    BoxPop.err(self, f'请求动态密令失败')
+                win.get_dynamic_password()
+                if not win.nowAccount.dynamic_pwd:
                     return False
             return True
 
-        def __result(status: bool):
+        def __result(win, status, e):
+            if not status or e:
+                BoxPop.err(win, "获取动态密令失败")
+                return
             try:
-                if not status:
-                    return
-                SystemCom.run_game(self.nowAccount.id, self.nowAccount.dynamic_pwd, self.run_game_result)
+                SystemCom.run_game(win.nowAccount.id, win.nowAccount.dynamic_pwd)
             except Exception as e:
                 logging.error(f"发生错误:\n{str(e)}")
-                BoxPop.err(self, f'启动游戏出现了问题:\n {str(e)}')
+                BoxPop.err(win, f'启动游戏出现了问题:\n {str(e)}')
 
-        CustomThread.run_task(__task, __result, LoadingMask(self))
+        CustomThread.run_task(__task, __result, self, True, win=self)
 
     def get_dynamic_password(self):
-        try:
-            pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)
-            pwd = pwd if pwd else None
-            self.nowAccount.dynamic_pwd = pwd
-            self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(pwd))
-        except Exception as e:
-            logging.error(f"发生错误:\n{str(e)}")
-
-    def run_game_result(self, data):
-        status, msg = data
-        # -999 = 系统异常
-        # -1  = 免输入模式错误
-        # 0 = 游戏正在运行,不执行
-        # 1  = 设置游戏目录
-        # 2 = 自动阻止更新成功
-        if status == 1:
-            if not BoxPop.question(self, msg):
-                return
-            options = QFileDialog.Options()
-            directory = QFileDialog.getExistingDirectory(None, "请选择新枫之谷游戏目录", "", options=options)
-            if not directory:
-                return
-            Config.game_path(directory)
-            # 重新打开
-            self.start_clicked()
-        elif status == 0:
-            # 游戏正在运行
-            if BoxPop.question(self, '检测到游戏运行中,是否强制结束后重新启动游戏?'):
-                SystemCom.kill_mapleStory()
-                self.start_clicked()
-        elif status == 2:
-            logging.info(msg)
-            BoxPop.info(self, msg)
-        else:
-            logging.error(msg)
-            BoxPop.warn(self, msg)
+        pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)
+        pwd = pwd if pwd else None
+        self.nowAccount.dynamic_pwd = pwd
+        self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(pwd))
 
     def get_account_info(self, event=None):
         def __task():
-            try:
-                return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
-            except Exception as e:
-                logging.error(f"发生错误:\n{str(e)}")
-            return None
+            return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
 
-        def __result(actInfoResult: ActInfoResult = None):
-            if not actInfoResult:
-                BoxPop.err(self, '获取账号信息失败!')
+        def __result(win, actInfoResult: ActInfoResult, e):
+            if not actInfoResult or e:
+                BoxPop.err(win, '获取账号信息失败!')
                 return
-            self.children_accounts = actInfoResult.accounts
-            self.auth_cert = actInfoResult.auth_cert
-            self.comboBox_gameAct.clear()
-            self.pushButton_createAct.setVisible(actInfoResult.new_user)
-            self.pushButton_dynamicPwd.setEnabled(not actInfoResult.new_user)
-            self.lineEdit_numAct.setText('')
-            self.lineEdit_dynamicPwd.setText('')
-            if actInfoResult.new_user is True or len(self.children_accounts) == 0:
+            win.children_accounts = actInfoResult.accounts
+            win.auth_cert = actInfoResult.auth_cert
+            win.comboBox_gameAct.clear()
+            win.pushButton_createAct.setVisible(actInfoResult.new_user)
+            win.pushButton_dynamicPwd.setEnabled(not actInfoResult.new_user)
+            win.lineEdit_numAct.setText('')
+            win.lineEdit_dynamicPwd.setText('')
+            if actInfoResult.new_user is True or len(win.children_accounts) == 0:
                 # 新账号
-                if not self.auth_cert:
-                    BoxPop.info(self, '此账号尚未完成电话进阶认证\n请前往会员中心完成后重新登录！')
+                if not win.auth_cert:
+                    BoxPop.info(win, '此账号尚未完成电话进阶认证\n请前往会员中心完成后重新登录！')
                     # 不允许创建账号和查看账号详情
-                    self.pushButton_createAct.setEnabled(False)
-                    self.action_user_info.setEnabled(False)
+                    win.pushButton_createAct.setEnabled(False)
+                    win.action_user_info.setEnabled(False)
                 return
-            for entry in self.children_accounts:
-                self.comboBox_gameAct.addItem(entry.name, userData=entry.id)
-            self.comboBox_gameAct.setCurrentIndex(0)
-            self.nowAccount = self.children_accounts[0]
-            self.refresh_account_info(0)
+            for entry in win.children_accounts:
+                win.comboBox_gameAct.addItem(entry.name, userData=entry.id)
+            win.comboBox_gameAct.setCurrentIndex(0)
+            win.nowAccount = win.children_accounts[0]
+            win.refresh_account_info(0)
 
-        CustomThread.run_task(__task, __result, LoadingMask(self))
+        CustomThread.run_task(__task, __result, self, True)
 
     def refresh_account_info(self, index):
         """
@@ -252,20 +213,16 @@ class MainWin(QWidget, Ui_Main):
 
     def refresh_points(self, event=None):
         def __task():
-            try:
-                points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
-                points_game = math.floor(Decimal(points) / Decimal('2.5'))
-                return f"{points}[{points_game}]"
-            except Exception as e:
-                logging.error(f"发生错误:\n{str(e)}")
-            return None
+            points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
+            points_game = math.floor(Decimal(points) / Decimal('2.5'))
+            return f"{points}[{points_game}]"
 
-        def __result(template: str = None):
-            if not template:
-                template = ""
-            self.label_points.setText(template)
+        def __result(win, template: str, e):
+            if not template or e:
+                template = "0"
+            win.label_points.setText(template)
 
-        CustomThread.run_task(__task, __result, LoadingMask(self))
+        CustomThread.run_task(__task, __result, self, True)
 
     def user_loginOut_triggerd(self):
         from src.window.LoginWin import LoginWin

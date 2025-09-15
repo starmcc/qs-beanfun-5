@@ -20,6 +20,7 @@ from src.window.QrCodeShowWin import QrCodeShowWin
 
 def init_menu(self):
     menu_config = [
+        CustomMenu(name="run_game", title="启动游戏", handler=lambda: SystemCom.run_game(self)),
         CustomMenu(name="user_center", title="用户中心", children=[
             CustomMenu(name="user_center_member", title="会员中心",
                        handler=lambda: PyQtBrowser.open_browser(QsClient.get_instance().get_web_url_member_center(GLOBAL_CONFIG.bf_web_token), self)),
@@ -75,16 +76,17 @@ def __build_menu(window, menu: QMenu, config_items: list):
 
 
 def build_dynamic_menu(window, menu: QMenu):
-    def __build_result(data):
-        entry, win = data
+    def __build_result(win, data, e):
         submenu = QMenu(WinManager.translate("便捷导航"), win)
         submenu.setObjectName("nav")
         actions = menu.actions()
         index = len(actions) - 3
         index = index if index > 0 else 0
         menu.insertMenu(actions[index], submenu)
-        if entry:
-            __build_dynamic_menu(win, entry, submenu)
+        if e:
+            logging.error(f"发生错误:\n{str(e)}")
+        elif data:
+            __build_dynamic_menu(win, data, submenu)
         action = QAction(WinManager.translate("更新导航数据"), submenu)
         action.setObjectName("nav_update_list")
 
@@ -96,29 +98,25 @@ def build_dynamic_menu(window, menu: QMenu):
         action.triggered.connect(re_deleteLater)
         submenu.addAction(action)
 
-    CustomThread.run_task(__get_dynamic_menu_config, __build_result, None, window=window)
+    CustomThread.run_task(__get_dynamic_menu_config, __build_result, window, False)
 
 
-def __get_dynamic_menu_config(window) -> typing.Any:
+def __get_dynamic_menu_config() -> typing.Any:
     # 先读取网络配置，再进行菜单配置
+    response = RequestClient.get_instance().get("https://gitee.com/starmcc/qs-beanfun-menu/raw/master/config.json")
+    if response.status_code != 200:
+        return None
     try:
-        response = RequestClient.get_instance().get("https://gitee.com/starmcc/qs-beanfun-menu/raw/master/config.json")
-        if response.status_code != 200:
-            return None, window
-        try:
-            # 解析JSON响应
-            entry = response.json()
-        except ValueError as e:
-            logging.error(f"JSON解析失败:\n{str(e)}")
-            return None, window
-            # 检查响应数据结构完整性
-        if not isinstance(entry, list):
-            logging.error("获取二维码失败,错误代码[0]")
-            return None, window
-        return entry, window
-    except Exception as e:
-        logging.error(f"请求出错 error{str(e)}")
-        return None, window
+        # 解析JSON响应
+        entry = response.json()
+    except ValueError as e:
+        logging.error(f"JSON解析失败:\n{str(e)}")
+        return None
+        # 检查响应数据结构完整性
+    if not isinstance(entry, list):
+        logging.error("获取二维码失败,错误代码[0]")
+        return None
+    return entry
 
 
 def __build_dynamic_menu(self, entry, nav_menu: QMenu):

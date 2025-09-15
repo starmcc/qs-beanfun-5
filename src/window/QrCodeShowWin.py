@@ -13,7 +13,8 @@ from src.views.Ui_QrCodeShow import Ui_QrCodeShow
 
 class QrCodeShowWin(QDialog, Ui_QrCodeShow):
     refresh_event = pyqtSignal()
-    def __init__(self, parent,title:str, data: str):
+
+    def __init__(self, parent, title: str, data: str):
         super().__init__(parent)
         self.data = data
         self.setupUi(self)
@@ -40,8 +41,10 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
             qr_code_result.status = True
             return qr_code_result
 
-        def __load_qr_code_result(result: QrCodeResult):
-            if not result.status:
+        def __load_qr_code_result(window, result: QrCodeResult, e):
+            if not result.status or e:
+                if e:
+                    result.msg = "网络错误"
                 BoxPop.err(self, result.msg)
                 return
             image_data = BytesIO(result.qr_image)
@@ -49,7 +52,7 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
             if pixmap.loadFromData(image_data.getvalue()):
                 self.label_qrCode.setPixmap(pixmap)
 
-        CustomThread().run_task(__load_qr_code, __load_qr_code_result)
+        CustomThread().run_task(__load_qr_code, __load_qr_code_result, self, False)
 
     def loaded_loading_gif(self):
         movie = QMovie(":/images/qrLoading")

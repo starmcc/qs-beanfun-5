@@ -70,7 +70,7 @@ class Ui_AccountEdit(object):
 
     def retranslateUi(self, AccountEdit):
         _translate = QtCore.QCoreApplication.translate
-        AccountEdit.setWindowTitle(_translate("AccountEdit", "account"))
+        AccountEdit.setWindowTitle(_translate("AccountEdit", "账号"))
         self.label_3.setText(_translate("AccountEdit", "PWD"))
         self.label_2.setText(_translate("AccountEdit", "ACT"))
         self.label.setText(_translate("AccountEdit", "DSC"))

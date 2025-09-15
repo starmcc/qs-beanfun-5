@@ -1,10 +1,10 @@
 import locale
 import logging
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import QEvent, Qt, QObject
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QSpacerItem, QSizePolicy, QLabel, QHBoxLayout, QDialog, QGraphicsDropShadowEffect
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QEvent, Qt, QObject, QSize, pyqtSlot
+from PyQt5.QtGui import QIcon, QColor, QPixmap
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QHBoxLayout, QDialog, QGraphicsDropShadowEffect, QPushButton, QMenu
 
 from src.config.GlobalConfig import GLOBAL_APP_VERSION
 from src.config.TitleBarConfig import TitleBarConfig
@@ -179,20 +179,18 @@ def __create_title_bar(window, config, height):
     title_layout.setContentsMargins(2, 0, 2, 0)
     title_layout.setSpacing(5)
 
+    # 添加图标
+    label_icon = __create_icon(window)
+    title_layout.addWidget(label_icon)
+
     # 添加菜单按钮
-    menu_btn = __create_menu_button(window)
+    menu_btn = TitleButton(":/images/menu", window)
     title_layout.addWidget(menu_btn)
     title_menu = MenuManager.init_menu(window)
     # 动态获取菜单
     MenuManager.build_dynamic_menu(window, title_menu)
-
-    # 按钮点击事件：显示菜单
-    def show_menu_by_button():
-        # # 菜单显示在按钮的左下角（相对于按钮）
-        button_pos = menu_btn.mapToGlobal(QtCore.QPoint(0, menu_btn.height()))
-        title_menu.exec_(button_pos)
-
-    menu_btn.clicked.connect(show_menu_by_button)
+    # 关联按钮菜单
+    menu_btn.set_menu(title_menu)
 
     # 添加标题文本
     title_label = QLabel(config.title)
@@ -204,126 +202,66 @@ def __create_title_bar(window, config, height):
 
     # 添加控制按钮
     if config.min_btn:
-        min_btn = __create_minimize_button(window)
+        min_btn = TitleButton(":/images/min", window)
+
+        def handle_minimize():
+            window.showMinimized()
+            window.hide()  # 隐藏窗口
+            window.trayIcon.showMsg("登录器已最小化到托盘")
+
+        min_btn.clicked.connect(handle_minimize)
         title_layout.addWidget(min_btn)
 
     if config.max_btn:
-        max_btn = __create_maximize_button(window)
+        max_btn = TitleButton(":/images/max", window)
+
+        def toggle_maximize():
+            if window.isMaximized():
+                if window._original_geometry:
+                    window.setGeometry(window._original_geometry)
+                else:
+                    window.showNormal()
+                max_btn.setText("□")
+            else:
+                window._original_geometry = window.geometry()
+                window.showMaximized()
+                max_btn.setText("▢")
+
+        max_btn.clicked.connect(toggle_maximize)
         title_layout.addWidget(max_btn)
 
     if config.close_btn:
-        close_btn = __create_close_button(window)
+        close_btn = TitleButton(":/images/close", window)
+        close_btn.clicked.connect(window.close)
         title_layout.addWidget(close_btn)
 
     return title_bar
 
 
-def __create_menu_button(window):
-    menu_btn = QPushButton()
-    menu_btn.setIcon(QIcon(":/images/logo"))
-    menu_btn.setFixedSize(24, 24)
-    menu_btn.setFocusPolicy(Qt.NoFocus)
-    menu_btn.setStyleSheet("""
-        QPushButton {
-            border: 0; 
-            border-radius: 6px; 
-            background-color: transparent; 
-        }
-        QPushButton:hover {
-            background-color: rgba(255, 255, 255, 0.2); 
-        }
-        QPushButton:pressed {
-            background-color: rgba(255, 255, 255, 0.3); 
-        }
-    """)
-    return menu_btn
+def __create_icon(window):
+    icon_label = QLabel(window)
+    # 加载图标（支持资源文件路径或本地文件路径）
+    pixmap = QPixmap(":/images/logo")  # 使用QPixmap加载图标
+    if not pixmap.isNull():
+        scaled_pixmap = pixmap.scaled(
+            20, 20,
+            Qt.KeepAspectRatio,  # 保持宽高比
+            Qt.SmoothTransformation  # 平滑缩放
+        )
+        icon_label.setPixmap(scaled_pixmap)
+    # # 设置固定大小
+    # icon_label.setFixedSize(28, 28)
 
-
-def __create_minimize_button(window):
-    min_btn = QPushButton("—")
-    min_btn.setFixedSize(28, 28)
-    min_btn.setFocusPolicy(Qt.NoFocus)
-    min_btn.setStyleSheet("""
-        QPushButton {
-            color: white;
-            border: 0; 
-            border-radius: 6px; 
-            background-color: transparent; 
-        }
-        QPushButton:hover {
-            background-color: rgba(255, 255, 255, 0.2); 
-        }
-        QPushButton:pressed {
-            background-color: rgba(255, 255, 255, 0.3); 
-        }
-    """)
-
-    def handle_minimize():
-        window.showMinimized()
-        window.hide()  # 隐藏窗口
-        window.trayIcon.showMsg("登录器已最小化到托盘")
-
-    min_btn.clicked.connect(handle_minimize)
-    return min_btn
-
-
-def __create_maximize_button(window):
-    max_btn = QPushButton("□")
-    max_btn.setFixedSize(28, 28)
-    max_btn.setFocusPolicy(Qt.NoFocus)
-    max_btn.setStyleSheet("""
-        QPushButton {
-            color: white;
-            border: 0; 
-            border-radius: 6px; 
-            background-color: transparent; 
-        }
-        QPushButton:hover {
-            background-color: rgba(255, 255, 255, 0.2); 
-        }
-        QPushButton:pressed {
-            background-color: rgba(255, 255, 255, 0.3); 
-        }
-    """)
-
-    window._original_geometry = None
-
-    def toggle_maximize():
-        if window.isMaximized():
-            if window._original_geometry:
-                window.setGeometry(window._original_geometry)
-            else:
-                window.showNormal()
-            max_btn.setText("□")
-        else:
-            window._original_geometry = window.geometry()
-            window.showMaximized()
-            max_btn.setText("▢")
-
-    max_btn.clicked.connect(toggle_maximize)
-    return max_btn
-
-
-def __create_close_button(window):
-    close_btn = QPushButton("X")
-    close_btn.setFixedSize(28, 28)
-    close_btn.setFocusPolicy(Qt.NoFocus)
-    close_btn.setStyleSheet("""
-        QPushButton {
-            color: white;
-            border: 0; 
-            border-radius: 6px; 
-            background-color: transparent; 
-        }
-        QPushButton:hover {
-            background-color: rgba(255, 255, 255, 0.2); 
-        }
-        QPushButton:pressed {
-            background-color: rgba(255, 255, 255, 0.3); 
-        }
-    """)
-    close_btn.clicked.connect(window.close)
-    return close_btn
+    # 设置样式（无边框、透明背景）
+    icon_label.setStyleSheet("""
+                QLabel {
+                    margin-left: 6px;
+                    border: none;
+                    border-radius: 6px;
+                    background-color: transparent;
+                }
+            """)
+    return icon_label
 
 
 def __create_content_widget(window):
@@ -407,3 +345,74 @@ def __is_windows_simplified_chinese():
     except Exception as e:
         logging.error(f"获取系统语言时出现异常: {str(e)}")
         return False
+
+
+class TitleButton(QPushButton):
+    def __init__(self, icon_path, parent=None):
+        super().__init__(parent)
+        self.icon_path = icon_path  # 图标路径
+        self.init_ui()
+
+    def init_ui(self):
+        # 基础设置
+        self.setText("")  # 不显示文字
+        self.setFixedSize(24, 24)  # 固定尺寸
+        self.setFocusPolicy(Qt.NoFocus)  # 去除焦点框
+        self.setAttribute(Qt.WA_StyledBackground, True)  # 确保样式生效
+        self.setMouseTracking(True)  # 启用鼠标跟踪
+
+        # 加载并设置图标
+        self.load_icon()
+
+        # 设置交互样式（简洁可靠）
+        self.setStyleSheet("""
+            QPushButton {
+                color: white;
+                border-radius: 6px;
+                background-color: transparent;
+                padding: 3px;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.08);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 255, 255, 0.11);
+            }
+        """)
+
+    def load_icon(self):
+        """加载图标并处理可能的错误"""
+        pixmap = QPixmap(self.icon_path)
+        if pixmap.isNull():
+            # 图标加载失败
+            logging.error(f"警告：无法加载图标 {self.icon_path}")
+            self.setText("?")
+            return
+
+        # 缩放图标以适应按钮（保持比例）
+        scaled_pixmap = pixmap.scaled(
+            20, 20,  # 稍小于按钮尺寸，留边距
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation  # 平滑缩放
+        )
+        self.setIcon(QIcon(scaled_pixmap))
+        self.setIconSize(QSize(20, 20))  # 图标显示尺寸
+
+    def set_menu(self, menu: QMenu):
+        """设置关联的菜单并监听关闭事件"""
+        self.menu = menu
+        # 菜单即将隐藏时重置按钮状态
+        self.menu.aboutToHide.connect(self.reset_state)
+        # 将按钮点击与菜单弹出关联
+        self.clicked.connect(self.show_menu)
+
+    def show_menu(self):
+        """显示菜单（在按钮下方）"""
+        if self.menu:
+            # 菜单显示位置：按钮下方左侧对齐
+            self.menu.exec_(self.mapToGlobal(self.rect().bottomLeft()))
+
+    @pyqtSlot()
+    def reset_state(self):
+        """重置按钮状态，清除按压效果"""
+        self.update()

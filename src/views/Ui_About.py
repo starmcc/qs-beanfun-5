@@ -115,13 +115,13 @@ class Ui_About(object):
 
     def retranslateUi(self, About):
         _translate = QtCore.QCoreApplication.translate
-        About.setWindowTitle(_translate("About", "About"))
+        About.setWindowTitle(_translate("About", "关于.."))
         self.label.setText(_translate("About", "本程式不是游戏橘子数位科技开发的客户端程序"))
         self.label_2.setText(_translate("About", "使用本程式请确保下载途径是否为作者提供的下载途径"))
         self.label_3.setText(_translate("About", "使用本程式造成的一切后果由使用者承担"))
         self.label_4.setText(_translate("About", "所有不怀好意的指责...都需要时间去验证！"))
         self.label_7.setText(_translate("About", "如果您条件允许,望君赞赏"))
         self.label_version.setText(_translate("About", "0.0.0"))
-        self.label_9.setText(_translate("About", "现版本:"))
+        self.label_9.setText(_translate("About", "Version:"))
         self.label_11.setText(_translate("About", "作者QQ:"))
         self.label_qq.setText(_translate("About", "1140526018"))

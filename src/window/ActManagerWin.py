@@ -124,7 +124,6 @@ class ActManagerWin(QDialog, Ui_ActManager):
 
     def show_context_menu(self, position):
         menu = QMenu()
-        refresh_action = menu.addAction("刷新")
         add_action = menu.addAction("增加")
         delete_action = None
         edit_action = None
@@ -132,7 +131,7 @@ class ActManagerWin(QDialog, Ui_ActManager):
         if selected_indexes:
             edit_action = menu.addAction("编辑")
             delete_action = menu.addAction("删除")
-
+        refresh_action = menu.addAction("刷新")
         action = menu.exec_(self.tableWidget.mapToGlobal(position))
 
         if action == refresh_action:

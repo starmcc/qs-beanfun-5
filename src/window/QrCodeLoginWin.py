@@ -34,22 +34,24 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
     def refresh_qrCode(self, event=None):
         self.loaded_loading_gif()
 
-        def __load_qr_code():
-            if self.task_id:
-                SchedulerManager.stop_task(self.task_id)
+        def __load_qr_code(win):
+            if win.task_id:
+                SchedulerManager.stop_task(win.task_id)
             return QsQrClient.get_instance().get_qr_code_image()
 
-        def __load_qr_code_result(result: QrCodeResult):
-            if not result.status:
-                BoxPop.err(self, result.msg)
+        def __load_qr_code_result(window, result: QrCodeResult, e):
+            if not result.status or e:
+                if e:
+                    result.msg = "网络错误"
+                BoxPop.err(window, result.msg)
                 return
             image_data = BytesIO(result.qr_image)
             pixmap = QPixmap()
             if pixmap.loadFromData(image_data.getvalue()):
-                self.label_qrCode.setPixmap(pixmap)
-                self.task_id = SchedulerManager.do_task(self.check_login, 2000, result)
+                window.label_qrCode.setPixmap(pixmap)
+                window.task_id = SchedulerManager.do_task(window.check_login, 2000, result)
 
-        CustomThread().run_task(__load_qr_code, __load_qr_code_result)
+        CustomThread().run_task(__load_qr_code, __load_qr_code_result, self, False, win=self)
 
     def check_login(self, task_id, result: QrCodeResult):
         status = QsQrClient.get_instance().verify_qr_code_success(result.str_encrypt_data)

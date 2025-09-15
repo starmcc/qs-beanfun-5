@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>account</string>
+   <string>账号</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="2,1">
    <property name="spacing">
@@ -72,12 +72,10 @@
       </widget>
      </item>
      <item row="2" column="4">
-      <widget class="QLineEdit" name="lineEdit_desc">
-      </widget>
+      <widget class="QLineEdit" name="lineEdit_desc"/>
      </item>
      <item row="0" column="4">
-      <widget class="QLineEdit" name="lineEdit_account">
-      </widget>
+      <widget class="QLineEdit" name="lineEdit_account"/>
      </item>
     </layout>
    </item>

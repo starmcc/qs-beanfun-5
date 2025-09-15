@@ -6,12 +6,13 @@ from ctypes import wintypes
 
 import psutil
 import pyautogui
+from PyQt5.QtWidgets import QFileDialog
 
 from src.config import Config
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.plugins import PluginTools
 from src.plugins.LocaleRemulator import LocaleRemulator
-from src.utils import BaseTools, SchedulerManager
+from src.utils import BaseTools, SchedulerManager, BoxPop
 
 # 加载 user32 DLL
 user32 = ctypes.WinDLL("user32", use_last_error=True)
@@ -34,7 +35,7 @@ user32.ClientToScreen.restype = wintypes.BOOL
 
 
 # 运行游戏的函数
-def run_game(act: str = None, pwd: str = None, res_fnc=None):
+def run_game(window, act: str = None, pwd: str = None):
     # -999 = 系统异常
     # -1  = 免输入模式错误
     # 0 = 游戏正在运行,不执行
@@ -43,7 +44,7 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
     try:
         # 如果游戏正在运行,弹出询问是否强制结束进程
         if check_game_running():
-            GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (0, '游戏正在运行中'))
+            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 0, '游戏正在运行中')
             return
 
         # 加载插件
@@ -51,7 +52,7 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
 
         directory_path = Config.game_path()
         if directory_path == '':
-            GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (1, '请设置游戏目录'))
+            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 1, '请设置游戏目录')
             return
 
         runParam = './MapleStory.exe'
@@ -60,7 +61,7 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
             if act and pwd:
                 runParam = f'{runParam} tw.login.maplestory.beanfun.com 8484 BeanFun {act} {pwd}'
             else:
-                GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (-1, '免输入模式错误：数据不足!'))
+                GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -1, '免输入模式错误：数据不足!')
                 return
 
         lr_exe = BaseTools.build_path(r'plugins\LocaleRemulator\LRProc.exe')
@@ -78,7 +79,7 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
                 if hwnd:
                     user32.PostMessageW(hwnd, 0x0010, 0, 0)  # WM_CLOSE = 0x0010
             except Exception as e:
-                GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (-999, str(e)))
+                GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, str(e))
             finally:
                 if hwnd or time.time() - RUN_TIME >= 5:
                     # 如果获取到了，且超过5秒则结束任务
@@ -93,9 +94,10 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
                 result = subprocess.run(command, shell=True, check=True)
                 SchedulerManager.stop_task(taskId)
                 if result.returncode == 0:
-                    GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (2, '程式自动拦截游戏自动更新程序\n建议使用官方补丁进行手动更新\n如需要使用游戏内置自动更新功能\n请前往设置取消阻止自动更新配置'))
+                    GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window,
+                                                       2, '程式自动拦截游戏自动更新程序\n建议使用官方补丁进行手动更新\n如需要使用游戏内置自动更新功能\n请前往设置取消阻止自动更新配置')
                 else:
-                    GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (-999, result.stderr.decode('gbk')))
+                    GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, result.stderr.decode('gbk'))
                 break
             if time.time() - RUN_TIME >= 10:
                 SchedulerManager.stop_task(taskId)
@@ -108,7 +110,36 @@ def run_game(act: str = None, pwd: str = None, res_fnc=None):
         if Config.stop_update():
             SchedulerManager.do_task(__stopAutoPatcher, 200)
     except Exception as e:
-        GLOBAL_CONFIG.custom_queue.addTask(res_fnc, (-999, str(e)))
+        GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, str(e))
+
+
+def _run_game_result(win, status, msg):
+    # -999 = 系统异常
+    # -1  = 免输入模式错误
+    # 0 = 游戏正在运行,不执行
+    # 1  = 设置游戏目录
+    # 2 = 自动阻止更新成功
+    if status == 1:
+        if not BoxPop.question(win, msg):
+            return
+        options = QFileDialog.Options()
+        directory = QFileDialog.getExistingDirectory(None, "请选择新枫之谷游戏目录", "", options=options)
+        if not directory:
+            return
+        Config.game_path(directory)
+        # 重新打开
+        win.start_clicked()
+    elif status == 0:
+        # 游戏正在运行
+        if BoxPop.question(win, '检测到游戏运行中,是否强制结束后重新启动游戏?'):
+            kill_mapleStory()
+            win.start_clicked()
+    elif status == 2:
+        logging.info(msg)
+        BoxPop.info(win, msg)
+    else:
+        logging.error(msg)
+        BoxPop.warn(win, msg)
 
 
 def check_game_running():

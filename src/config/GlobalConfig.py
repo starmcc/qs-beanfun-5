@@ -23,7 +23,7 @@ GLOBAL_CONFIG = _GlobalConfig()
 GLOBAL_ACT_TYPE_HK = 'HK'
 GLOBAL_ACT_TYPE_TW = 'TW'
 
-GLOBAL_APP_VERSION = '5.2.7'
+GLOBAL_APP_VERSION = '5.2.8'
 
 GLOBAL_APP_GITHUB = "https://github.com/starmcc/qs-beanfun-5"
 

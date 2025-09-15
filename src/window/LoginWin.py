@@ -1,8 +1,6 @@
-import logging
 import re
 import time
 
-import httpx
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QIcon
@@ -11,14 +9,12 @@ from PyQt5.QtWidgets import QWidget, QButtonGroup
 from src.client import QsClient
 from src.config import Config
 from src.config.GlobalConfig import *
-from src.models.LoginRecord import LoginRecord
 from src.utils import BoxPop, WinManager, BaseTools
 from src.utils.ThreadTools import CustomThread
 from src.views.Ui_Login import Ui_Login
 from src.window import PyQtBrowser
 from src.window.ActManagerWin import ActManagerWin
 from src.window.IntermediateLoginWin import IntermediateLoginWin
-from src.window.LoadingTask import LoadingMask
 from src.window.MainWin import MainWin
 from src.window.QrCodeLoginWin import QrCodeLoginWin
 from src.window.TrayIcon import TrayIcon
@@ -65,18 +61,18 @@ class LoginWin(QWidget, Ui_Login):
         # 创建显示密码动作按钮
         self.show_password_action = QtWidgets.QAction(self)
         # 获取系统自带的可见图标，这里以开启眼睛图标作示例，不同系统显示效果可能有差异
-        self.show_password_action.setIcon(QIcon(':/images/pwd_open'))
+        self.show_password_action.setIcon(QIcon(':/images/pwd_close'))
 
         def toggle_password_visibility():
             if self.is_password_visible:
                 # 如果密码当前可见，将其设为隐藏状态
                 self.lineEdit_password.setEchoMode(QtWidgets.QLineEdit.Password)
-                self.show_password_action.setIcon(QIcon(':/images/pwd_open'))
+                self.show_password_action.setIcon(QIcon(':/images/pwd_close'))
                 self.is_password_visible = False
             else:
                 # 如果密码当前隐藏，将其设为可见状态
                 self.lineEdit_password.setEchoMode(QtWidgets.QLineEdit.Normal)
-                self.show_password_action.setIcon(QIcon(':/images/pwd_close'))
+                self.show_password_action.setIcon(QIcon(':/images/pwd_open'))
                 self.is_password_visible = True
 
         self.show_password_action.triggered.connect(toggle_password_visibility)
@@ -108,56 +104,60 @@ class LoginWin(QWidget, Ui_Login):
 
     def login_clicked(self):
         def __task_login(act, pwd):
-            try:
-                return QsClient.get_instance().login(act, pwd)
-            except Exception as e:
-                logging.error(f"未知错误:\n{str(e)}")
-            return LoginRecord(status=False, message='网络错误')
+            return QsClient.get_instance().login(act, pwd)
 
-        CustomThread.run_task(__task_login, self.task_login_result, LoadingMask(self), act=self.lineEdit_account.text(), pwd=self.lineEdit_password.text())
-
-    def task_login_result(self, login_record):
-
-        def __dual_very_login(record):
-            return QsClient.get_instance().dual_very_login(record)
-
-        def __dual_very_login_result(record):
-            if not record.status:
-                if record.message:
-                    BoxPop.err(self, record.message)
-                if record.daul_status:
-                    # 如果是验证码错误，则递归继续执行
-                    self.task_login_result(record)
+        def __task_login_result(window, login_record, exception):
+            if exception:
+                BoxPop.err(window, "网络错误")
                 return
-            self.save_login_data_result(record)
 
-        if login_record.daul_status:
-            # 双重验证
-            code = self._login_double_input()
-            if not code:
+            def __dual_very_login(record):
+                return QsClient.get_instance().dual_very_login(record)
+
+            def __dual_very_login_result(win, record, e):
+                if not record.status:
+                    if record.message:
+                        BoxPop.err(win, record.message)
+                    if record.daul_status:
+                        # 如果是验证码错误，则递归继续执行
+                        win.task_login_result(record)
+                    return
+                win.save_login_data_result(record)
+
+            if login_record.daul_status:
+                # 双重验证
+                code = window.login_double_input()
+                if not code:
+                    return
+                login_record.dual_code = code
+                CustomThread.run_task(__dual_very_login, __dual_very_login_result, window, False, record=login_record)
                 return
-            login_record.dual_code = code
-            CustomThread.run_task(__dual_very_login, __dual_very_login_result, LoadingMask(self), record=login_record)
-            return
 
-        if not login_record.status:
-            BoxPop.err(self, login_record.message)
-            return
+            if not login_record.status:
+                BoxPop.err(window, login_record.message)
+                return
 
-        if login_record.adv_status:
-            # 台号进阶验证 需要显示图形验证码并填写手机号
-            GLOBAL_CONFIG.win_twAdv = TwAdvWin(self)
-            GLOBAL_CONFIG.win_twAdv.exec_()
-            return
+            if login_record.adv_status:
+                # 台号进阶验证 需要显示图形验证码并填写手机号
+                GLOBAL_CONFIG.win_twAdv = TwAdvWin(window)
+                GLOBAL_CONFIG.win_twAdv.exec_()
+                return
 
-        if login_record.intermediate_login:
-            # 台号中級驗證
-            GLOBAL_CONFIG.win_intermediateLogin = IntermediateLoginWin(self, login_record)
-            GLOBAL_CONFIG.win_intermediateLogin.data_sent.connect(self.task_login_result)
-            GLOBAL_CONFIG.win_intermediateLogin.exec_()
-            return
+            if login_record.intermediate_login:
+                # 台号中級驗證
+                GLOBAL_CONFIG.win_intermediateLogin = IntermediateLoginWin(window, login_record)
+                GLOBAL_CONFIG.win_intermediateLogin.data_sent.connect(window.task_login_result)
+                GLOBAL_CONFIG.win_intermediateLogin.exec_()
+                return
 
-        self.save_login_data_result(login_record)
+            self.save_login_data_result(login_record)
+
+        CustomThread.run_task(__task_login,
+                              __task_login_result,
+                              self,
+                              True,
+                              act=self.lineEdit_account.text(),
+                              pwd=self.lineEdit_password.text())
 
     def save_login_data_result(self, login_record):
 
@@ -178,13 +178,13 @@ class LoginWin(QWidget, Ui_Login):
 
         self.login_go_to_main_event.emit()
 
-    def _login_double_input(self) -> str:
+    def login_double_input(self) -> str:
         text, ok = BoxPop.input_dialog(self, '双重验证', '请填写验证码')
         if ok:
             if re.match(r'^\d+$', text):
                 return text
             else:
-                return self._login_double_input()
+                return self.login_double_input()
         return ''
 
     def register_mousePressEvent(self, event):

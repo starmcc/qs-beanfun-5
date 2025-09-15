@@ -201,7 +201,10 @@ def remember(value: bool = None):
     return None
 
 
-def proxy():
+def proxy(value: str =None):
     key = 'proxy'
-    # 读取
-    return __get_config(key)
+    if value is None:
+        # 读取
+        return __get_config(key, '')
+    __save_config(key, value)
+    return None

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'UI_ActManager.ui'
+# Form implementation generated from reading ui file 'Ui_ActManager.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -34,4 +34,4 @@ class Ui_ActManager(object):
 
     def retranslateUi(self, ActManager):
         _translate = QtCore.QCoreApplication.translate
-        ActManager.setWindowTitle(_translate("ActManager", "AccountManager"))
+        ActManager.setWindowTitle(_translate("ActManager", "账号管理"))

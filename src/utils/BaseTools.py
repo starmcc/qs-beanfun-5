@@ -14,7 +14,6 @@ from src.config import GlobalConfig, Config
 from src.config.GlobalConfig import GLOBAL_APP_GITHUB_API, GLOBAL_APP_GITHUB
 from src.utils import BoxPop
 from src.utils.ThreadTools import CustomThread
-from src.window.LoadingTask import LoadingMask
 
 
 def hidden_str(s):
@@ -39,14 +38,18 @@ def build_path(path: str):
 
 def check_new_version(win, quiet: bool = True):
     # 检查更新
-    def __check_update_result(status):
+    def __check_update_result(window, result, e):
         # 安静模式且24小时内提醒过则返回
         if quiet and (dt := Config.update_tips_time()):
             if (datetime.now() - dt).total_seconds() <= 604800:
                 return
-        if not status:
-            status = (False, '未知错误', None)
-        status_flag, message, window = status
+        if not result:
+            result = (False, '未知错误')
+        status_flag, message = result
+        if e:
+            logging.error(f"检查版本更新出现错误：\n {str(e)}")
+            status_flag = False
+            message = "无法获取版本信息"
         if status_flag:
             buttons = {
                 "前往更新": QMessageBox.AcceptRole,
@@ -68,29 +71,25 @@ def check_new_version(win, quiet: bool = True):
         elif not quiet:
             BoxPop.info(window, message)
 
-    CustomThread.run_task(__check_version, __check_update_result, None if quiet else LoadingMask(win), win=win)
+    CustomThread.run_task(__check_version, __check_update_result, win, not quiet)
 
 
-def __check_version(win) -> (bool, str):
+def __check_version() -> (bool, str):
     # bool = 是否有更新
     # str = 更新内容,错误消息
     msg = '无法获取版本信息'
-    try:
-        response = RequestClient.get_instance().get(f"{GLOBAL_APP_GITHUB_API}/releases/latest")
-        response.raise_for_status()
-        data = response.json()
-        latest_version = data.get('tag_name')
-        if latest_version is None:
-            return False, msg, win
-        if version.parse(GlobalConfig.GLOBAL_APP_VERSION) >= version.parse(latest_version):
-            return False, '当前是最新版本', win
-        else:
-            body = data.get('body')
-            msg = f'发现新版本：{latest_version}\n{body}\n是否前往更新?'
-            return True, msg, win
-    except Exception as e:
-        logging.error(f"检查版本更新出现错误：\n {str(e)}")
-        return False, msg, win
+    response = RequestClient.get_instance().get(f"{GLOBAL_APP_GITHUB_API}/releases/latest")
+    response.raise_for_status()
+    data = response.json()
+    latest_version = data.get('tag_name')
+    if latest_version is None:
+        return False, msg
+    if version.parse(GlobalConfig.GLOBAL_APP_VERSION) >= version.parse(latest_version) and getattr(sys, 'frozen', False):
+        return False, '当前是最新版本'
+    else:
+        body = data.get('body')
+        msg = f'发现新版本：{latest_version}\n{body}\n是否前往更新?'
+        return True, msg
 
 
 def build_chrome():
