@@ -7,6 +7,7 @@ from PyQt5.QtGui import QIcon, QColor, QPixmap
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QHBoxLayout, QDialog, QGraphicsDropShadowEffect, QPushButton, QMenu
 
 from src.config.GlobalConfig import GLOBAL_APP_VERSION
+from src.config.StyleConstants import StyleConstants
 from src.config.TitleBarConfig import TitleBarConfig
 from src.utils import MenuManager
 from src.zhconv import zhconv
@@ -27,7 +28,8 @@ def set_basic_window(window):
         else:
             window.setWindowFlags(window.windowFlags() & ~Qt.WindowContextHelpButtonHint | Qt.MSWindowsFixedSizeDialogHint)
     # 设置全局样式
-    __build_default_global_style(window)
+    window.setWindowIcon(QIcon(":/images/logo"))
+    window.setStyleSheet(StyleConstants.GLOBAL_STYLE)
     # 创建窗口为无边框，构建标题栏
     if not isinstance(window, QDialog):
         __build_title_bar(window, titleBarConfig)
@@ -66,38 +68,6 @@ class __WindowDragFilter(QObject):
 
         # 其他事件不拦截
         return super().eventFilter(obj, event)
-
-
-def __build_default_global_style(window):
-    window.setWindowIcon(QIcon(":/images/logo"))
-
-    window.setStyleSheet("""
-        * {
-        font-family: 'Microsoft YaHei', 'SimHei', 'Arial', sans-serif;
-        }
-
-        QLineEdit {
-        border: 1px solid #a0a0a0;  /* 边框宽度为 1px，颜色为 #a0a0a0 */
-        border-radius: 3px;  /* 边框圆角 */
-        padding-left: 5px;  /* 文本距离左边界有 5px */
-        background-color: transparent;  /* 背景颜色 */
-        color: black;  /* 文本颜色 */
-        selection-background-color: #F57C00;  /* 选中文本的背景颜色 */
-        font-size: 10pt;  /* 文本字体大小 */
-        }
-
-        QLineEdit:hover {  /* 鼠标悬浮在 QLineEdit 时的状态 */
-            border: 1px solid #F57C00;
-            border-radius: 3px;
-            background-color: #f2f2f2;
-            color: #F57C00;
-            selection-background-color: #F57C00;
-        }
-
-        QLineEdit[echoMode="2"] {  /* QLineEdit 有输入掩码时的状态 */
-            lineedit-password-character: 9679;
-        }
-        """)
 
 
 def __build_title_bar(window, config: TitleBarConfig):
@@ -249,8 +219,6 @@ def __create_icon(window):
             Qt.SmoothTransformation  # 平滑缩放
         )
         icon_label.setPixmap(scaled_pixmap)
-    # # 设置固定大小
-    # icon_label.setFixedSize(28, 28)
 
     # 设置样式（无边框、透明背景）
     icon_label.setStyleSheet("""

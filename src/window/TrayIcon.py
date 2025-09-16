@@ -11,20 +11,24 @@ class TrayIcon(QSystemTrayIcon):
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
         # 创建菜单和动作
-        self.menu = QMenu()
-        self.create_menu_actions()
+        self.menu = None
+        self.create_menu([{"name": "显示", "func": self.showSelf}])
         """ 设置图标 """
         self.setIcon(QIcon(':/images/logo'))
-        # 连接图标激活信号（点击图标）
         self.activated.connect(self.icon_clicked)
         self.show()
 
-    def create_menu_actions(self):
-        """ 创建动作 """
-        self.quit_action = QAction("退出", self)
-        self.quit_action.triggered.connect(self.quit)
-        self.menu.addAction(self.quit_action)
-        """ 设置上下文菜单 """
+    def create_menu(self, menus: list[dict]):
+        self.menu = QMenu()
+        if menus:
+            for menu in menus:
+                action = QAction(menu['name'], self)
+                action.triggered.connect(menu['func'])
+                self.menu.addAction(action)
+
+        quit_action = QAction("退出", self)
+        quit_action.triggered.connect(self.quit)
+        self.menu.addAction(quit_action)
         self.setContextMenu(self.menu)
 
     def icon_clicked(self, reason):
@@ -35,8 +39,11 @@ class TrayIcon(QSystemTrayIcon):
                 self.parent().hide()
                 self.showMsg("程序已最小化到托盘")
             else:
-                self.parent().show()
-                self.parent().showNormal()
+                self.showSelf()
+
+    def showSelf(self):
+        self.parent().show()
+        self.parent().showNormal()
 
     def showMsg(self, msg, title=""):
         self.showMessage(WinManager.translate(title), WinManager.translate(msg), self.icon(), 1000)
