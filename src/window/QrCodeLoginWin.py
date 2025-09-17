@@ -9,7 +9,7 @@ from src.client import QsQrClient
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.QrCodeResult import QrCodeResult
 from src.utils import SchedulerManager, BoxPop, WinManager
-from src.utils.ThreadTools import CustomThread
+from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_QrCodeLogin import Ui_QrCodeLogin
 
 
@@ -40,7 +40,7 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
             return QsQrClient.get_instance().get_qr_code_image()
 
         def __load_qr_code_result(window, result: QrCodeResult, e):
-            if not result.status or e:
+            if e or not result.status:
                 if e:
                     result.msg = "网络错误"
                 BoxPop.err(window, result.msg)
@@ -51,7 +51,7 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
                 window.label_qrCode.setPixmap(pixmap)
                 window.task_id = SchedulerManager.do_task(window.check_login, 2000, result)
 
-        CustomThread().run_task(__load_qr_code, __load_qr_code_result, self, False, win=self)
+        get_thread_pool().submit_task(__load_qr_code, __load_qr_code_result, self, False, win=self)
 
     def check_login(self, task_id, result: QrCodeResult):
         status = QsQrClient.get_instance().verify_qr_code_success(result.str_encrypt_data)

@@ -10,7 +10,7 @@ from src.client import QsClient
 from src.config import Config
 from src.config.GlobalConfig import *
 from src.utils import BoxPop, WinManager, BaseTools
-from src.utils.ThreadTools import CustomThread
+from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_Login import Ui_Login
 from src.window import PyQtBrowser
 from src.window.ActManagerWin import ActManagerWin
@@ -115,6 +115,9 @@ class LoginWin(QWidget, Ui_Login):
                 return QsClient.get_instance().dual_very_login(record)
 
             def __dual_very_login_result(win, record, e):
+                if e:
+                    BoxPop.err(win, "未知错误")
+                    return
                 if not record.status:
                     if record.message:
                         BoxPop.err(win, record.message)
@@ -130,7 +133,7 @@ class LoginWin(QWidget, Ui_Login):
                 if not code:
                     return
                 login_record.dual_code = code
-                CustomThread.run_task(__dual_very_login, __dual_very_login_result, window, False, record=login_record)
+                get_thread_pool().submit_task(__dual_very_login, __dual_very_login_result, window, False, record=login_record)
                 return
 
             if not login_record.status:
@@ -152,7 +155,7 @@ class LoginWin(QWidget, Ui_Login):
 
             self.save_login_data_result(login_record)
 
-        CustomThread.run_task(__task_login,
+        get_thread_pool().submit_task(__task_login,
                               __task_login_result,
                               self,
                               True,

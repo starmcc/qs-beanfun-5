@@ -10,7 +10,7 @@ from src.client import QsClient, RequestClient
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.CustomMenu import CustomMenu
 from src.utils import BoxPop, SystemCom, BaseTools, WinManager
-from src.utils.ThreadTools import CustomThread
+from src.utils.ThreadPoolManager import get_thread_pool
 from src.window import PyQtBrowser
 from src.window.AboutWin import AboutWin
 from src.window.AccountInfoWin import AccountInfoWin
@@ -98,7 +98,7 @@ def build_dynamic_menu(window, menu: QMenu):
         action.triggered.connect(re_deleteLater)
         submenu.addAction(action)
 
-    CustomThread.run_task(__get_dynamic_menu_config, __build_result, window, False)
+    get_thread_pool().submit_task(__get_dynamic_menu_config, __build_result, window, False)
 
 
 def __get_dynamic_menu_config() -> typing.Any:

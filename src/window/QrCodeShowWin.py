@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QDialog
 from src.client import RequestClient
 from src.models.QrCodeResult import QrCodeResult
 from src.utils import WinManager, BoxPop
-from src.utils.ThreadTools import CustomThread
+from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_QrCodeShow import Ui_QrCodeShow
 
 
@@ -42,7 +42,7 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
             return qr_code_result
 
         def __load_qr_code_result(window, result: QrCodeResult, e):
-            if not result.status or e:
+            if e or not result.status:
                 if e:
                     result.msg = "网络错误"
                 BoxPop.err(self, result.msg)
@@ -52,7 +52,7 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
             if pixmap.loadFromData(image_data.getvalue()):
                 self.label_qrCode.setPixmap(pixmap)
 
-        CustomThread().run_task(__load_qr_code, __load_qr_code_result, self, False)
+        get_thread_pool().submit_task(__load_qr_code, __load_qr_code_result, self, False)
 
     def loaded_loading_gif(self):
         movie = QMovie(":/images/qrLoading")

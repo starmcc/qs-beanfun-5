@@ -13,7 +13,7 @@ from src.client import RequestClient
 from src.config import GlobalConfig, Config
 from src.config.GlobalConfig import GLOBAL_APP_GITHUB_API, GLOBAL_APP_GITHUB
 from src.utils import BoxPop
-from src.utils.ThreadTools import CustomThread
+from src.utils.ThreadPoolManager import get_thread_pool
 
 
 def hidden_str(s):
@@ -71,7 +71,7 @@ def check_new_version(win, quiet: bool = True):
         elif not quiet:
             BoxPop.info(window, message)
 
-    CustomThread.run_task(__check_version, __check_update_result, win, not quiet)
+    get_thread_pool().submit_task(__check_version, __check_update_result, win, not quiet)
 
 
 def __check_version() -> (bool, str):

@@ -8,8 +8,8 @@ from PyQt5.QtWidgets import QApplication
 # noinspection PyUnresolvedReferences
 import src.Resources_rc
 from src.utils import BaseTools
+from src.utils.ThreadPoolManager import shutdown_thread_pool
 from src.window.LoginWin import LoginWin
-
 
 class QsBeanfun(QApplication):
 
@@ -30,6 +30,11 @@ class QsBeanfun(QApplication):
     def _handle_exception(self, e):
         logger = logging.getLogger(__name__)
         logger.error("捕获到异常", exc_info=True)
+
+    def closeEvent(self, event):
+        """应用关闭事件"""
+        shutdown_thread_pool()
+        super().closeEvent(event)
 
 
 if __name__ == '__main__':

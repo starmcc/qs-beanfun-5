@@ -13,7 +13,7 @@ from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.Account import Account
 from src.models.ActInfoResult import ActInfoResult
 from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager, WinManager
-from src.utils.ThreadTools import CustomThread
+from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_Main import Ui_Main
 from src.window.ConfigWin import ConfigWin
 from src.window.TrayIcon import TrayIcon
@@ -34,6 +34,7 @@ class MainWin(QWidget, Ui_Main):
         self.get_account_info()
         # 定时心跳保证登录状态
         self.task_id = SchedulerManager.do_task(self.refresh_login_status, 1000 * 60 * 5)
+
 
     def closeEvent(self, a0):
         # 当窗口关闭时停止心跳
@@ -97,7 +98,7 @@ class MainWin(QWidget, Ui_Main):
             else:
                 BoxPop.err(win, msg)
 
-        CustomThread.run_task(__task, __result, self, True)
+        get_thread_pool().submit_task(__task, __result, self, True)
 
     def autoInput_stateChanged(self):
         Config.auto_input(self.checkBox_autoInput.isChecked())
@@ -110,7 +111,7 @@ class MainWin(QWidget, Ui_Main):
             return True
 
         def __result(win, status, e):
-            if not status or e:
+            if e or not status:
                 BoxPop.err(win, "获取动态密令失败")
                 return
             try:
@@ -123,7 +124,7 @@ class MainWin(QWidget, Ui_Main):
                 logging.error(f"发生错误:\n{str(e)}")
                 BoxPop.err(win, '自动输入失败,请手动复制输入!')
 
-        CustomThread.run_task(__task, __result, self, True, win=self)
+        get_thread_pool().submit_task(__task, __result, self, True, win=self)
 
     def start_clicked(self):
         def __task(win):
@@ -134,7 +135,7 @@ class MainWin(QWidget, Ui_Main):
             return True
 
         def __result(win, status, e):
-            if not status or e:
+            if e or not status:
                 BoxPop.err(win, "获取动态密令失败")
                 return
             try:
@@ -143,7 +144,7 @@ class MainWin(QWidget, Ui_Main):
                 logging.error(f"发生错误:\n{str(e)}")
                 BoxPop.err(win, f'启动游戏出现了问题:\n {str(e)}')
 
-        CustomThread.run_task(__task, __result, self, True, win=self)
+        get_thread_pool().submit_task(__task, __result, self, True, win=self)
 
     def get_dynamic_password(self):
         pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)
@@ -156,7 +157,7 @@ class MainWin(QWidget, Ui_Main):
             return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
 
         def __result(win, actInfoResult: ActInfoResult, e):
-            if not actInfoResult or e:
+            if e or not actInfoResult:
                 BoxPop.err(win, '获取账号信息失败!')
                 return
             win.children_accounts = actInfoResult.accounts
@@ -180,7 +181,7 @@ class MainWin(QWidget, Ui_Main):
             win.nowAccount = win.children_accounts[0]
             win.refresh_account_info(0)
 
-        CustomThread.run_task(__task, __result, self, True)
+        get_thread_pool().submit_task(__task, __result, self, True)
 
     def refresh_account_info(self, index):
         """
@@ -218,11 +219,11 @@ class MainWin(QWidget, Ui_Main):
             return f"{points}[{points_game}]"
 
         def __result(win, template: str, e):
-            if not template or e:
+            if e or not template:
                 template = "0"
             win.label_points.setText(template)
 
-        CustomThread.run_task(__task, __result, self, True)
+        get_thread_pool().submit_task(__task, __result, self, True)
 
     def user_loginOut_triggerd(self):
         from src.window.LoginWin import LoginWin
