@@ -15,6 +15,7 @@ class GlobalConstants:
     APP_VERSION = "5.3.0"
     GITHUB_URL = "https://github.com/starmcc/qs-beanfun-5"
     GITHUB_API_URL = "https://api.github.com/repos/starmcc/qs-beanfun-5"
+    NAV_API_URL = "https://gitee.com/starmcc/qs-beanfun-nav/raw/master/config.json"
 
 
 class _GlobalConfig:

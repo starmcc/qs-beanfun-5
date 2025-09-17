@@ -8,6 +8,7 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QDialog, QGroupBox, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout, QWidget
 
 from src.client import RequestClient
+from src.config.GlobalConfig import GlobalConstants
 from src.utils import WinManager
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.UI_Nav import Ui_Nav
@@ -37,7 +38,7 @@ class NavWin(QDialog, Ui_Nav):
                 return
             win._render_groups(win._raw_entries)
 
-        get_thread_pool().submit_task(self._get_dynamic_menu_config, _result, self, True)
+        get_thread_pool().submit_task(self._get_dynamic_nav_config, _result, self, True)
 
     def _filter_entries(self, keyword: str):
         if not keyword:
@@ -195,117 +196,10 @@ class NavWin(QDialog, Ui_Nav):
         return label
 
     @staticmethod
-    def _get_dynamic_menu_config() -> typing.Any:
+    def _get_dynamic_nav_config() -> typing.Any:
         # 先读取网络配置，再进行菜单配置
-        response = RequestClient.get_instance().get("https://gitee.com/starmcc/qs-beanfun-menu/raw/master/config.json")
+        response = RequestClient.get_instance().get(GlobalConstants.NAV_API_URL)
         if response.status_code != 200:
             return None
         # 解析JSON响应
-        entry = response.json()
-        entry = [
-            {
-                "name": "custom_tools",
-                "type": 0,
-                "title": "实用工具",
-                "data": [
-                    {
-                        "name": "tools_recharge",
-                        "type": 3,
-                        "title": "GASH官方充值通道",
-                        "data": "https://gitee.com/starmcc/qs-beanfun-menu/raw/master/datas/shop_list.png"
-                    }, {
-                        "name": "tools_hexa",
-                        "type": 2,
-                        "title": "Hexa计算器",
-                        "data": "https://starmcc.github.io/MapleStoryCoreCalc/"
-                    }, {
-                        "name": "tools_star",
-                        "type": 2,
-                        "title": "星力模拟器",
-                        "data": "https://maplehexa.cisyy.cc/starforceEmulator/"
-                    }, {
-                        "name": "tools_all_tools",
-                        "type": 2,
-                        "title": "枫之谷小工具",
-                        "data": "https://mstoolbox.netlify.app/"
-                    }, {
-                        "name": "tools_all_tools",
-                        "type": 2,
-                        "title": "枫之谷小工具",
-                        "data": "https://mstoolbox.netlify.app/"
-                    }, {
-                        "name": "tools_union",
-                        "type": 2,
-                        "title": "联盟摆放模拟器",
-                        "data": "https://xenogents.github.io/LegionSolver/"
-                    }, {
-                        "name": "tools_paper_dolls",
-                        "type": 2,
-                        "title": "开源纸娃娃系统",
-                        "data": "https://github.com/Elem8100/MapleNecrocer"
-                    }, {
-                        "name": "tools_exchange",
-                        "type": 2,
-                        "title": "汇率换算",
-                        "data": "https://zh.coinmill.com/CNY_calculator.html"
-                    }
-                ]
-            },
-            {
-                "name": "nav_beanfun",
-                "type": 0,
-                "title": "游戏橘子官网",
-                "data": [
-                    {
-                        "name": "nav_beanfun_hk",
-                        "type": 1,
-                        "title": "香港地区",
-                        "data": "https://bfweb.hk.beanfun.com/"
-                    },
-                    {
-                        "name": "nav_beanfun_tw",
-                        "type": 1,
-                        "title": "台湾地区",
-                        "data": "https://tw.beanfun.com/"
-                    },
-                    {
-                        "name": "nav_maplestory",
-                        "type": 1,
-                        "title": "新枫之谷官网",
-                        "data": "https://maplestory.beanfun.com/main"
-                    }
-                ]
-            },
-            {
-                "name": "nav_cms",
-                "type": 0,
-                "title": "社区论坛",
-                "data": [
-                    {
-                        "name": "nav_baidu_beanfun",
-                        "type": 1,
-                        "title": "Beanfun贴吧",
-                        "data": "https://tieba.baidu.com/f?kw=beanfun"
-                    },
-                    {
-                        "name": "nav_baidu_maplestory",
-                        "type": 1,
-                        "title": "新枫之谷贴吧",
-                        "data": "https://tieba.baidu.com/f?kw=%E6%96%B0%E6%9E%AB%E4%B9%8B%E8%B0%B7"
-                    },
-                    {
-                        "name": "nav_bahamute",
-                        "type": 1,
-                        "title": "巴哈姆特",
-                        "data": "https://forum.gamer.com.tw/B.php?bsn=7650"
-                    }
-                ]
-            },
-            {
-                "name": "custom_auther_bilibili",
-                "type": 1,
-                "title": "作者B站",
-                "data": "https://space.bilibili.com/391919722"
-            }
-        ]
-        return entry
+        return response.json()
