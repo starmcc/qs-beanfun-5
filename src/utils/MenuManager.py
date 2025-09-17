@@ -16,11 +16,13 @@ from src.window.AboutWin import AboutWin
 from src.window.AccountInfoWin import AccountInfoWin
 from src.window.MainWin import MainWin
 from src.window.QrCodeShowWin import QrCodeShowWin
+from src.window.NavWin import NavWin
 
 
 def init_menu(self):
     menu_config = [
         CustomMenu(name="run_game", title="启动游戏", handler=lambda: SystemCom.run_game(self)),
+        CustomMenu(name="nav_panel", title="便捷导航面板", handler=lambda: open_nav_panel(self)),
         CustomMenu(name="user_center", title="用户中心", children=[
             CustomMenu(name="user_center_member", title="会员中心",
                        handler=lambda: PyQtBrowser.open_browser(QsClient.get_instance().get_web_url_member_center(GLOBAL_CONFIG.bf_web_token), self)),
@@ -73,6 +75,14 @@ def __build_menu(window, menu: QMenu, config_items: list):
             if item.handler:
                 action.triggered.connect(item.handler)
             menu.addAction(action)
+
+
+def open_nav_panel(self):
+    try:
+        win = NavWin(self)
+        win.show()
+    except Exception as e:
+        logging.error(f"打开便捷导航面板失败: {e}")
 
 
 def build_dynamic_menu(window, menu: QMenu):
