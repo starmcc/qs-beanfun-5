@@ -19,11 +19,12 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
         self.account: Account = account
         self.setupUi(self)
         WinManager.set_basic_window(self)
-        self.init_ui()
+        self.init_ui(parent)
         self.init_data()
 
-    def init_ui(self):
+    def init_ui(self, parent):
         self.pushButton_edit.clicked.connect(self.edit_account)
+        self.notice_refresh.connect(parent.get_account_info)
 
     def init_data(self):
         self.label_account.setText(self.account.id)

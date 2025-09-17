@@ -78,10 +78,10 @@ def tools_gameKill_triggered(self):
         if err:
             BoxPop.err(self, err)
 
+
 def open_nav_triggered(self):
     GLOBAL_CONFIG.win_nav = NavWin(self)
     GLOBAL_CONFIG.win_nav.exec_()
-
 
 
 def help_open_about_triggered(self):
@@ -99,5 +99,4 @@ def user_loginOut_triggerd(self):
 
 def user_info_triggered(self):
     GLOBAL_CONFIG.win_accountInfo = AccountInfoWin(self, self.nowAccount)
-    GLOBAL_CONFIG.win_accountInfo.notice_refresh.connect(self.get_account_info_clicked)
     GLOBAL_CONFIG.win_accountInfo.exec_()

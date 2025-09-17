@@ -152,7 +152,7 @@ class MainWin(QWidget, Ui_Main):
         self.nowAccount.dynamic_pwd = pwd
         self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(pwd))
 
-    def get_account_info(self, event=None):
+    def get_account_info(self):
         def __task():
             return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
 
