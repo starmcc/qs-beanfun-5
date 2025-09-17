@@ -14,6 +14,7 @@ from src.config import Config
 from src.config.GlobalConfig import GlobalConstants
 from src.utils import BoxPop
 from src.utils.ThreadPoolManager import get_thread_pool
+from src.config.Constants import TimeConstants
 
 
 def hidden_str(s):
@@ -41,7 +42,7 @@ def check_new_version(win, quiet: bool = True):
     def __check_update_result(window, result, e):
         # 安静模式且24小时内提醒过则返回
         if quiet and (dt := Config.update_tips_time()):
-            if (datetime.now() - dt).total_seconds() <= 604800:
+            if (datetime.now() - dt).total_seconds() <= TimeConstants.SECONDS_PER_WEEK:
                 return
         if not result:
             result = (False, '未知错误')

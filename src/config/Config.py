@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 
 from src.utils import DeUtils, BaseTools
+from src.config.Constants import ConfigKeys
 
 
 def __get_config(key: str, default=None):
@@ -53,7 +54,7 @@ def __save_config(key: str, value):
 
 
 def pass_input(value: bool = None):
-    key = 'pass_input'
+    key = ConfigKeys.PASS_INPUT
     if value is None:
         # 读取
         return __get_config(key, False)
@@ -62,7 +63,7 @@ def pass_input(value: bool = None):
 
 
 def stop_update(value: bool = None):
-    key = 'stop_update'
+    key = ConfigKeys.STOP_UPDATE
     if value is None:
         # 读取
         return __get_config(key, True)
@@ -71,7 +72,7 @@ def stop_update(value: bool = None):
 
 
 def close_start_window(value: bool = None):
-    key = 'close_start_window'
+    key = ConfigKeys.CLOSE_START_WINDOW
     if value is None:
         # 读取
         return __get_config(key, True)
@@ -80,7 +81,7 @@ def close_start_window(value: bool = None):
 
 
 def game_path(value: str = None):
-    key = 'game_path'
+    key = ConfigKeys.GAME_PATH
     if value is None:
         # 读取
         return __get_config(key, '')
@@ -89,7 +90,7 @@ def game_path(value: str = None):
 
 
 def auto_input(value: bool = None):
-    key = 'auto_input'
+    key = ConfigKeys.AUTO_INPUT
     if value is None:
         # 读取
         return __get_config(key, True)
@@ -98,7 +99,7 @@ def auto_input(value: bool = None):
 
 
 def update_tips_time(value: datetime = None):
-    key = 'update_tips_time'
+    key = ConfigKeys.UPDATE_TIPS_TIME
     if value is None:
         # 读取
         time_str = __get_config(key, None)
@@ -110,7 +111,7 @@ def update_tips_time(value: datetime = None):
 
 
 def accounts(value: list[dict] = None):
-    key = 'accounts'
+    key = ConfigKeys.ACCOUNTS
     new_ls: list[dict] = []
     # ==================== 读取需解密
     if value is None:
@@ -193,7 +194,7 @@ def account_first(account: str = None):
 
 
 def remember(value: bool = None):
-    key = 'remember'
+    key = ConfigKeys.REMEMBER
     if value is None:
         # 读取
         return __get_config(key, True)
@@ -202,7 +203,7 @@ def remember(value: bool = None):
 
 
 def proxy(value: str =None):
-    key = 'proxy'
+    key = ConfigKeys.PROXY
     if value is None:
         # 读取
         return __get_config(key, '')

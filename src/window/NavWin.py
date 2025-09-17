@@ -13,6 +13,7 @@ from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.UI_Nav import Ui_Nav
 from src.window import PyQtBrowser
 from src.window.QrCodeShowWin import QrCodeShowWin
+from src.config.Constants import UrlConstants, UiConstants
 
 
 class NavWin(QDialog, Ui_Nav):
@@ -98,7 +99,7 @@ class NavWin(QDialog, Ui_Nav):
 
         self.verticalLayout_groups.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
-    def _build_button_rows(self, nodes: List[dict], parent_layout: QVBoxLayout, max_per_row: int = 4):
+    def _build_button_rows(self, nodes: List[dict], parent_layout: QVBoxLayout, max_per_row: int = UiConstants.DEFAULT_BUTTONS_PER_ROW):
         row_layout: Optional[QHBoxLayout] = None
         count_in_row = 0
         for node in nodes:
@@ -197,7 +198,7 @@ class NavWin(QDialog, Ui_Nav):
     @staticmethod
     def _get_dynamic_menu_config() -> typing.Any:
         # 先读取网络配置，再进行菜单配置
-        response = RequestClient.get_instance().get("https://gitee.com/starmcc/qs-beanfun-menu/raw/master/config.json")
+        response = RequestClient.get_instance().get(UrlConstants.MENU_CONFIG_URL)
         if response.status_code != 200:
             return None
         # 解析JSON响应

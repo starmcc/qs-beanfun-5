@@ -17,6 +17,7 @@ from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_Main import Ui_Main
 from src.window.ConfigWin import ConfigWin
 from src.window.TrayIcon import TrayIcon
+from src.config.Constants import TimeConstants, BusinessConstants
 
 
 class MainWin(QWidget, Ui_Main):
@@ -32,8 +33,8 @@ class MainWin(QWidget, Ui_Main):
         self.auth_cert = True
         self.init_ui()
         self.get_account_info()
-        # 定时心跳保证登录状态
-        self.task_id = SchedulerManager.do_task(self.refresh_login_status, 1000 * 60 * 5)
+        # 定时心跳保证登录状态（5分钟）
+        self.task_id = SchedulerManager.do_task(self.refresh_login_status, TimeConstants.MILLISECONDS_PER_MINUTE * 5)
 
     def closeEvent(self, a0):
         # 当窗口关闭时停止心跳
@@ -215,7 +216,7 @@ class MainWin(QWidget, Ui_Main):
     def refresh_points(self, event=None):
         def __task():
             points = QsClient.get_instance().get_game_points(GLOBAL_CONFIG.bf_web_token)
-            points_game = math.floor(Decimal(points) / Decimal('2.5'))
+            points_game = math.floor(Decimal(points) / BusinessConstants.POINTS_TO_GAME_DIVISOR)
             return f"{points}[{points_game}]"
 
         def __result(win, template: str, e):
