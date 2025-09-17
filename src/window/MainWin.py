@@ -35,14 +35,14 @@ class MainWin(QWidget, Ui_Main):
         # 定时心跳保证登录状态
         self.task_id = SchedulerManager.do_task(self.refresh_login_status, 1000 * 60 * 5)
 
-
     def closeEvent(self, a0):
         # 当窗口关闭时停止心跳
         SchedulerManager.stop_task(self.task_id)
         self.trayIcon.deleteLater()
         super().closeEvent(a0)
 
-    def refresh_login_status(self, task_id):
+    @staticmethod
+    def refresh_login_status(task_id):
         QsClient.get_instance().heartbeat()
 
     def init_ui(self):

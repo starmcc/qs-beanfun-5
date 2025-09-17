@@ -3,7 +3,7 @@ import webbrowser
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QDialog
 
-from src.config.GlobalConfig import GLOBAL_APP_VERSION
+from src.config.GlobalConfig import GlobalConstants
 from src.utils import BaseTools, WinManager
 from src.views.Ui_About import Ui_About
 
@@ -16,7 +16,7 @@ class AboutWin(QDialog, Ui_About):
         self.init_ui()
 
     def init_ui(self):
-        self.label_version.setText(GLOBAL_APP_VERSION)
+        self.label_version.setText(GlobalConstants.APP_VERSION)
         self.label_image.setPixmap(QPixmap(":/images/sponsor"))
         self.label_qq.mousePressEvent = self.qq_mousePressEvent
         self.label_version.mousePressEvent = self.version_mousePressEvent

@@ -109,7 +109,7 @@ class QsClient:
 
 
 def get_instance() -> QsClient:
-    if GLOBAL_CONFIG.now_login_type == GLOBAL_ACT_TYPE_TW:
+    if GLOBAL_CONFIG.now_login_type == ActType.TW.value:
         from src.client.impl.TwClientImpl import TwClientImpl
         return TwClientImpl()
     from src.client.impl.HkClientImpl import HkClientImpl

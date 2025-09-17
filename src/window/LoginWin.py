@@ -88,9 +88,9 @@ class LoginWin(QWidget, Ui_Login):
         isTw = self.buttonGroup_type.checkedButton() == self.radioButton_tw
         self.label_qrCode.setVisible(isTw)
         if isTw:
-            GLOBAL_CONFIG.now_login_type = GLOBAL_ACT_TYPE_TW
+            GLOBAL_CONFIG.now_login_type = ActType.TW.value
         else:
-            GLOBAL_CONFIG.now_login_type = GLOBAL_ACT_TYPE_HK
+            GLOBAL_CONFIG.now_login_type = ActType.HK.value
 
     def init_account_info(self):
         account = Config.account_first()
@@ -156,11 +156,11 @@ class LoginWin(QWidget, Ui_Login):
             self.save_login_data_result(login_record)
 
         get_thread_pool().submit_task(__task_login,
-                              __task_login_result,
-                              self,
-                              True,
-                              act=self.lineEdit_account.text(),
-                              pwd=self.lineEdit_password.text())
+                                      __task_login_result,
+                                      self,
+                                      True,
+                                      act=self.lineEdit_account.text(),
+                                      pwd=self.lineEdit_password.text())
 
     def save_login_data_result(self, login_record):
 

@@ -10,8 +10,8 @@ from PyQt5.QtWidgets import QMessageBox
 from packaging import version
 
 from src.client import RequestClient
-from src.config import GlobalConfig, Config
-from src.config.GlobalConfig import GLOBAL_APP_GITHUB_API, GLOBAL_APP_GITHUB
+from src.config import Config
+from src.config.GlobalConfig import GlobalConstants
 from src.utils import BoxPop
 from src.utils.ThreadPoolManager import get_thread_pool
 
@@ -64,7 +64,7 @@ def check_new_version(win, quiet: bool = True):
             click_result = BoxPop.custom_question(window, message, buttons)
 
             if click_result == 0:
-                webbrowser.open(f"{GLOBAL_APP_GITHUB}/releases")
+                webbrowser.open(f"{GlobalConstants.GITHUB_URL}/releases")
             if quiet and click_result == 1:
                 Config.update_tips_time(datetime.now())
 
@@ -78,13 +78,13 @@ def __check_version() -> (bool, str):
     # bool = 是否有更新
     # str = 更新内容,错误消息
     msg = '无法获取版本信息'
-    response = RequestClient.get_instance().get(f"{GLOBAL_APP_GITHUB_API}/releases/latest")
+    response = RequestClient.get_instance().get(f"{GlobalConstants.GITHUB_API_URL}/releases/latest")
     response.raise_for_status()
     data = response.json()
     latest_version = data.get('tag_name')
     if latest_version is None:
         return False, msg
-    if version.parse(GlobalConfig.GLOBAL_APP_VERSION) >= version.parse(latest_version) and getattr(sys, 'frozen', False):
+    if version.parse(GlobalConstants.APP_VERSION) >= version.parse(latest_version) and getattr(sys, 'frozen', False):
         return False, '当前是最新版本'
     else:
         body = data.get('body')

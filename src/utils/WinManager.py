@@ -6,7 +6,7 @@ from PyQt5.QtCore import QEvent, Qt, QObject, QSize, pyqtSlot
 from PyQt5.QtGui import QIcon, QColor, QPixmap
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QHBoxLayout, QDialog, QGraphicsDropShadowEffect, QPushButton, QMenu
 
-from src.config.GlobalConfig import GLOBAL_APP_VERSION
+from src.config.GlobalConfig import GlobalConstants
 from src.config.StyleConstants import StyleConstants
 from src.config.TitleBarConfig import TitleBarConfig
 from src.utils import MenuManager
@@ -18,9 +18,9 @@ def set_basic_window(window):
     from src.window.PyQtBrowser import PyQtBrowser
     from src.window.LoginWin import LoginWin
     if isinstance(window, LoginWin):
-        titleBarConfig.title = f'v {GLOBAL_APP_VERSION}'
+        titleBarConfig.title = f'v {GlobalConstants.APP_VERSION}'
     else:
-        titleBarConfig.title = f'{window.windowTitle()} {GLOBAL_APP_VERSION}'
+        titleBarConfig.title = f'{window.windowTitle()} {GlobalConstants.APP_VERSION}'
 
     if isinstance(window, QDialog):
         if isinstance(window, PyQtBrowser):
@@ -157,8 +157,6 @@ def __create_title_bar(window, config, height):
     menu_btn = TitleButton(":/images/menu", window)
     title_layout.addWidget(menu_btn)
     title_menu = MenuManager.init_menu(window)
-    # 动态获取菜单
-    MenuManager.build_dynamic_menu(window, title_menu)
     # 关联按钮菜单
     menu_btn.set_menu(title_menu)
 

@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableWidgetItem, QMenu, QHeaderView, QDialog
 
 from src.config import Config
-from src.config.GlobalConfig import GLOBAL_ACT_TYPE_HK, GLOBAL_ACT_TYPE_TW
+from src.config.GlobalConfig import ActType
 from src.utils import BoxPop, WinManager
 from src.views.Ui_AccountEdit import Ui_AccountEdit
 from src.views.Ui_ActManager import Ui_ActManager
@@ -44,7 +44,7 @@ class ActEditWin(QDialog, Ui_AccountEdit):
         else:
             self.lineEdit_password.setFocus()
 
-        if self.editAct.get('login_type') == GLOBAL_ACT_TYPE_TW:
+        if self.editAct.get('login_type') == ActType.TW.value:
             self.radioButton_tw.setChecked(True)
         else:
             self.radioButton_hk.setChecked(True)
@@ -57,7 +57,7 @@ class ActEditWin(QDialog, Ui_AccountEdit):
         self.editAct['account'] = self.lineEdit_account.text()
         self.editAct['password'] = self.lineEdit_password.text()
         self.editAct['desc'] = self.lineEdit_desc.text()
-        self.editAct['login_type'] = GLOBAL_ACT_TYPE_HK if self.radioButton_hk.isChecked() else GLOBAL_ACT_TYPE_TW
+        self.editAct['login_type'] = ActType.HK.value if self.radioButton_hk.isChecked() else ActType.TW.value
         status, msg = Config.account_changes(self.editAct, self.insert)
         if status:
             BoxPop.info(self, msg)
@@ -110,7 +110,7 @@ class ActManagerWin(QDialog, Ui_ActManager):
         for index, act in enumerate(acts):
             self.tableWidget.setItem(index, 0, CustomQTableWidgetItem(act.get('account')))
             login_type = ''
-            if act.get('login_type') == GLOBAL_ACT_TYPE_TW:
+            if act.get('login_type') == ActType.TW.value:
                 login_type = '台湾'
             else:
                 login_type = '香港'
