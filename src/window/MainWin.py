@@ -139,7 +139,7 @@ class MainWin(QWidget, Ui_Main):
                 BoxPop.err(win, "获取动态密令失败")
                 return
             try:
-                SystemCom.run_game(win.nowAccount.id, win.nowAccount.dynamic_pwd)
+                SystemCom.run_game(self, win.nowAccount.id, win.nowAccount.dynamic_pwd)
             except Exception as e:
                 logging.error(f"发生错误:\n{str(e)}")
                 BoxPop.err(win, f'启动游戏出现了问题:\n {str(e)}')
