@@ -25,7 +25,6 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
-          cache-dependency-path: './docs/package-lock.json'  # 缓存docs内的依赖
 
       - name: Install dependencies
         working-directory: ./docs  # 明确在docs目录执行npm
