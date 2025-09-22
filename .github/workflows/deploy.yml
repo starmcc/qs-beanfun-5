@@ -1,0 +1,52 @@
+name: Deploy VitePress to GitHub Pages
+
+on:
+  push:
+    branches: [master]  # 只在推送到main分支时触发
+    paths:
+      - 'docs/**'  # 仅当docs目录有变更时才触发（可选，优化性能）
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 必须，否则VitePress的"最后更新时间"功能会失效
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.15.0
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: ./docs  # 明确在docs目录执行npm
+        run: npm install
+
+      - name: Build VitePress (生成静态文件)
+        working-directory: ./docs  # 明确在docs目录执行构建
+        run: npm run docs:build  # 执行docs/package.json中的构建命令
+
+      - name: Upload VitePress (构建结果)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs/.vitepress/dist'  # 关键：指向VitePress的输出目录
+
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
