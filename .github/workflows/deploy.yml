@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./docs  # 明确在docs目录执行npm
-        run: npm ci
+        run: npm install
 
       - name: Build VitePress (生成静态文件)
         working-directory: ./docs  # 明确在docs目录执行构建
