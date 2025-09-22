@@ -5,7 +5,7 @@ export default {
   lang: 'zh-CN',
   title: 'QsBeanfun-5',
   description: '秋水登录器',
-  head: [['link', { rel: 'icon', href: './statics/logo.png' }]],
+  head: [['link', { rel: 'icon', href: 'logo.png' }]],
   lastUpdated: true,
   themeConfig: {
     // 主题级选项

@@ -5,7 +5,7 @@ hero:
   text: 'QsBeanfun-5'
   tagline: '致力打造《新枫之谷》最实用的游戏登入工具</br><img class="icon_custom" alt="Release" src="https://img.shields.io/github/v/release/starmcc/qs-beanfun-5?display_name=tag&label=Version&color=red"><img class="icon_custom" alt="Downloads" src="https://img.shields.io/github/downloads/starmcc/qs-beanfun-5/total?label=Downloads"/><img class="icon_custom" alt="License" src="https://img.shields.io/badge/License-MIT-lightgrey"/>'
   image:
-        src: ./statics/logo.png
+        src: logo.png
         alt: logo
   actions:
     - theme: brand
