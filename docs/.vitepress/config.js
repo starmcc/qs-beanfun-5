@@ -1,7 +1,7 @@
 // .vitepress/config.js
 export default {
   // 站点级选项
-  base: '/qs-beanfun-5/'
+  base: '/qs-beanfun-5/',
   lang: 'zh-CN',
   title: 'QsBeanfun-5',
   description: '秋水登录器',
