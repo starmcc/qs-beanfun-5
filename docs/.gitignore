@@ -3,4 +3,3 @@ dist
 cache
 .temp
 .DS_Store
-package-lock.json
