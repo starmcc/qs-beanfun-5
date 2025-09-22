@@ -38,9 +38,12 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
             self.label_status.setText('禁止')
             palette.setColor(QPalette.WindowText, QColor(255, 0, 0))
         self.label_status.setPalette(palette)
-        date = datetime.strptime(self.account.create_time, "%Y-%m-%d %H:%M:%S")
-        day = abs(date - datetime.now()).days
-        self.label_day.setText(f'{day}')
+        try:
+            date = datetime.strptime(self.account.create_time, "%Y-%m-%d %H:%M:%S")
+            day = abs(date - datetime.now()).days
+            self.label_day.setText(f'{day}')
+        except Exception as e:
+            logging.error(f"发生错误:\n{str(e)}")
         self.label_createTme.setText(f"于 {self.account.create_time} 创建")
 
     def edit_account(self):
