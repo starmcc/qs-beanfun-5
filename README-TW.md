@@ -43,7 +43,7 @@ I don't have a lot of energy to do it.
 
 ## 安裝
 
-[**Releases-點擊進入下載頁面**](https://github.com/starmcc/qs-beanfun-5/releases)
+[**Releases-點擊進入發佈頁**](https://starmcc.github.io/qs-beanfun-5/)
 
 **下載最新`Beanfun.zip`開箱即用。**
 
