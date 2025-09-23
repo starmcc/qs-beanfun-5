@@ -8,6 +8,7 @@
         <file alias="images/max">./images/max.png</file>
         <file alias="images/min">./images/min.png</file>
         <file alias="images/qrLoading">./images/qrLoading.gif</file>
+        <file alias="images/qrCode">./images/qrCode.png</file>
         <file alias="images/sponsor">./images/sponsor.png</file>
         <file alias="images/pwd_open">./images/pwd-o.png</file>
         <file alias="images/pwd_close">./images/pwd-c.png</file>
