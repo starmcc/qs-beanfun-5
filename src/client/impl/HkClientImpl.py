@@ -15,6 +15,9 @@ from src.utils import DeUtils
 
 class HkClientImpl(QsClient):
 
+    def get_login_index(self) -> str:
+        return "https://bfweb.hk.beanfun.com/beanfun_block/bflogin/default.aspx?service=999999_T0"
+
     def change_account_name(self, account_id: str, new_name: str) -> (bool, str):
         url = "https://bfweb.hk.beanfun.com/generic_handlers/gamezone.ashx"
         data = {

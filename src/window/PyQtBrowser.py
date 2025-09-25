@@ -20,8 +20,13 @@ class CustomWebEngineView(QWebEngineView):
 
 
 class PyQtBrowser(QDialog):
+    _instance = None
+
     def __init__(self, parent=None):
+        if PyQtBrowser._instance is not None:
+            raise Exception("LoginWeb窗口只能打开一个！")
         super().__init__(parent)
+        PyQtBrowser._instance = self
         # 设置基本窗口属性
         self.setup_window()
         # 初始化界面组件
@@ -102,9 +107,9 @@ class PyQtBrowser(QDialog):
         # 布局设置
         main_layout = QVBoxLayout()
         top_layout = QHBoxLayout()
-        main_layout.setContentsMargins(8, 8, 8, 8)
-        top_layout.setContentsMargins(0, 0, 0, 4)
-        top_layout.setSpacing(8)
+        main_layout.setContentsMargins(3, 3, 3, 3)
+        top_layout.setContentsMargins(0, 0, 0, 0)
+        top_layout.setSpacing(3)
 
         # 设置按钮最小宽度
         self.back_button.setMinimumWidth(36)
@@ -204,11 +209,17 @@ class PyQtBrowser(QDialog):
 
     def closeEvent(self, event: QCloseEvent):
         self.web_view.deleteLater()
+        PyQtBrowser._instance = None
         event.accept()
 
 
 def open_browser(url_path: str, parent=None):
+    # 1. 检查是否已有存活的LoginWeb实例
+    if PyQtBrowser._instance is not None:
+        PyQtBrowser._instance.showNormal()
+        PyQtBrowser._instance.raise_()
+        PyQtBrowser._instance.load_url(url_path)
+        return PyQtBrowser._instance
     win_browser = PyQtBrowser(parent)
     win_browser.load_url(url_path)
-    win_browser.show()
-    return win_browser
+    win_browser.exec_()

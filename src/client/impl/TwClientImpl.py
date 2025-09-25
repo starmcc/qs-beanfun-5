@@ -14,6 +14,9 @@ from src.utils import DeUtils
 
 class TwClientImpl(QsClient):
 
+    def get_login_index(self) -> str:
+        return "https://tw.beanfun.com/beanfun_block/bflogin/default.aspx?service=999999_T0"
+
     def get_session_key(self) -> (bool, str):
         url = 'https://tw.beanfun.com/beanfun_block/bflogin/default.aspx'
         params = {'service': '999999_T0'}

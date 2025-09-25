@@ -16,6 +16,7 @@ from src.zhconv import zhconv
 def set_basic_window(window):
     titleBarConfig: TitleBarConfig = TitleBarConfig()
     from src.window.PyQtBrowser import PyQtBrowser
+    from src.window.LoginWeb import LoginWeb
     from src.window.LoginWin import LoginWin
     if isinstance(window, LoginWin):
         titleBarConfig.title = f'v {GlobalConstants.APP_VERSION}'
@@ -23,7 +24,7 @@ def set_basic_window(window):
         titleBarConfig.title = f'{window.windowTitle()} {GlobalConstants.APP_VERSION}'
 
     if isinstance(window, QDialog):
-        if isinstance(window, PyQtBrowser):
+        if isinstance(window, PyQtBrowser) or isinstance(window, LoginWeb):
             window.setWindowFlags(window.windowFlags() & ~Qt.WindowContextHelpButtonHint | Qt.WindowMaximizeButtonHint)
         else:
             window.setWindowFlags(window.windowFlags() & ~Qt.WindowContextHelpButtonHint | Qt.MSWindowsFixedSizeDialogHint)

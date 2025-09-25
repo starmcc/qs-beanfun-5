@@ -51,5 +51,14 @@ class StyleConstants:
             background-color: #eeeeee;
             margin: 2px 4px;
         }
-        
-        """
+    """
+
+    TIPS_WIN_STYLE = """
+    background-color: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 13px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    """

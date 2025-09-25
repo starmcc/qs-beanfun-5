@@ -11,6 +11,7 @@ from src.utils import BaseTools
 from src.utils.ThreadPoolManager import shutdown_thread_pool
 from src.window.LoginWin import LoginWin
 
+
 class QsBeanfun(QApplication):
 
     def notify(self, receiver, event):

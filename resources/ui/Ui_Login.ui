@@ -150,7 +150,7 @@
            <enum>Qt::NoFocus</enum>
           </property>
           <property name="text">
-           <string>台湾地区</string>
+           <string>台湾</string>
           </property>
          </widget>
         </item>
@@ -160,7 +160,7 @@
            <enum>Qt::NoFocus</enum>
           </property>
           <property name="text">
-           <string>香港地区</string>
+           <string>香港</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -258,17 +258,37 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_login">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
+       <property name="spacing">
+        <number>0</number>
        </property>
-       <property name="text">
-        <string>登录</string>
-       </property>
-      </widget>
+       <item>
+        <widget class="QPushButton" name="pushButton_login">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>登录</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_web">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>官网登入</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

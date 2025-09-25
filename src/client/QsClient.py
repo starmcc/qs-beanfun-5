@@ -8,6 +8,11 @@ from src.models.LoginRecord import LoginRecord
 
 class QsClient:
 
+
+    @abstractmethod
+    def get_login_index(self) -> str:
+        pass
+
     @abstractmethod
     def login(self, act: str, pwd: str) -> LoginRecord:
         pass

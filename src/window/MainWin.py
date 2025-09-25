@@ -152,7 +152,7 @@ class MainWin(QWidget, Ui_Main):
         self.nowAccount.dynamic_pwd = pwd
         self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(pwd))
 
-    def get_account_info(self):
+    def get_account_info(self, event=None):
         def __task():
             return QsClient.get_instance().get_account_list(GLOBAL_CONFIG.bf_web_token)
 
@@ -173,7 +173,6 @@ class MainWin(QWidget, Ui_Main):
                     BoxPop.info(win, '此账号尚未完成电话进阶认证\n请前往会员中心完成后重新登录！')
                     # 不允许创建账号和查看账号详情
                     win.pushButton_createAct.setEnabled(False)
-                    win.action_user_info.setEnabled(False)
                 return
             for entry in win.children_accounts:
                 win.comboBox_gameAct.addItem(entry.name, userData=entry.id)

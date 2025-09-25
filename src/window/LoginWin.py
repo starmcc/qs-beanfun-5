@@ -12,7 +12,7 @@ from src.config.GlobalConfig import *
 from src.utils import BoxPop, WinManager, BaseTools
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_Login import Ui_Login
-from src.window import PyQtBrowser
+from src.window import PyQtBrowser, LoginWeb, CustomToolTipWin
 from src.window.ActManagerWin import ActManagerWin
 from src.window.IntermediateLoginWin import IntermediateLoginWin
 from src.window.MainWin import MainWin
@@ -42,6 +42,8 @@ class LoginWin(QWidget, Ui_Login):
 
         self.pushButton_login.clicked.connect(self.login_clicked)
         self.pushButton_actManager.clicked.connect(self.actManager_clicked)
+        self.pushButton_web.clicked.connect(self.login_web_clicked)
+        CustomToolTipWin.build_tips(self, self.pushButton_web, "谷歌人机验证/邮箱验证/门号验证/疑难杂症等..\n可使用【官网登入】解决问题\n原生态网页操作,成功登入将自动载入数据")
         self.label_register.mousePressEvent = self.register_mousePressEvent
         self.label_forgotPassword.mousePressEvent = self.forgotPassword_mousePressEvent
         self.lineEdit_password.returnPressed.connect(self.login_clicked)
@@ -102,7 +104,11 @@ class LoginWin(QWidget, Ui_Login):
         elif type == 'TW':
             self.radioButton_tw.click()
 
+    def login_web_clicked(self):
+        LoginWeb.open_login_page(QsClient.get_instance().get_login_index(), self)
+
     def login_clicked(self):
+
         def __task_login(act, pwd):
             return QsClient.get_instance().login(act, pwd)
 
