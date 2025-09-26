@@ -1,3 +1,5 @@
+import logging
+
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 
@@ -26,7 +28,7 @@ class TaskQueue(QObject):
             # 同时传递位置参数和关键字参数
             task(*args, **kwargs)
         except Exception as e:
-            print(f"任务执行出错: {str(e)}")  # 实际应用中建议使用logging
+            logging.error(f"任务执行出错: {str(e)}")
 
         # 移除已完成的任务
         self.taskQueue.pop(0)

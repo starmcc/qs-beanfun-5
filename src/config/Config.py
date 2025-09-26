@@ -43,9 +43,11 @@ def __save_config(key: str, value):
         except json.JSONDecodeError as e:
             logging.error(f"发生错误:\n{str(e)}")
             conf = {}
+
+    conf.setdefault(key, None)
+    conf[key] = value
+
     with open(config_path, 'w') as file:
-        conf.setdefault(key)
-        conf[key] = value
         json.dump(conf, file, indent=4)
 
 

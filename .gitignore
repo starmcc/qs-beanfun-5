@@ -151,3 +151,4 @@ config.json
 /plugins/
 
 *.spec
+/.codebuddy/

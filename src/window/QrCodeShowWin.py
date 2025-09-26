@@ -58,3 +58,10 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
         movie = QMovie(":/images/qrLoading")
         self.label_qrCode.setMovie(movie)
         movie.start()
+
+    def closeEvent(self, event):
+        """确保动画资源正确清理"""
+        if hasattr(self, 'movie') and self.movie:
+            self.movie.stop()
+            self.movie = None
+        super().closeEvent(event)

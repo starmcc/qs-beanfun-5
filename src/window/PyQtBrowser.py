@@ -24,7 +24,7 @@ class PyQtBrowser(QDialog):
 
     def __init__(self, parent=None):
         if PyQtBrowser._instance is not None:
-            raise Exception("LoginWeb窗口只能打开一个！")
+            raise Exception("PyQtBrowser窗口只能打开一个")
         super().__init__(parent)
         PyQtBrowser._instance = self
         # 设置基本窗口属性
@@ -168,22 +168,49 @@ class PyQtBrowser(QDialog):
         self.web_view.setHtml(html)
 
     def build_url(self, url):
-        if not url.startswith(("http://", "https://")):
+        """构建URL，使用共享的网络管理器并确保资源正确清理"""
+        if not url or not isinstance(url, str):
+            return QUrl()
+            
+        # 如果已经是完整URL，直接返回
+        if url.startswith(("http://", "https://")):
+            return QUrl(url)
+        
+        # 创建一次性的网络管理器
+        manager = QNetworkAccessManager(self)
+        reply = None
+        loop = None
+        
+        try:
+            # 先尝试HTTPS
             https_url = f"https://{url}"
             https_qurl = QUrl(https_url)
             request = QNetworkRequest(https_qurl)
-            manager = QNetworkAccessManager(self)
             reply = manager.get(request)
+            
+            # 使用事件循环等待请求完成
             loop = QEventLoop()
             reply.finished.connect(loop.quit)
             loop.exec_()
+            
+            # 检查响应状态
             if reply.error() == QNetworkReply.NoError:
-                reply.deleteLater()
                 return https_qurl
             else:
-                reply.deleteLater()
+                # HTTPS失败，回退到HTTP
                 return QUrl(f"http://{url}")
-        return QUrl(url)
+                
+        except Exception as e:
+            logging.error(f"URL构建失败: {str(e)}")
+            # 发生异常时回退到HTTP
+            return QUrl(f"http://{url}")
+        finally:
+            # 确保资源正确清理
+            if reply:
+                reply.deleteLater()
+            if loop:
+                loop.deleteLater()
+            # 网络管理器会自动被Qt的父子关系管理清理
 
     def handle_cookies(self):
         """

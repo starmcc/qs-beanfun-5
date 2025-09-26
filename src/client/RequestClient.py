@@ -46,14 +46,14 @@ class _RequestClient:
             return self.client.get(url, **kwargs)
         except Exception as e:
             logging.error(f"Unexpected error during GET request to {url}: {str(e)}")
-            return Response(500)
+            return Response(status_code=500)
 
     def post(self, url, **kwargs) -> Response:
         try:
             return self.client.post(url, **kwargs)
         except Exception as e:
             logging.error(f"Unexpected error during POST request to {url}: {str(e)}")
-            return Response(500)
+            return Response(status_code=500)
 
 
 def get_instance() -> _RequestClient:

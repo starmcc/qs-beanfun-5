@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 from http.cookiejar import Cookie
@@ -72,11 +73,44 @@ class CustomWebEngineView(QWebEngineView):
         self.cookies.clear()  # 清除内存Cookie
         self.profile.cookieStore().deleteAllCookies()  # 清除Profile中的Cookie
         self.profile.clearAllVisitedLinks()  # 清除访问记录
-        if hasattr(self, 'temp_dir'):
+        
+        if hasattr(self, 'temp_dir') and self.temp_dir:
             try:
-                self.temp_dir.cleanup()  # 清理临时目录
+                # 先停止所有WebEngine活动
+                self.stop()
+                self.load(QUrl("about:blank"))  # 加载空白页面释放资源
+                
+                # 更安全的清理策略
+                import threading
+                import shutil
+                import os
+                
+                def safe_cleanup():
+                    import time
+                    time.sleep(2)  # 等待2秒确保资源释放
+                    
+                    try:
+                        # 尝试标准清理
+                        self.temp_dir.cleanup()
+                    except Exception as e:
+                        # 如果标准清理失败，尝试手动清理
+                        logging.warning(f"标准清理失败，尝试手动清理: {str(e)}")
+                        try:
+                            temp_path = self.temp_dir.name
+                            if os.path.exists(temp_path):
+                                # 使用更安全的清理方法
+                                shutil.rmtree(temp_path, ignore_errors=True)
+                        except Exception as e2:
+                            # 如果手动清理也失败，记录警告但继续
+                            logging.warning(f"手动清理也失败，临时目录可能残留: {str(e2)}")
+                
+                # 在后台线程中执行清理
+                cleanup_thread = threading.Thread(target=safe_cleanup)
+                cleanup_thread.daemon = True
+                cleanup_thread.start()
+                
             except Exception as e:
-                print(f"清理临时文件失败: {e}")
+                logging.warning(f"清理临时文件时出现警告: {str(e)}")
 
 
 class LoginWeb(QDialog):
@@ -85,7 +119,7 @@ class LoginWeb(QDialog):
 
     def __init__(self, parent):
         if LoginWeb._instance is not None:
-            raise Exception("LoginWeb窗口只能打开一个！")
+            raise Exception("LoginWeb窗口只能打开一个")
         super().__init__(parent)
         LoginWeb._instance = self
         GLOBAL_CONFIG.bf_web_token = None
@@ -184,27 +218,60 @@ class LoginWeb(QDialog):
         self.web_view.load(self.build_url(url_str))
 
     def build_url(self, url):
-        if not url.startswith(("http://", "https://")):
+        """构建URL，使用共享的网络管理器并确保资源正确清理"""
+        if not url or not isinstance(url, str):
+            return QUrl()
+            
+        # 如果已经是完整URL，直接返回
+        if url.startswith(("http://", "https://")):
+            return QUrl(url)
+        
+        # 创建一次性的网络管理器
+        manager = QNetworkAccessManager(self)
+        reply = None
+        loop = None
+        
+        try:
+            # 先尝试HTTPS
             https_url = f"https://{url}"
             https_qurl = QUrl(https_url)
             request = QNetworkRequest(https_qurl)
-            manager = QNetworkAccessManager(self)
             reply = manager.get(request)
+            
+            # 使用事件循环等待请求完成
             loop = QEventLoop()
             reply.finished.connect(loop.quit)
             loop.exec_()
+            
+            # 检查响应状态
             if reply.error() == QNetworkReply.NoError:
-                reply.deleteLater()
                 return https_qurl
             else:
-                reply.deleteLater()
+                # HTTPS失败，回退到HTTP
                 return QUrl(f"http://{url}")
-        return QUrl(url)
+                
+        except Exception as e:
+            logging.error(f"URL构建失败: {str(e)}")
+            # 发生异常时回退到HTTP
+            return QUrl(f"http://{url}")
+        finally:
+            # 确保资源正确清理
+            if reply:
+                reply.deleteLater()
+            if loop:
+                loop.deleteLater()
+            # 网络管理器会自动被Qt的父子关系管理清理
 
     def closeEvent(self, event: QCloseEvent):
+        """安全关闭窗口，确保资源正确释放"""
         if hasattr(self, 'web_view'):
-            self.web_view.clear_all_data()
+            # 先停止WebEngine活动
             self.web_view.stop()
+            # 加载空白页面释放资源
+            self.web_view.load(QUrl("about:blank"))
+            # 异步清理数据
+            self.web_view.clear_all_data()
+            # 延迟删除视图
             self.web_view.deleteLater()
         LoginWeb._instance = None
         event.accept()

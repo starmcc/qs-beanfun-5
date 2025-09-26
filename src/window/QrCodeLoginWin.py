@@ -21,6 +21,7 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.task_id = None
+        self.movie = None
         self.login_success.connect(self._login_success)
         self.setupUi(self)
         WinManager.set_basic_window(self)
@@ -68,15 +69,24 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
             self.login_success.emit()
 
     def loaded_loading_gif(self):
-        movie = QMovie(":/images/qrLoading")
-        self.label_qrCode.setMovie(movie)
-        movie.start()
-
-    def closeEvent(self, event):
-        if self.task_id:
-            SchedulerManager.stop_task(self.task_id)
-        super().close()
+        self.movie = QMovie(":/images/qrLoading")
+        self.label_qrCode.setMovie(self.movie)
+        self.movie.start()
 
     def _login_success(self):
         self.close()
         self.login_win_event.emit()
+
+    def closeEvent(self, event):
+        """确保所有资源正确清理"""
+        # 停止定时器任务
+        if self.task_id:
+            SchedulerManager.stop_task(self.task_id)
+            self.task_id = None
+            
+        # 停止动画
+        if hasattr(self, 'movie') and self.movie:
+            self.movie.stop()
+            self.movie = None
+            
+        super().closeEvent(event)

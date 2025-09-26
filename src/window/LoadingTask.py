@@ -99,3 +99,8 @@ class LoadingAnimation(QWidget):
         painter.setPen(pen)
         # 绘制3/4圆的弧，随角度旋转
         painter.drawArc(QRectF(6, 6, 52, 52), self.angle * 16, 270 * 16)
+
+    def closeEvent(self, event):
+        if hasattr(self, 'timer') and self.timer.isActive():
+            self.timer.stop()
+        super().closeEvent(event)
