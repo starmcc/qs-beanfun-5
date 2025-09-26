@@ -19,7 +19,7 @@ hero:
       link: https://pan.baidu.com/s/1SKwgiYoy7fDJCqDpFtZAjQ
 features:
   - title: 《新枫之谷》专用登录器
-    details: 支持香港/台湾所有登录方式</br>香港双重登入、台湾二维码登入</br>台湾进阶登入</br>官网登入等...
+    details: 支持香港/台湾所有登录方式</br>香港双重登入、台湾二维码登入、台湾进阶登入</br>原生官网登入(解决疑难问题)等...
   - title: 简体中文环境直接启动游戏
     details: 内置LR繁体区域模拟插件</br>无需更换系统语言</br>即可直接快速启动游戏
   - title: 内置实用工具/便捷导航
