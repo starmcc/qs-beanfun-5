@@ -21,12 +21,16 @@
 
 引用LR区域模拟元件，支持64bit台服新枫之谷游戏运行。
 
+---
+
 ### 🌟 主要特性
 
 - ✅ **支持香港/台湾游戏橘子登录**
-- ✅ 普通登录、双重登录、二维码登录
+- ✅ 普通登录、双重登录、二维码登录、官网登入
 - ✅ 无需安装游戏橘子插件
 - ✅ 模拟繁体操作系统环境运行新枫之谷
+
+---
 
 ## 📥 安装
 
@@ -37,6 +41,8 @@
 > ⚠️ **特别注意**
 > 
 > `Beanfun.exe` 目录不能存在中文，否则会出现很多未知错误！
+
+---
 
 ## 🚀 实现功能
 
@@ -52,6 +58,8 @@
 | **解决卡顿** |      一键跳过NGS进程，解决NGS卡顿问题      |
 | **实用工具** |         新枫之谷实用网站快捷导航          |
 
+---
+
 ## 🔧 环境与依赖
 
 ```bash
@@ -64,6 +72,8 @@ pip config get global.index-url
 pip install -r requirements.txt
 ```
 
+---
+
 ## 📦 打包编译
 
 执行 `build.bat` 文件
@@ -74,6 +84,8 @@ pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
 # 打包
 .\build.bat
 ```
+
+---
 
 ## 🔒 安全
 
@@ -86,6 +98,8 @@ pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
 ```bash
 certutil -hashfile 该程序路径
 ```
+
+---
 
 ## 💭 结语
 
@@ -105,6 +119,8 @@ certutil -hashfile 该程序路径
 > 🌟 最后奉劝那些指鹿为马的家伙，请心存善念，人生才会充满阳光。
 > 
 > 🍁 枫谷作伴，潇潇洒洒...
+
+---
 
 # 赞赏
 

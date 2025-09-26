@@ -21,12 +21,16 @@
 
 引用LR區域模擬元件，支援64bit臺服新楓之谷遊戲運行。
 
+---
+
 ### 🌟 主要特色
 
 - ✅ **支援香港/臺灣遊戲橘子登錄**
-- ✅ 普通登錄、雙重登錄、QR碼登錄
+- ✅ 普通登錄、雙重登錄、QR碼登錄、官網登入
 - ✅ 無需安裝遊戲橘子插件
 - ✅ 模擬繁體作業系統環境運行新楓之谷
+
+---
 
 ## 📥 安裝
 
@@ -37,6 +41,8 @@
 > ⚠️ **特別注意**
 > 
 > `Beanfun.exe` 目錄不能存在中文，否則會出現很多未知錯誤！
+
+---
 
 ## 🚀 實現功能
 
@@ -52,6 +58,8 @@
 | **解決卡頓** |      一鍵跳過NGS進程，解決NGS卡頓問題      |
 | **實用工具** |         新楓之谷實用網站快捷導航          |
 
+---
+
 ## 🔧 環境與依賴
 
 ```bash
@@ -64,6 +72,8 @@ pip config get global.index-url
 pip install -r requirements.txt
 ```
 
+---
+
 ## 📦 打包編譯
 
 執行 `build.bat` 檔案
@@ -74,6 +84,8 @@ pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
 # 打包
 .\build.bat
 ```
+
+---
 
 ## 🔒 安全
 
@@ -87,7 +99,7 @@ pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
 certutil -hashfile 該程式路徑
 ```
 
-按Enter後會出現 hash 值。
+---
 
 ## 💭 結語
 
