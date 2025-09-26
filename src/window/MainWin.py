@@ -15,6 +15,7 @@ from src.models.ActInfoResult import ActInfoResult
 from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager, WinManager
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_Main import Ui_Main
+from src.window import CustomToolTipWin
 from src.window.ConfigWin import ConfigWin
 from src.window.TrayIcon import TrayIcon
 
@@ -59,6 +60,9 @@ class MainWin(QWidget, Ui_Main):
         self.comboBox_gameAct.currentIndexChanged.connect(self.refresh_account_info)
         self.label_points.mousePressEvent = self.refresh_points
         self.label_status.mousePressEvent = self.get_account_info
+        CustomToolTipWin.build_tips(self, self.label_points, "账户拥有的储值点数")
+        CustomToolTipWin.build_tips(self, self.label_status, "如显示封禁请立刻联系官方客服解除!\n菜单 -> 用户中心 -> 客服中心 -> 联系客服 -> 填写信息并等待客服邮件回复\n建议勿使用外挂/辅助/宏/VPN等软件\n官方一经查实永久封禁,误封可解除")
+        CustomToolTipWin.build_tips(self, self.checkBox_autoInput, f"勾选后点击{self.pushButton_dynamicPwd.text()}将自动聚焦《新枫之谷》\n并自动在游戏中输入数字账号和动态密令")
         self.pushButton_loginOut.setFocus()
 
     def eventFilter(self, obj, event):

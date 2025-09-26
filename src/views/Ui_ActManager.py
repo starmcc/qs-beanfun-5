@@ -34,4 +34,4 @@ class Ui_ActManager(object):
 
     def retranslateUi(self, ActManager):
         _translate = QtCore.QCoreApplication.translate
-        ActManager.setWindowTitle(_translate("ActManager", "账号管理"))
+        ActManager.setWindowTitle(_translate("ActManager", "账号管理 - 双击可选择对应账号应用"))

@@ -104,7 +104,7 @@ class ActManagerWin(QDialog, Ui_ActManager):
         acts = Config.accounts()
         self.tableWidget.clear()
         self.tableWidget.setRowCount(len(acts))
-        column_name = ('账号', '账号地区', '描述', '最后登录时间')
+        column_name = ('账号', '账号地区', '备注', '最后登录时间')
         self.tableWidget.setHorizontalHeaderLabels(column_name)
 
         for index, act in enumerate(acts):

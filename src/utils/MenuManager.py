@@ -8,10 +8,7 @@ from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.CustomMenu import CustomMenu
 from src.utils import BoxPop, SystemCom, BaseTools
 from src.window import PyQtBrowser
-from src.window.AboutWin import AboutWin
-from src.window.AccountInfoWin import AccountInfoWin
 from src.window.MainWin import MainWin
-from src.window.NavWin import NavWin
 
 
 def init_menu(self):
@@ -23,7 +20,7 @@ def init_menu(self):
             CustomMenu(name="user_center_recharge", title="储值中心",
                        handler=lambda: PyQtBrowser.open_browser(QsClient.get_instance().get_web_url_user_recharge(GLOBAL_CONFIG.bf_web_token), self)),
             CustomMenu(name="user_center_service", title="客服中心", handler=lambda: PyQtBrowser.open_browser(QsClient.get_instance().get_web_url_service_center(), self)),
-            CustomMenu(name="user_center_account_info", title="账号详情", handler=lambda: user_info_triggered(self)),
+            CustomMenu(name="user_center_account_info", title="账号详情", handler=lambda: open_win(self,"userInfo")),
             CustomMenu(name="user_center_login_out", title="登出", handler=lambda: user_loginOut_triggerd(self)),
         ]),
         CustomMenu(name="func", title="实用功能", children=[
@@ -31,8 +28,9 @@ def init_menu(self):
             CustomMenu(name="func_game_kill", title="强制结束游戏", handler=lambda: tools_gameKill_triggered(self)),
             CustomMenu(name="tools_calc", title="系统计算器", handler=lambda: subprocess.Popen('calc.exe')),
         ]),
-        CustomMenu(name="nav", title="便捷导航", handler=lambda: open_nav_triggered(self)),
-        CustomMenu(name="about", title="关于作者..", handler=lambda: help_open_about_triggered(self)),
+        CustomMenu(name="nav", title="便捷导航", handler=lambda: open_win(self, "nav")),
+        CustomMenu(name="config", title="设置", handler=lambda: open_win(self,"config")),
+        CustomMenu(name="about", title="关于作者..", handler=lambda: open_win(self, "about")),
         CustomMenu(name="check_update", title="检测更新", handler=lambda: BaseTools.check_new_version(self, False)),
         CustomMenu(name="out", title="退出", handler=sys.exit),
     ]
@@ -78,15 +76,23 @@ def tools_gameKill_triggered(self):
         if err:
             BoxPop.err(self, err)
 
-
-def open_nav_triggered(self):
-    GLOBAL_CONFIG.win_nav = NavWin(self)
-    GLOBAL_CONFIG.win_nav.exec_()
-
-
-def help_open_about_triggered(self):
-    GLOBAL_CONFIG.win_about = AboutWin(self)
-    GLOBAL_CONFIG.win_about.exec_()
+def open_win(self, win_type):
+    if win_type == "nav":
+        from src.window.NavWin import NavWin
+        GLOBAL_CONFIG.win_nav = NavWin(self)
+        GLOBAL_CONFIG.win_nav.exec_()
+    elif win_type == "about":
+        from src.window.AboutWin import AboutWin
+        GLOBAL_CONFIG.win_about = AboutWin(self)
+        GLOBAL_CONFIG.win_about.exec_()
+    elif win_type == "userInfo":
+        from src.window.AccountInfoWin import AccountInfoWin
+        GLOBAL_CONFIG.win_accountInfo = AccountInfoWin(self, self.nowAccount)
+        GLOBAL_CONFIG.win_accountInfo.exec_()
+    elif win_type == "config":
+        from src.window.ConfigWin import ConfigWin
+        GLOBAL_CONFIG.win_config = ConfigWin(self)
+        GLOBAL_CONFIG.win_config.exec_()
 
 
 def user_loginOut_triggerd(self):
@@ -96,7 +102,3 @@ def user_loginOut_triggerd(self):
     win_login.show()
     self.close()
 
-
-def user_info_triggered(self):
-    GLOBAL_CONFIG.win_accountInfo = AccountInfoWin(self, self.nowAccount)
-    GLOBAL_CONFIG.win_accountInfo.exec_()

@@ -36,15 +36,10 @@ user32.ClientToScreen.restype = wintypes.BOOL
 
 # 运行游戏的函数
 def run_game(window, act: str = None, pwd: str = None):
-    # -999 = 系统异常
-    # -1  = 免输入模式错误
-    # 0 = 游戏正在运行,不执行
-    # 1  = 设置游戏目录
-    # 2 = 自动阻止更新成功
     try:
         # 如果游戏正在运行,弹出询问是否强制结束进程
         if check_game_running():
-            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 0, '游戏正在运行中')
+            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 0, '检测到游戏运行中,是否强制结束后重新启动游戏?')
             return
 
         # 加载插件
@@ -122,16 +117,17 @@ def _run_game_result(win, status, msg):
     if status == 1:
         if not BoxPop.question(win, msg):
             return
-        options = QFileDialog.Options()
-        directory = QFileDialog.getExistingDirectory(None, "请选择新枫之谷游戏目录", "", options=options)
+        directory, err = select_game_path()
         if not directory:
             return
-        Config.game_path(directory)
+        if err:
+            BoxPop.warn(win, err)
+            return
         # 重新打开
         win.start_clicked()
     elif status == 0:
         # 游戏正在运行
-        if BoxPop.question(win, '检测到游戏运行中,是否强制结束后重新启动游戏?'):
+        if BoxPop.question(win, msg):
             kill_mapleStory()
             win.start_clicked()
     elif status == 2:
@@ -140,6 +136,17 @@ def _run_game_result(win, status, msg):
     else:
         logging.error(msg)
         BoxPop.warn(win, msg)
+
+def select_game_path() -> (str, str):
+    options = QFileDialog.Options()
+    directory = QFileDialog.getExistingDirectory(None, "选择新枫之谷游戏目录", "", options=options)
+    errorMsg = ""
+    if not directory:
+        return directory, errorMsg
+    if BaseTools.check_cn_path(directory):
+        errorMsg = "目录中存在中文,游戏目录不建议使用中文汉字,可能会发生无法预估的错误!"
+    Config.game_path(directory)
+    return directory, errorMsg
 
 
 def check_game_running():

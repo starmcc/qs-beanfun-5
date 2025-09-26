@@ -2,12 +2,12 @@ import logging
 import os
 import sys
 
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 
 # 确保正确加载qrc资源，防止Pycharm误删
 # noinspection PyUnresolvedReferences
 import src.Resources_rc
-from src.utils import BaseTools
+from src.utils import BaseTools, BoxPop
 from src.utils.ThreadPoolManager import shutdown_thread_pool
 from src.window.LoginWin import LoginWin
 
@@ -68,5 +68,8 @@ if __name__ == '__main__':
 
     app = QsBeanfun(sys.argv)
     win_login = LoginWin()
+    if BaseTools.check_cn_path(os.getcwd()):
+        BoxPop.show_message_box(win_login, "目中存在汉字,无法运行", f"存放程序的文件夹目录有汉字\n请删掉汉字后运行！", QMessageBox.Warning)
+        sys.exit(1)
     win_login.show()
     sys.exit(app.exec_())

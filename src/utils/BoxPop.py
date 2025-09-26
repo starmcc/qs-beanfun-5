@@ -13,19 +13,19 @@ QMessageBox.NoIcon：不显示任何图标
 
 
 def err(self, msg) -> bool:
-    return __show_message_box(self, '错误', msg, QMessageBox.Critical) == QMessageBox.Ok
+    return show_message_box(self, '错误', msg, QMessageBox.Critical) == QMessageBox.Ok
 
 
 def warn(self, msg) -> bool:
-    return __show_message_box(self, '警告', msg, QMessageBox.Warning) == QMessageBox.Ok
+    return show_message_box(self, '警告', msg, QMessageBox.Warning) == QMessageBox.Ok
 
 
 def info(self, msg) -> bool:
-    return __show_message_box(self, '提示', msg, QMessageBox.Information) == QMessageBox.Ok
+    return show_message_box(self, '提示', msg, QMessageBox.Information) == QMessageBox.Ok
 
 
 def question(self, msg) -> bool:
-    return __show_message_box(self, '请选择', msg, QMessageBox.Question, QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes
+    return show_message_box(self, '请选择', msg, QMessageBox.Question, QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes
 
 
 def custom_question(self, msg, buttons: dict[str, int]) -> int:
@@ -50,7 +50,7 @@ def input_dialog(parent, title: str, label: str) -> (str, bool):
     return dialog.textValue(), dialog.result()
 
 
-def __show_message_box(self, title, text, icon_type=QMessageBox.Information, buttons=QMessageBox.Ok) -> int:
+def show_message_box(self, title, text, icon_type=QMessageBox.Information, buttons=QMessageBox.Ok) -> int:
     """
     通用的显示 QMessageBox 的方法。
 

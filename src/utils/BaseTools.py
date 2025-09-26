@@ -107,3 +107,12 @@ def build_chrome():
             logging.info(f"已初始化 {target_path}")
         return target_path
     return None
+
+
+def check_cn_path(path):
+    if not path:
+        return False
+    for char in path:
+        if '\u4e00' <= char <= '\u9fff':
+            return True
+    return False

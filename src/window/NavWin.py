@@ -12,7 +12,7 @@ from src.config.GlobalConfig import GlobalConstants
 from src.utils import WinManager
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.UI_Nav import Ui_Nav
-from src.window import PyQtBrowser
+from src.window import PyQtBrowser, CustomToolTipWin
 from src.window.QrCodeShowWin import QrCodeShowWin
 
 
@@ -29,6 +29,7 @@ class NavWin(QDialog, Ui_Nav):
     def _build_ui(self):
         self.pushButton_refresh.clicked.connect(self._load_entries)
         self.lineEdit_search.textChanged.connect(self._filter_entries)
+        CustomToolTipWin.build_tips(self, self.checkBox_outer, "勾选后只会从系统默认浏览器打开网址")
 
     def _load_entries(self):
         def _result(win, entry, e):

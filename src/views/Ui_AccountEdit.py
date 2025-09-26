@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_AccountEdit(object):
     def setupUi(self, AccountEdit):
         AccountEdit.setObjectName("AccountEdit")
-        AccountEdit.resize(200, 130)
+        AccountEdit.resize(242, 124)
         self.verticalLayout = QtWidgets.QVBoxLayout(AccountEdit)
         self.verticalLayout.setContentsMargins(3, 5, 3, 5)
         self.verticalLayout.setSpacing(1)
@@ -71,9 +71,9 @@ class Ui_AccountEdit(object):
     def retranslateUi(self, AccountEdit):
         _translate = QtCore.QCoreApplication.translate
         AccountEdit.setWindowTitle(_translate("AccountEdit", "账号"))
-        self.label_3.setText(_translate("AccountEdit", "PWD"))
-        self.label_2.setText(_translate("AccountEdit", "ACT"))
-        self.label.setText(_translate("AccountEdit", "DSC"))
-        self.radioButton_hk.setText(_translate("AccountEdit", "HK"))
-        self.radioButton_tw.setText(_translate("AccountEdit", "TW"))
-        self.pushButton_save.setText(_translate("AccountEdit", "Save"))
+        self.label_3.setText(_translate("AccountEdit", "密码"))
+        self.label_2.setText(_translate("AccountEdit", "账号"))
+        self.label.setText(_translate("AccountEdit", "备注"))
+        self.radioButton_hk.setText(_translate("AccountEdit", "香港"))
+        self.radioButton_tw.setText(_translate("AccountEdit", "台湾"))
+        self.pushButton_save.setText(_translate("AccountEdit", "保存"))
