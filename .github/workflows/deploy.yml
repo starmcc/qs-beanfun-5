@@ -27,6 +27,12 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './docs/package-lock.json'
 
+      - name: Clean npm cache and modules
+        working-directory: ./docs
+        run: |
+          rm -rf node_modules package-lock.json
+          npm cache clean --force
+
       - name: Install dependencies
         working-directory: ./docs  # 明确在docs目录执行npm
         run: npm install
