@@ -59,11 +59,8 @@ def run_game(window, act: str = None, pwd: str = None):
                 GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -1, '免输入模式错误：数据不足!')
                 return
 
-        lr_exe = BaseTools.build_path(r'plugins\LocaleRemulator\LRProc.exe')
-        lr_dll = BaseTools.build_path(r'plugins\LocaleRemulator\LRHookx64.dll')
-        cmd = f'"{lr_exe}" "{lr_dll}" tms {runParam}'
-
-        subprocess.Popen(cmd, cwd=directory_path)
+        runParam = LocaleRemulator().build_LRProc_cmd() + runParam
+        subprocess.Popen(runParam, cwd=directory_path)
         RUN_TIME = time.time()
 
         # ============================= 内部方法 =============================
@@ -76,26 +73,37 @@ def run_game(window, act: str = None, pwd: str = None):
             except Exception as e:
                 GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, str(e))
             finally:
-                if hwnd or time.time() - RUN_TIME >= 5:
-                    # 如果获取到了，且超过5秒则结束任务
+                # 如果游戏主窗口已经存在，则停止任务
+                if getMapleStoryHwnd():
+                    SchedulerManager.stop_task(taskId)
+                    return
+                if hwnd or time.time() - RUN_TIME >= 30:
+                    # 如果获取到了，且超过时间则结束任务
                     SchedulerManager.stop_task(taskId)
 
         def __stopAutoPatcher(taskId):
-            processes = psutil.process_iter()
-            for process in processes:
-                if process.name() != 'Patcher.exe':
-                    continue
-                command = f"taskkill /pid {process.pid} /f"
-                result = subprocess.run(command, shell=True, check=True)
-                SchedulerManager.stop_task(taskId)
-                if result.returncode == 0:
-                    GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window,
-                                                       2, '程式自动拦截游戏自动更新程序\n建议使用官方补丁进行手动更新\n如需要使用游戏内置自动更新功能\n请前往设置取消阻止自动更新配置')
-                else:
-                    GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, result.stderr.decode('gbk'))
-                break
-            if time.time() - RUN_TIME >= 10:
-                SchedulerManager.stop_task(taskId)
+
+            try:
+                processes = psutil.process_iter()
+                for process in processes:
+                    if process.name() != 'Patcher.exe':
+                        continue
+                    command = f"taskkill /pid {process.pid} /f"
+                    result = subprocess.run(command, shell=True, check=True)
+                    SchedulerManager.stop_task(taskId)
+                    if result.returncode == 0:
+                        GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window,
+                                                           2, '程式自动拦截游戏自动更新程序\n建议使用官方补丁进行手动更新\n如需要使用游戏内置自动更新功能\n请前往设置取消阻止自动更新配置')
+                    else:
+                        GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, result.stderr.decode('gbk'))
+                    break
+            finally:
+                # 如果游戏主窗口已经存在，则停止任务
+                if getMapleStoryHwnd():
+                    SchedulerManager.stop_task(taskId)
+                    return
+                if time.time() - RUN_TIME >= 30:
+                    SchedulerManager.stop_task(taskId)
 
         # ============================= 内部方法End =============================
 

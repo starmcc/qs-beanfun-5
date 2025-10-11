@@ -13,6 +13,11 @@
         <file alias="images/pwd_open">./images/pwd-o.png</file>
         <file alias="images/pwd_close">./images/pwd-c.png</file>
         <file alias="statics/zhconv">./statics/zhcdict.json</file>
-        <file alias="plugins/LocaleRemulator.zip">./plugins/LocaleRemulator.zip</file>
+
+        <file alias="plugins/LocaleRemulator/LRConfig.xml">./plugins/LocaleRemulator-1.6.0/LRConfig.xml</file>
+        <file alias="plugins/LocaleRemulator/LRHookx32.dll">./plugins/LocaleRemulator-1.6.0/LRHookx32.dll</file>
+        <file alias="plugins/LocaleRemulator/LRHookx64.dll">./plugins/LocaleRemulator-1.6.0/LRHookx64.dll</file>
+        <file alias="plugins/LocaleRemulator/LRProc.exe">./plugins/LocaleRemulator-1.6.0/LRProc.exe</file>
+        <file alias="plugins/LocaleRemulator/LRSubMenus.dll">./plugins/LocaleRemulator-1.6.0/LRSubMenus.dll</file>
     </qresource>
 </RCC>
