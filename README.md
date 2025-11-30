@@ -99,6 +99,11 @@ pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
 certutil -hashfile 该程序路径
 ```
 
+> v5.4.1之前的版本，账密加密使用的是windows wmic组件，如系统缺少组件将使用默认加密密令，将使用默认秘钥！
+
+**v5.4.2已进行优化，强烈建议升级到5.4.2版本以上**
+
+
 ---
 
 ## 💭 结语

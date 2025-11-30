@@ -3,7 +3,7 @@ import logging
 import os
 from datetime import datetime
 
-from src.utils import DeUtils, BaseTools
+from src.utils import DeUtils, BaseTools, De2Utils
 
 
 def __get_config(key: str, default=None):
@@ -121,17 +121,23 @@ def accounts(value: list[dict] = None):
         for account in ls:
             # 存在就解密
             act = account.get('account')
-            account['account'] = act if not act else DeUtils.decrypt_aes(act)
             pwd = account.get('password')
-            account['password'] = pwd if not pwd else DeUtils.decrypt_aes(pwd)
+            encrypt_version = account.get('encrypt_version')
+            if encrypt_version == '2':
+                account['account'] = act if not act else De2Utils.decrypt_aes(act)
+                account['password'] = pwd if not pwd else De2Utils.decrypt_aes(pwd)
+            else:
+                account['account'] = act if not act else DeUtils.decrypt_aes(act)
+                account['password'] = pwd if not pwd else DeUtils.decrypt_aes(pwd)
             new_ls.append(account)
         return new_ls
     # ==================== 保存需加密
     for account in value:
         act = account.get('account')
-        account['account'] = act if not act else DeUtils.encrypt_aes(act)
+        account['account'] = act if not act else De2Utils.encrypt_aes(act)
         pwd = account.get('password')
-        account['password'] = pwd if not pwd else DeUtils.encrypt_aes(pwd)
+        account['password'] = pwd if not pwd else De2Utils.encrypt_aes(pwd)
+        account['encrypt_version'] = '2'
         new_ls.append(account)
     __save_config(key, tuple(new_ls))
     return None

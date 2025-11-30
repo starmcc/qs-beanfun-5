@@ -6,6 +6,9 @@ import subprocess
 from Crypto.Cipher import DES, AES
 from Crypto.Util.Padding import pad, unpad
 
+"""
+# 废弃工具类，使用De2Utils代替，此处使用明文秘钥，安全系数太低啦！
+"""
 
 def __get_cpu_disk_code():
     """

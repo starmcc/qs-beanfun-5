@@ -46,3 +46,5 @@ class ConfigWin(QDialog, Ui_Config):
             return
         if err:
             BoxPop.warn(self, err)
+            return
+        self.lineEdit_gamePath.setText(Config.game_path())

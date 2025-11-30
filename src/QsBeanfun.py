@@ -7,19 +7,21 @@ from PyQt5.QtWidgets import QApplication, QMessageBox
 # 确保正确加载qrc资源，防止Pycharm误删
 # noinspection PyUnresolvedReferences
 import src.Resources_rc
-from src.utils import BaseTools, BoxPop
-from src.utils.ThreadPoolManager import shutdown_thread_pool
+from src import LoggingConfig
+from src.utils import BaseTools, BoxPop, ThreadPoolManager
 from src.window.LoginWin import LoginWin
 
+def on_app_about_to_quit():
+    ThreadPoolManager.shutdown_thread_pool()
+    logging.info("线程池已销毁")
 
 class QsBeanfun(QApplication):
-
     def notify(self, receiver, event):
         try:
             return super().notify(receiver, event)
         except ValueError as ve:
             if "Data must be aligned to block boundary in ECB mode" in str(ve):
-                logging.error("加密解密数据出现对齐问题，请检查相关数据！")
+                logging.error("加密解密数据出现对齐问题！")
                 return False
             else:
                 self._handle_exception(ve)
@@ -29,47 +31,28 @@ class QsBeanfun(QApplication):
             return False
 
     def _handle_exception(self, e):
-        logger = logging.getLogger(__name__)
-        logger.error("捕获到异常", exc_info=True)
+        logging.error("捕获到未处理的异常", exc_info=True)
 
-    def closeEvent(self, event):
-        """应用关闭事件"""
-        shutdown_thread_pool()
-        super().closeEvent(event)
-
-
+# -------------------------- 主程序入口 --------------------------
 if __name__ == '__main__':
-    # 配置日志文件处理器
-    file_handler = logging.FileHandler(BaseTools.build_path('app.log'), encoding='utf-8')
-    # 配置控制台日志处理器
-    console_handler = logging.StreamHandler(sys.stdout)
-    level = logging.DEBUG
-    if getattr(sys, 'frozen', False):
-        # 生产环境下改成Info
-        level = logging.INFO
-    logging_config = {
-        'format': '%(asctime)s | %(levelname)s:  %(message)s | %(filename)s : %(module)s : %(lineno)d',
-        'datefmt': '%Y-%m-%d %H:%M:%S',
-        'level': level,
-        'handlers': [file_handler, console_handler],
-    }
-    logging.basicConfig(**logging_config)
-
-    # 禁止缩放
+    LoggingConfig.setup_logging()
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     try:
-        # 构建QtWebEngineProcess的复制品chrome.exe 适配加速器
         chrome_path = BaseTools.build_chrome()
         if chrome_path:
-            # 设置QtWebEngineProcess的环境变量让其读取chrome.exe
             os.environ["QTWEBENGINEPROCESS_PATH"] = chrome_path
+        else:
+            logging.warning("未找到chrome.exe, QTWebEngine可能无法正常加载加速器")
     except Exception as e:
         logging.error(f"file chrome.exe build error {str(e)}")
 
     app = QsBeanfun(sys.argv)
+    app.aboutToQuit.connect(on_app_about_to_quit)
+
     win_login = LoginWin()
     if BaseTools.check_cn_path(os.getcwd()):
         BoxPop.show_message_box(win_login, "目中存在汉字,无法运行", f"存放程序的文件夹目录有汉字\n请删掉汉字后运行！", QMessageBox.Warning)
         sys.exit(1)
     win_login.show()
+    logging.info(f"启动完成")
     sys.exit(app.exec_())
