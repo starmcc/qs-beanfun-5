@@ -18,7 +18,8 @@ def __get_cpu_disk_code():
                 stderr=subprocess.PIPE,
                 encoding="utf-8",
                 errors="ignore",
-                timeout=10  # 超时保护，避免命令挂起
+                timeout=10,  # 超时保护，避免命令挂起
+                creationflags=subprocess.CREATE_NO_WINDOW
             )
             output_lines = [line.strip() for line in result.stdout.split("\n") if line.strip()]
             return output_lines[0] if output_lines else ""
@@ -39,7 +40,8 @@ def __get_cpu_disk_code():
                 stderr=subprocess.PIPE,
                 encoding="utf-8",
                 errors="ignore",
-                timeout=5
+                timeout=5,
+                creationflags=subprocess.CREATE_NO_WINDOW
             )
             # 解析输出，过滤虚拟网卡（包含"虚拟"或"VMware"/"Virtual"的跳过）
             mac_list = []
