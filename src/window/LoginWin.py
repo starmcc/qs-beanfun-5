@@ -129,7 +129,7 @@ class LoginWin(QWidget, Ui_Login):
                         BoxPop.err(win, record.message)
                     if record.daul_status:
                         # 如果是验证码错误，则递归继续执行
-                        win.task_login_result(record)
+                        __task_login_result(win, record, e)
                     return
                 win.save_login_data_result(record)
 
@@ -155,7 +155,7 @@ class LoginWin(QWidget, Ui_Login):
             if login_record.intermediate_login:
                 # 台号中級驗證
                 GLOBAL_CONFIG.win_intermediateLogin = IntermediateLoginWin(window, login_record)
-                GLOBAL_CONFIG.win_intermediateLogin.data_sent.connect(window.task_login_result)
+                GLOBAL_CONFIG.win_intermediateLogin.data_sent.connect(__task_login_result)
                 GLOBAL_CONFIG.win_intermediateLogin.exec_()
                 return
 
