@@ -47,6 +47,7 @@ class LoginWin(QWidget, Ui_Login):
                                     "谷歌人机验证/邮箱验证/门号验证/疑难杂症等..\n可使用【官网登入】解决问题\n原生态网页操作,成功登入将自动载入数据")
         self.label_register.mousePressEvent = self.register_mousePressEvent
         self.label_forgotPassword.mousePressEvent = self.forgotPassword_mousePressEvent
+        self.lineEdit_account.returnPressed.connect(self.lineEdit_password.setFocus)
         self.lineEdit_password.returnPressed.connect(self.login_clicked)
         self.checkBox_remember.stateChanged.connect(self.remember_stateChanged)
         self.label_qrCode.mousePressEvent = self.open_qr_code_win
@@ -81,6 +82,9 @@ class LoginWin(QWidget, Ui_Login):
         self.show_password_action.triggered.connect(toggle_password_visibility)
         # 将动作添加到密码输入框
         self.lineEdit_password.addAction(self.show_password_action, QtWidgets.QLineEdit.TrailingPosition)
+
+        if self.lineEdit_password.text() != "":
+            self.lineEdit_password.setFocus()
 
     def open_qr_code_win(self, event=None):
         GLOBAL_CONFIG.win_qrCode = QrCodeLoginWin(self)
@@ -190,7 +194,7 @@ class LoginWin(QWidget, Ui_Login):
         self.login_go_to_main_event.emit()
 
     def login_double_input(self) -> str:
-        GLOBAL_CONFIG.win_double_code_input = DoubleCodeInputWin()
+        GLOBAL_CONFIG.win_double_code_input = DoubleCodeInputWin(self)
         dialog_result = GLOBAL_CONFIG.win_double_code_input.exec_()
         ok = True if dialog_result == QDialog.Accepted else False
         if ok:

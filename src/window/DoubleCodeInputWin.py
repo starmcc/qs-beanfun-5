@@ -46,9 +46,15 @@ class DoubleCodeInputWin(QDialog, Ui_DoubleCodeInput):
 
             # 允许Tab键
             if key == Qt.Key_Tab:
-                return super().eventFilter(obj, event)  # 不拦截Tab键，交给系统处理
+                return super().eventFilter(obj, event)
 
-            # 3.按键的文本内容判断是否为数字
+            # 允许Enter键
+            if key == Qt.Key_Return:
+                if len(self.input_code) == 6:
+                    self.pushButton_enter.click()
+                return super().eventFilter(obj, event)
+
+            # 按键的文本内容判断是否为数字
             pressed_char = event.text()
             if not pressed_char.isdigit():
                 # 非数字字符 → 拦截，不允许输入
@@ -61,6 +67,8 @@ class DoubleCodeInputWin(QDialog, Ui_DoubleCodeInput):
                 self.input_boxes[idx + 1].setFocus()
         self.input_code = "".join([box.text() for box in self.input_boxes])
         self.pushButton_enter.setEnabled(len(self.input_code) == 6)
+        if len(self.input_code) == 6:
+            self.pushButton_enter.click()
 
     def get_code(self):
         return self.input_code
