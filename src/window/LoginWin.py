@@ -1,10 +1,9 @@
-import re
 import time
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWidgets import QWidget, QButtonGroup
+from PyQt5.QtWidgets import QWidget, QButtonGroup, QDialog
 
 from src.client import QsClient
 from src.config import Config
@@ -14,6 +13,7 @@ from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_Login import Ui_Login
 from src.window import PyQtBrowser, LoginWeb, CustomToolTipWin
 from src.window.ActManagerWin import ActManagerWin
+from src.window.DoubleCodeInputWin import DoubleCodeInputWin
 from src.window.IntermediateLoginWin import IntermediateLoginWin
 from src.window.MainWin import MainWin
 from src.window.QrCodeLoginWin import QrCodeLoginWin
@@ -43,7 +43,8 @@ class LoginWin(QWidget, Ui_Login):
         self.pushButton_login.clicked.connect(self.login_clicked)
         self.pushButton_actManager.clicked.connect(self.actManager_clicked)
         self.pushButton_web.clicked.connect(self.login_web_clicked)
-        CustomToolTipWin.build_tips(self, self.pushButton_web, "谷歌人机验证/邮箱验证/门号验证/疑难杂症等..\n可使用【官网登入】解决问题\n原生态网页操作,成功登入将自动载入数据")
+        CustomToolTipWin.build_tips(self, self.pushButton_web,
+                                    "谷歌人机验证/邮箱验证/门号验证/疑难杂症等..\n可使用【官网登入】解决问题\n原生态网页操作,成功登入将自动载入数据")
         self.label_register.mousePressEvent = self.register_mousePressEvent
         self.label_forgotPassword.mousePressEvent = self.forgotPassword_mousePressEvent
         self.lineEdit_password.returnPressed.connect(self.login_clicked)
@@ -139,7 +140,8 @@ class LoginWin(QWidget, Ui_Login):
                 if not code:
                     return
                 login_record.dual_code = code
-                get_thread_pool().submit_task(__dual_very_login, __dual_very_login_result, window, False, record=login_record)
+                get_thread_pool().submit_task(__dual_very_login, __dual_very_login_result, window, False,
+                                              record=login_record)
                 return
 
             if not login_record.status:
@@ -188,13 +190,17 @@ class LoginWin(QWidget, Ui_Login):
         self.login_go_to_main_event.emit()
 
     def login_double_input(self) -> str:
-        text, ok = BoxPop.input_dialog(self, '双重验证', '请填写验证码')
+        GLOBAL_CONFIG.win_double_code_input = DoubleCodeInputWin()
+        dialog_result = GLOBAL_CONFIG.win_double_code_input.exec_()
+        ok = True if dialog_result == QDialog.Accepted else False
         if ok:
-            if re.match(r'^\d+$', text):
-                return text
+            code = GLOBAL_CONFIG.win_double_code_input.get_code()
+            print(code)
+            if code:
+                return code
             else:
                 return self.login_double_input()
-        return ''
+        return ""
 
     def register_mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:

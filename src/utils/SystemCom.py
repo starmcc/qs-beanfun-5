@@ -73,10 +73,6 @@ def run_game(window, act: str = None, pwd: str = None):
             except Exception as e:
                 GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, str(e))
             finally:
-                # 如果游戏主窗口已经存在，则停止任务
-                if getMapleStoryHwnd():
-                    SchedulerManager.stop_task(taskId)
-                    return
                 if hwnd or time.time() - RUN_TIME >= 30:
                     # 如果获取到了，且超过时间则结束任务
                     SchedulerManager.stop_task(taskId)
@@ -98,10 +94,6 @@ def run_game(window, act: str = None, pwd: str = None):
                         GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, result.stderr.decode('gbk'))
                     break
             finally:
-                # 如果游戏主窗口已经存在，则停止任务
-                if getMapleStoryHwnd():
-                    SchedulerManager.stop_task(taskId)
-                    return
                 if time.time() - RUN_TIME >= 30:
                     SchedulerManager.stop_task(taskId)
 

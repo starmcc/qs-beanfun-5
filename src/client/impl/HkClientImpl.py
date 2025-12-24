@@ -72,7 +72,6 @@ class HkClientImpl(QsClient):
                 '__VIEWSTATEGENERATOR': viewstateGenerator,
                 't_AccountID': act,
                 't_Password': pwd,
-                'token1': '',
                 'g-recaptcha-response': '',
                 'btn_login': '登入'}
         rsp = RequestClient.get_instance().post(url, data=data)
@@ -289,7 +288,6 @@ class HkClientImpl(QsClient):
                 '__VIEWSTATE': viewstate,
                 '__EVENTVALIDATION': eventvalidation,
                 '__VIEWSTATEGENERATOR': viewstateGenerator,
-                'token1': '',
                 'totpLoginBtn': '登入'}
         if not viewstate or not eventvalidation or not viewstateGenerator:
             login_record.message = '登入失败,无法获取关键参数[viewstate][eventvalidation][viewstateGenerator]'
