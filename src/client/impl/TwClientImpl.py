@@ -35,7 +35,7 @@ class TwClientImpl(QsClient):
         return False, '登入失败,请检查网络环境[1]'
 
     def login(self, act: str, pwd: str) -> LoginRecord:
-        RequestClient.get_instance().client.cookies.jar.clear()
+        RequestClient.get_instance().client.cookies.clear()
         login_record = LoginRecord(status=False, message='')
 
         ok, data = self.get_session_key()

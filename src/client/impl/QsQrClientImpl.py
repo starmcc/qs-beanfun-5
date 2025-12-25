@@ -7,7 +7,7 @@ from src.models.QrCodeResult import QrCodeResult
 
 class QsQrClientImpl(QsQrClient):
     def get_qr_code_image(self) -> QrCodeResult:
-        RequestClient.get_instance().client.cookies.jar.clear()
+        RequestClient.get_instance().client.cookies.clear()
         qr_code_result = QrCodeResult()
         ok, qr_code_result.session_key = QsClient.get_instance().get_session_key()
         if not ok:

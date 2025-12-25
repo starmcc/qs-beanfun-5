@@ -44,7 +44,7 @@ class HkClientImpl(QsClient):
         return self.result_json_handler(rsp, '创建')
 
     def login(self, act: str, pwd: str) -> LoginRecord:
-        RequestClient.get_instance().client.cookies.jar.clear()
+        RequestClient.get_instance().client.cookies.clear()
         login_record = LoginRecord(status=False, message='')
 
         ok, data = self.get_session_key()

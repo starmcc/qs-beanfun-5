@@ -1,19 +1,22 @@
 import logging
 import os
 import threading
+from io import BytesIO
+from typing import  Optional
 
-import httpx
-from httpx import Response
+import requests
+from requests.models import Response as RequestsResponse
 
 from src.config import Config
 
 
 class _RequestClient:
-    client: httpx.Client
+    client: requests.Session  # 替换为requests的会话对象
     _instance = None
     _lock = threading.Lock()
 
     def __new__(cls):
+        """保持原有的线程安全单例模式"""
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -25,63 +28,78 @@ class _RequestClient:
         return cls._instance
 
     def init_client(self):
+        """初始化requests会话，配置代理、请求头、SSL验证等"""
+        # 代理配置：优先环境变量，其次配置文件
         proxies = os.environ.get('ENV_PROXY_URL')
         if not proxies:
             proxies = Config.proxy()
+
+        # 构建代理字典（requests要求指定http/https协议）
+        proxy_dict = {}
         if proxies:
             logging.info(f'use proxy {proxies}')
+            proxy_dict = {
+                'http': proxies,
+                'https': proxies
+            }
+
+        # 请求头配置
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
             "Accept-Encoding": "identity",
             "Connection": "Keep-Alive",
         }
-        self.client = httpx.Client(follow_redirects=True,
-                                   verify=False,
-                                   proxies=proxies,
-                                   headers=headers,
-                                   timeout=10)
 
-    def get(self, url, **kwargs) -> Response:
+        # 初始化requests会话
+        self.client = requests.Session()
+        self.client.headers.update(headers)  # 设置会话默认请求头
+        self.client.proxies = proxy_dict     # 设置代理
+        self.client.verify = False           # 禁用SSL证书验证
+
+    def _create_error_response(self, status_code: int = 500) -> RequestsResponse:
+        """构造自定义错误响应"""
+        resp = RequestsResponse()
+        resp.status_code = status_code
+        resp._content = b''  # 响应体为空
+        resp._content_consumed = True  # 标记内容已消费
+        resp.url = ''
+        resp.headers = {}
+        resp.raw = BytesIO(b'')  # 原始响应流
+        resp.reason = 'Internal Server Error' if status_code == 500 else ''
+        return resp
+
+    def get(self, url: str, **kwargs) -> RequestsResponse:
+        """GET请求封装，异常时返回500响应"""
         try:
+            kwargs.setdefault('timeout', 10)
+            # requests默认allow_redirects=True
             return self.client.get(url, **kwargs)
         except Exception as e:
             logging.error(f"Unexpected error during GET request to {url}: {str(e)}")
-            return Response(status_code=500)
+            return self._create_error_response(500)
 
-    def post(self, url, **kwargs) -> Response:
+    def post(self, url: str, **kwargs) -> RequestsResponse:
+        """POST请求封装，异常时返回500响应"""
         try:
+            kwargs.setdefault('timeout', 10)
             return self.client.post(url, **kwargs)
         except Exception as e:
             logging.error(f"Unexpected error during POST request to {url}: {str(e)}")
-            return Response(status_code=500)
+            return self._create_error_response(500)
 
 
 def get_instance() -> _RequestClient:
+    """获取请求客户端单例"""
     return _RequestClient()
 
 
-def get_ck_val(key) -> str or None:
+def get_ck_val(key: str) -> Optional[str]:
     client = get_instance()
-    if client:
-        try:
-            cookies = client.client.cookies
-            for cookie in cookies.jar:
-                if cookie.name == key:
-                    return cookie.value
-        except Exception as e:
-            logging.error(f"Error getting cookie value: {str(e)}")
-    return None
-
-
-def get_cookies() -> list or None:
-    client = get_instance()
-    if client:
-        try:
-            cookie_list = []
-            cookies = client.client.cookies
-            for cookie in cookies.jar:
-                cookie_list.append((cookie.name, cookie.value))
-            return cookie_list
-        except Exception as e:
-            logging.error(f"Error getting cookies: {str(e)}")
-    return None
+    if not client:
+        return None
+    try:
+        # requests的CookieJar直接通过get方法获取值
+        return client.client.cookies.get(key)
+    except Exception as e:
+        logging.error(f"Error getting cookie value: {str(e)}")
+        return None

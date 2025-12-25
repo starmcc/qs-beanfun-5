@@ -214,23 +214,42 @@ class PyQtBrowser(QDialog):
 
     def handle_cookies(self):
         """
-        获取 cookiestore
+        获取 cookiestore 并将 requests 的 Cookie 同步到 Qt 的 QNetworkCookieStore
         """
         try:
+            # 获取 Qt 的 CookieStore
             cookie_store = self.web_view.page().profile().cookieStore()
+            # 获取 requests 客户端的 Cookies
             cookies = RequestClient.get_instance().client.cookies
-            for cookie in cookies.jar:
+
+            # 遍历 requests 的 RequestsCookieJar
+            for cookie in cookies:
+                # 初始化 Qt 的 QNetworkCookie
                 q_cookie = QNetworkCookie()
-                q_cookie.setName(cookie.name.encode())
-                q_cookie.setValue(cookie.value.encode())
+
+                # 1. 设置 Cookie 名称和值
+                q_cookie.setName(cookie.name.encode('utf-8'))
+                q_cookie.setValue(cookie.value.encode('utf-8'))
+
+                # 2. 设置域名
                 if cookie.domain:
                     q_cookie.setDomain(cookie.domain)
-                q_cookie.setPath(cookie.path)
+
+                # 3. 设置路径
+                q_cookie.setPath(cookie.path if cookie.path else '/')
+
+                # 4. 设置过期时间
                 if cookie.expires:
+                    # requests 的 expires 时间戳（秒），可能为浮点数，需转 int
                     expiration = QDateTime.fromTime_t(int(cookie.expires))
                     q_cookie.setExpirationDate(expiration)
+
+                # 5. 设置是否为 HTTPS 安全 Cookie
                 q_cookie.setSecure(cookie.secure)
+
+                # 6. 将 Qt Cookie 写入 CookieStore
                 cookie_store.setCookie(q_cookie)
+
         except Exception as e:
             logging.error(f"处理 cookies 时出现错误: {str(e)}")
 

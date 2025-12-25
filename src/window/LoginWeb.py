@@ -1,7 +1,6 @@
 import logging
 import os
 import tempfile
-from http.cookiejar import Cookie
 
 from PyQt5.QtCore import QUrl, QEventLoop, pyqtSignal
 from PyQt5.QtGui import QCloseEvent
@@ -19,7 +18,6 @@ class CustomWebEngineView(QWebEngineView):
         super().__init__(parent)
         self.temp_dir = tempfile.TemporaryDirectory()  # 自动管理的临时目录
         self.profile = QWebEngineProfile(self.temp_dir.name, self)  # 绑定临时目录
-        self.login_status = False
         # 禁用Cookie持久化
         self.profile.setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies)
         # 设置缓存和存储路径到临时目录
@@ -40,34 +38,30 @@ class CustomWebEngineView(QWebEngineView):
         self.cookies[(key, str(cookie.domain()))] = value  # 将cookie保存到字典里
         if key == "bfWebToken":
             GLOBAL_CONFIG.bf_web_token = value
-            if GLOBAL_CONFIG.bf_web_token:
-                self.login_status = True
-                self.parent().finished_login.emit()
 
-    def sync_httpx_cookies(self):
-        jar = RequestClient.get_instance().client.cookies.jar
-        jar.clear()
-        for (key, domain), value in self.cookies.items():
-            cookie = Cookie(
-                name=key,  # cookie名称
-                value=value,  # cookie值
-                domain=domain,
-                path="/",
-                secure=False,
-                expires=None,
-                version=0,  # 版本号，默认0
-                port=None,  # 端口，None表示不限制
-                port_specified=False,  # 是否指定端口
-                domain_specified=True,  # 是否指定域名
-                domain_initial_dot=False,  # 域名是否以点开头
-                path_specified=True,  # 是否指定路径
-                discard=False,  # 是否会话结束后丢弃
-                comment=None,  # 注释
-                comment_url=None,  # 注释URL
-                rest={},  # 其他属性
-                rfc2109=False  # 是否遵循RFC2109标准
-            )
-            jar.set_cookie(cookie)
+    def sync_requests_cookies(self):
+        try:
+            # 1. 获取 requests 的 CookieJar
+            cookies_jar = RequestClient.get_instance().client.cookies
+            # 2. 清空原有 Cookie
+            cookies_jar.clear()
+
+            # 3. 遍历本地 Cookie 字典，同步到 requests 的 CookieJar
+            for (key, domain), value in self.cookies.items():
+                # 使用 requests CookieJar 的 set 方法添加 Cookie
+                cookies_jar.set(
+                    name=key,  # Cookie 名称
+                    value=value,  # Cookie 值
+                    domain=domain,  # Cookie 域名
+                    path="/",  # Cookie 路径
+                    secure=False,  # 是否仅 HTTPS 生效
+                    expires=None,  # 过期时间
+                    rest={},  # 其他扩展属性
+                    version=0  # Cookie 版本
+                )
+            logging.info("Cookie 已成功同步到 requests 客户端")
+        except Exception as e:
+            logging.error(f"同步 Cookie 到 requests 时出错: {str(e)}")
 
     def clear_all_data(self):
         self.cookies.clear()  # 清除内存Cookie
@@ -114,7 +108,6 @@ class CustomWebEngineView(QWebEngineView):
 
 
 class LoginWeb(QDialog):
-    finished_login = pyqtSignal()
     _instance = None
 
     def __init__(self, parent):
@@ -142,7 +135,7 @@ class LoginWeb(QDialog):
         # 创建界面组件
         self.web_view = CustomWebEngineView(self)
         self.progress_bar = QProgressBar()
-        self.enter_btn = QPushButton(WinManager.translate("确认登入状态(如未自动跳转请成功登入后点击此处)"))
+        self.enter_btn = QPushButton(WinManager.translate("确认登入状态(请成功登入后点击此处)"))
         self.enter_btn.setFixedHeight(38)
 
         # 设置进度条样式
@@ -178,11 +171,10 @@ class LoginWeb(QDialog):
         self.web_view.loadProgress.connect(self.on_load_progress)
         self.web_view.loadStarted.connect(self.on_load_started)
         self.enter_btn.clicked.connect(self.on_login_enter)
-        self.finished_login.connect(self.on_login_enter)
 
     def on_login_enter(self, event=None):
         if GLOBAL_CONFIG.bf_web_token:
-            self.web_view.sync_httpx_cookies()
+            self.web_view.sync_requests_cookies()
             self.parent().login_go_to_main_event.emit()
             self.close()
         else:
