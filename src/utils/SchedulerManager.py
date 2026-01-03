@@ -3,7 +3,7 @@ from typing import Callable
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler(timezone="Asia/Shanghai")
 # 启动调度任务
 scheduler.start()
 

@@ -6,9 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>330</width>
+    <width>280</width>
     <height>150</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>280</width>
+    <height>150</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>280</width>
+    <height>150</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>设置</string>
@@ -16,7 +34,7 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="2,1">
    <item>
     <widget class="QGroupBox" name="groupBox_normal">
      <property name="title">
@@ -42,14 +60,21 @@
       <item row="0" column="1">
        <widget class="QCheckBox" name="checkBox_closeStartWindow">
         <property name="text">
-         <string>跳过Play页面</string>
+         <string>跳过Play窗口</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
+      <item row="2" column="0">
        <widget class="QCheckBox" name="checkBox_passInput">
         <property name="text">
          <string>跳过登录界面</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="checkBox_appCheckUpdate">
+        <property name="text">
+         <string>工具检查更新</string>
         </property>
        </widget>
       </item>
@@ -61,9 +86,12 @@
      <property name="title">
       <string>游戏目录</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,1">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,1">
       <property name="spacing">
-       <number>0</number>
+       <number>1</number>
+      </property>
+      <property name="leftMargin">
+       <number>9</number>
       </property>
       <property name="topMargin">
        <number>0</number>
@@ -80,6 +108,18 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_gamePath">
+        <property name="minimumSize">
+         <size>
+          <width>60</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>60</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>选择</string>
         </property>

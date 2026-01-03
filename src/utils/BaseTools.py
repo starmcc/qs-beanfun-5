@@ -4,7 +4,6 @@ import os
 import shutil
 import sys
 import webbrowser
-from datetime import datetime
 
 from PyQt5.QtWidgets import QMessageBox
 from packaging import version
@@ -37,12 +36,12 @@ def build_path(path: str):
 
 
 def check_new_version(win, quiet: bool = True):
+    # 如果是安静模式,且无勾选检查更新
+    if quiet and not Config.app_check_update():
+        return
+
     # 检查更新
     def __check_update_result(window, result, e):
-        # 安静模式且24小时内提醒过则返回
-        if quiet and (dt := Config.update_tips_time()):
-            if (datetime.now() - dt).total_seconds() <= 604800:
-                return
         if not result:
             result = (False, '未知错误')
         status_flag, message = result
@@ -58,7 +57,7 @@ def check_new_version(win, quiet: bool = True):
             if quiet:
                 buttons = {
                     "前往更新": QMessageBox.AcceptRole,
-                    "本周不提醒": QMessageBox.ActionRole,
+                    "不再提醒": QMessageBox.ActionRole,
                     "取消": QMessageBox.RejectRole
                 }
             click_result = BoxPop.custom_question(window, message, buttons)
@@ -66,8 +65,7 @@ def check_new_version(win, quiet: bool = True):
             if click_result == 0:
                 webbrowser.open(f"{GlobalConstants.GITHUB_URL}/releases")
             if quiet and click_result == 1:
-                Config.update_tips_time(datetime.now())
-
+                Config.app_check_update(False)
         elif not quiet:
             BoxPop.info(window, message)
 
@@ -84,7 +82,7 @@ def __check_version() -> (bool, str):
     latest_version = data.get('tag_name')
     if latest_version is None:
         return False, msg
-    if version.parse(GlobalConstants.APP_VERSION) >= version.parse(latest_version) and getattr(sys, 'frozen', False):
+    if version.parse(GlobalConstants.APP_VERSION) >= version.parse(latest_version):
         return False, '当前是最新版本'
     else:
         body = data.get('body')

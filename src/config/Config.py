@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from datetime import datetime
 
 from src.utils import DeUtils, BaseTools, De2Utils
 
@@ -81,6 +80,15 @@ def close_start_window(value: bool = None):
     return None
 
 
+def app_check_update(value: bool = None):
+    key = 'app_check_update'
+    if value is None:
+        # 读取
+        return __get_config(key, True)
+    __save_config(key, value)
+    return None
+
+
 def game_path(value: str = None):
     key = 'game_path'
     if value is None:
@@ -96,18 +104,6 @@ def auto_input(value: bool = None):
         # 读取
         return __get_config(key, True)
     __save_config(key, value)
-    return None
-
-
-def update_tips_time(value: datetime = None):
-    key = 'update_tips_time'
-    if value is None:
-        # 读取
-        time_str = __get_config(key, None)
-        if not time_str:
-            return None
-        return datetime.fromisoformat(time_str)
-    __save_config(key, value.isoformat())
     return None
 
 
@@ -209,7 +205,7 @@ def remember(value: bool = None):
     return None
 
 
-def proxy(value: str =None):
+def proxy(value: str = None):
     key = 'proxy'
     if value is None:
         # 读取
