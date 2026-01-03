@@ -17,7 +17,7 @@
 <img src="./resources/images/logo.png" width="120" height="120">
 </div>
 
-> **请注意：** QsBeanfun并不是游戏橘子数位科技开发的官方工具
+> **请注意：** QsBeanfun并不是游戏橘子数位科技开发的官方工具，如介意请勿使用！
 
 引用LR区域模拟元件，支持64bit台服新枫之谷游戏运行。
 
@@ -89,14 +89,14 @@ pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
 
 ## 🔒 安全
 
-每次发布 `Release` 都会贴出压缩包的 (`Hash`) 哈希值
+每次发布 `Release` `Github`都会贴出压缩包的 (`SHA256`)
 
-请各位下载工具后校验 `Hash` 值是否安全
+请各位下载工具后校验 `SHA256` 值是否安全
 
-**怎么查询哈希值？**
+**怎么查询SHA256？**
 
 ```bash
-certutil -hashfile 该程序路径
+Get-FileHash -Algorithm 该程序路径
 ```
 
 > v5.4.1之前的版本，账密加密使用的是windows wmic组件，如系统缺少组件将使用默认加密密令，将使用默认秘钥！

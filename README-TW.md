@@ -17,7 +17,7 @@
 <img src="./resources/images/logo.png" width="120" height="120">
 </div>
 
-> **請注意：** QsBeanfun並不是遊戲橘子數位科技開發的官方工具
+> **請注意：** QsBeanfun並不是遊戲橘子數位科技開發的官方工具，如介意請勿使用！
 
 引用LR區域模擬元件，支援64bit臺服新楓之谷遊戲運行。
 
@@ -89,14 +89,14 @@ pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
 
 ## 🔒 安全
 
-每次發佈 `Release` 都會貼出壓縮包的 (`Hash`) 雜湊值
+每次發佈 `Release` `Github`都會貼出壓縮包的 (`SHA256`)
 
-請各位下載工具後校驗 `Hash` 值是否安全
+請各位下載工具後校驗 `SHA256` 值是否安全
 
-**怎麼查詢雜湊值？**
+**怎麼查詢SHA256？**
 
 ```bash
-certutil -hashfile 該程式路徑
+Get-FileHash -Algorithm 該程式路徑
 ```
 
 > v5.4.1之前的版本，賬密加密使用的是windows wmic組件，如系統缺少組件將使用默認加密密令，將使用默認秘鑰！
