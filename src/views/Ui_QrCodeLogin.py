@@ -14,9 +14,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_QrCodeLogin(object):
     def setupUi(self, QrCodeLogin):
         QrCodeLogin.setObjectName("QrCodeLogin")
-        QrCodeLogin.resize(200, 200)
-        QrCodeLogin.setMinimumSize(QtCore.QSize(200, 200))
-        QrCodeLogin.setMaximumSize(QtCore.QSize(200, 200))
+        QrCodeLogin.resize(300, 300)
+        QrCodeLogin.setMinimumSize(QtCore.QSize(300, 300))
+        QrCodeLogin.setMaximumSize(QtCore.QSize(300, 300))
         self.verticalLayout = QtWidgets.QVBoxLayout(QrCodeLogin)
         self.verticalLayout.setObjectName("verticalLayout")
         self.label_qrCode = QtWidgets.QLabel(QrCodeLogin)
@@ -30,4 +30,4 @@ class Ui_QrCodeLogin(object):
 
     def retranslateUi(self, QrCodeLogin):
         _translate = QtCore.QCoreApplication.translate
-        QrCodeLogin.setWindowTitle(_translate("QrCodeLogin", "二维码登录"))
+        QrCodeLogin.setWindowTitle(_translate("QrCodeLogin", "GamePass"))

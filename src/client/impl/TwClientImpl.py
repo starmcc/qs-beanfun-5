@@ -9,7 +9,7 @@ from src.client.QsClient import QsClient
 from src.models.Account import Account
 from src.models.ActInfoResult import ActInfoResult
 from src.models.LoginRecord import LoginRecord
-from src.utils import DeUtils
+from src.utils import De2Utils
 
 
 class TwClientImpl(QsClient):
@@ -23,16 +23,13 @@ class TwClientImpl(QsClient):
         response = RequestClient.get_instance().get(url, params=params)
         if response.status_code != 200:
             return False, '登入失败,请检查网络环境[0]'
-        if "已自動被系統鎖定" in response.text:
-            return False, "IP已自動被系統鎖定"
-        if "目前無法在您的國家或地區瀏覽此網站" in response.text:
-            return False, "目前無法在您的國家或地區瀏覽此網站"
         redirect_urls = [r.url for r in response.history]
         for url in redirect_urls:
             match = re.search(r'skey=([\w]+)', str(url))
             if match:
                 return True, match.group(1)
-        return False, '登入失败,请检查网络环境[1]'
+        result_text = response.text.encode('iso-8859-1').decode('utf-8')
+        return False, f'登入失败,请检查网络环境\n{result_text}'
 
     def login(self, act: str, pwd: str) -> LoginRecord:
         RequestClient.get_instance().client.cookies.clear()
@@ -262,7 +259,7 @@ class TwClientImpl(QsClient):
         rsp = RequestClient.get_instance().get(url, params=params)
         if rsp.status_code != 200:
             return None
-        return DeUtils.decrypt_des_no_pkcs_hex(rsp.text)
+        return De2Utils.decrypt_des_no_pkcs_hex(rsp.text)
 
     def get_web_url_member_center(self, bf_web_token: str) -> str:
         return 'https://tw.beanfun.com/TW/auth.aspx?channel=member&page_and_query=default.aspx%3Fservice_code%3D999999%26service_region%3DT0&web_token=' + bf_web_token
@@ -281,7 +278,8 @@ class TwClientImpl(QsClient):
         return 'https://tw.beanfun.com/member/forgot_pwd.aspx'
 
     def heartbeat(self):
-        rsp = RequestClient.get_instance().get('https://tw.beanfun.com/beanfun_block/generic_handlers/echo_token.ashx?webtoken=1')
+        rsp = RequestClient.get_instance().get(
+            'https://tw.beanfun.com/beanfun_block/generic_handlers/echo_token.ashx?webtoken=1')
         logging.info(f'heartbeat')
 
     def login_out(self):

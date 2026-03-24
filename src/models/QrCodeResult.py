@@ -4,6 +4,4 @@ class QrCodeResult:
         self.status = status
         self.msg = ''
         self.session_key: str = ''
-        self.str_encrypt_data: str = ''
-        self.str_encrypt_bcdd_data: str = ''
         self.qr_image: bytes = bytes()

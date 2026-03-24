@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-from src.utils import DeUtils, BaseTools, De2Utils
+from src.utils import BaseTools, De2Utils
 
 
 def __get_config(key: str, default=None):
@@ -122,9 +122,6 @@ def accounts(value: list[dict] = None):
             if encrypt_version == '2':
                 account['account'] = act if not act else De2Utils.decrypt_aes(act)
                 account['password'] = pwd if not pwd else De2Utils.decrypt_aes(pwd)
-            else:
-                account['account'] = act if not act else DeUtils.decrypt_aes(act)
-                account['password'] = pwd if not pwd else DeUtils.decrypt_aes(pwd)
             new_ls.append(account)
         return new_ls
     # ==================== 保存需加密

@@ -9,7 +9,7 @@ class QsQrClient:
         pass
 
     @abstractmethod
-    def verify_qr_code_success(self, str_encrypt_data: str) -> int:
+    def verify_qr_code_success(self) -> int:
         pass
 
     @abstractmethod

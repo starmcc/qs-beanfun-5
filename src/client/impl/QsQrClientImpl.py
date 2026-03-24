@@ -14,11 +14,10 @@ class QsQrClientImpl(QsQrClient):
             qr_code_result.msg = qr_code_result.session_key
             return qr_code_result
         params = {
-            'skey': qr_code_result.session_key
+            'pSKey': qr_code_result.session_key
         }
-        RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/login/qr_form.aspx', params=params)
-
-        rsp = RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/generic_handlers/get_qrcodeData.ashx', params=params)
+        RequestClient.get_instance().get('https://login.beanfun.com/Login/Index', params=params)
+        rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/InitLogin', params=params)
         # 检查HTTP响应状态码
         if rsp.status_code != 200:
             qr_code_result.msg = '获取二维码失败,错误代码[0]'
@@ -34,71 +33,66 @@ class QsQrClientImpl(QsQrClient):
             qr_code_result.msg = '获取二维码失败,错误代码[1]'
             return qr_code_result
         # 获取intResult字段并验证
-        int_result = entry.get('intResult')
+        int_result = entry.get('Result')
         if int_result is None:
             qr_code_result.msg = '获取二维码失败,错误代码[2]'
             return qr_code_result
         # 检查业务逻辑状态码
-        if int_result != 1:
+        if int_result != 0:
             qr_code_result.msg = entry.get('strOutstring', '获取二维码失败,错误代码[3]')
             return qr_code_result
-
-        qr_code_result.str_encrypt_data = entry.get("strEncryptData")
-        qr_code_result.str_encrypt_bcdd_data = entry.get("strEncryptBCDOData")
-        rsp = RequestClient.get_instance().get(
-            f'https://tw.newlogin.beanfun.com/qrhandler.ashx?u=https://beanfunstor.blob.core.windows.net/redirect/appCheck.html?url=beanfunapp://Q/gameLogin/gtw/{qr_code_result.str_encrypt_data}')
-        if rsp.status_code != 200:
-            qr_code_result.msg = '获取二维码图片失败,错误代码[0]'
-            return qr_code_result
         qr_code_result.status = True
-        qr_code_result.qr_image = rsp.content
+        qr_code_result.qr_image = entry.get('ResultData').get('QRImage')
         return qr_code_result
 
-    def verify_qr_code_success(self, str_encrypt_data: str) -> int:
-        data = {
-            'status': str_encrypt_data
-        }
-        rsp = RequestClient.get_instance().post('https://tw.newlogin.beanfun.com/generic_handlers/CheckLoginStatus.ashx', data=data)
+    def verify_qr_code_success(self) -> int:
+        rsp = RequestClient.get_instance().get('https://login.beanfun.com/QRLogin/CheckLoginStatus')
         if rsp.status_code != 200:
             return -1
-
         content = rsp.json()
-        return content.get('Result')
+        return content.get('ResultCode')
 
     def login(self, session_key: str) -> (bool, str):
-        params = {
-            'skey': session_key
-        }
         headers = {
-            'Referer': f'https://tw.newlogin.beanfun.com/login/qr_form.aspx?skey={session_key}'
+            'Referer': f'https://login.beanfun.com/Login/Index?pSKey={session_key}'
         }
-        rsp = RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/login/qr_step2.aspx', headers=headers, params=params)
+        rsp = RequestClient.get_instance().get('https://login.beanfun.com/QRLogin/QRLogin', headers=headers)
 
         if rsp.status_code != 200:
-            return False, ''
-        data_list = re.findall(r'akey=(.*)&authkey=(.*)&', rsp.text)
-        data_list = data_list[0] if data_list else None
-        aKey = data_list[0] if len(data_list) > 0 else None
-        authKey = data_list[1] if len(data_list) > 1 else None
+            return False, '登录失败[0]'
 
-        if not aKey or not authKey:
-            return False, ''
-
-        params = {
-            'akey': aKey,
-            'authkey': authKey,
-            'bfapp': '1',
-        }
-        rsp = RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/login/final_step.aspx', params=params)
+        rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/SendLogin')
         if rsp.status_code != 200:
-            return False, ''
-        token = rsp.cookies.get("bfWebToken")
-        data = {
-            'SessionKey': session_key,
-            'AuthKey': aKey,
-            'ServiceCode': '',
-            'ServiceRegion': '',
-            'ServiceAccountSN': '0',
+            return False, '登录失败[1]'
+
+        print(rsp.text)
+
+        payload = {}
+        input_tags = re.findall(r'<input[^>]+>', rsp.text, re.IGNORECASE)
+        for tag in input_tags:
+            tag_str = tag
+            # 匹配 name value 属性
+            name_match = re.search(r'name\s*=\s*[\'\"]([^\'\"]+)[\'\"]', tag_str, re.IGNORECASE)
+            val_match = re.search(r'value\s*=\s*[\'\"]([^\'\"]*)[\'\"]', tag_str, re.IGNORECASE)
+            if name_match and val_match and "type=\"submit\"" not in tag_str.lower():
+                name = name_match.group(1)
+                value = val_match.group(1)
+                payload[name] = value
+
+        print(len(payload))
+        print(payload)
+
+        if len(payload) == 0:
+            return False, '登录失败[2]'
+        headers = {
+            'Referer': 'https://login.beanfun.com/'
         }
-        RequestClient.get_instance().post('https://tw.beanfun.com/beanfun_block/bflogin/return.aspx', data=data)
-        return True, token
+        rsp = RequestClient.get_instance().post("https://tw.beanfun.com/beanfun_block/bflogin/return.aspx",
+                                                data=payload, headers=headers, allow_redirects=False)
+
+        set_cookie_header = rsp.headers.get("Set-Cookie", "")
+        match = re.search(r"bfWebToken=([^;]+)", set_cookie_header)
+        bfWebToken = match.group(1) if match else None
+        if bfWebToken is None or bfWebToken == '':
+            return False, '登录失败[3]'
+        return True, bfWebToken

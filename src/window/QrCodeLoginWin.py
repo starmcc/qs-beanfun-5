@@ -1,4 +1,5 @@
 import logging
+from base64 import b64decode
 from io import BytesIO
 
 from PyQt5.QtCore import pyqtSignal
@@ -46,16 +47,16 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
                     result.msg = "网络错误"
                 BoxPop.err(window, result.msg)
                 return
-            image_data = BytesIO(result.qr_image)
+            image_data = BytesIO(b64decode(result.qr_image))
             pixmap = QPixmap()
             if pixmap.loadFromData(image_data.getvalue()):
                 window.label_qrCode.setPixmap(pixmap)
-                window.task_id = SchedulerManager.do_task(window.check_login, 2000, result)
+                window.task_id = SchedulerManager.do_task(window.check_login, 1500, result)
 
         get_thread_pool().submit_task(__load_qr_code, __load_qr_code_result, self, False, win=self)
 
     def check_login(self, task_id, result: QrCodeResult):
-        status = QsQrClient.get_instance().verify_qr_code_success(result.str_encrypt_data)
+        status = QsQrClient.get_instance().verify_qr_code_success()
         if status == 1:
             self.task_id = None
             SchedulerManager.stop_task(task_id)
@@ -83,10 +84,10 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
         if self.task_id:
             SchedulerManager.stop_task(self.task_id)
             self.task_id = None
-            
+
         # 停止动画
         if hasattr(self, 'movie') and self.movie:
             self.movie.stop()
             self.movie = None
-            
+
         super().closeEvent(event)

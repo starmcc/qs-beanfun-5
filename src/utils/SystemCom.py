@@ -39,7 +39,8 @@ def run_game(window, act: str = None, pwd: str = None):
     try:
         # 如果游戏正在运行,弹出询问是否强制结束进程
         if check_game_running():
-            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 0, '检测到游戏运行中,是否强制结束后重新启动游戏?')
+            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 0,
+                                               '检测到游戏运行中,是否强制结束后重新启动游戏?')
             return
 
         # 加载插件
@@ -89,7 +90,8 @@ def run_game(window, act: str = None, pwd: str = None):
                     SchedulerManager.stop_task(taskId)
                     if result.returncode == 0:
                         GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window,
-                                                           2, '程式自动拦截游戏自动更新程序\n建议使用官方补丁进行手动更新\n如需要使用游戏内置自动更新功能\n请前往设置取消阻止自动更新配置')
+                                                           2,
+                                                           '程式自动拦截游戏自动更新程序\n建议使用官方补丁进行手动更新\n如需要使用游戏内置自动更新功能\n请前往设置取消阻止自动更新配置')
                     else:
                         GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, result.stderr.decode('gbk'))
                     break
@@ -137,6 +139,7 @@ def _run_game_result(win, status, msg):
         logging.error(msg)
         BoxPop.warn(win, msg)
 
+
 def select_game_path() -> (str, str):
     options = QFileDialog.Options()
     directory = QFileDialog.getExistingDirectory(None, "选择新枫之谷游戏目录", "", options=options)
@@ -177,13 +180,31 @@ def auto_input_act_pwd(act, pwd) -> (int, str):
         return 2, msg
     # 操作流程：获取窗口焦点 -> 鼠标点输入框 -> 按End -> 按退格 -> 输入 -> 按TAB -> 输入 -> 回车
     hwnd = getMapleStoryHwnd()
+    # ===================== 分辨率自适应坐标计算 =====================
+    # 基准分辨率（你原来写死坐标的分辨率）
+    BASE_WIDTH = 1366
+    BASE_HEIGHT = 768
+    # 基准坐标（1366x768下的输入框位置）
+    BASE_INPUT_X = 555
+    BASE_INPUT_Y = 310
+    # 获取游戏窗口当前 客户区 宽高（排除边框、标题栏，最精准）
+    rect = wintypes.RECT()
+    user32.GetClientRect(hwnd, ctypes.byref(rect))
+    current_width = rect.right - rect.left
+    current_height = rect.bottom - rect.top
+    print('current_width:', current_width)
+    print('current_height:', current_height)
+
+    # 按比例动态计算当前分辨率下的输入框坐标
+    target_x = int(BASE_INPUT_X * (current_width / BASE_WIDTH))
+    target_y = int(BASE_INPUT_Y * (current_height / BASE_HEIGHT))
     # 前置游戏窗口
     user32.SetForegroundWindow(hwnd)
     pyautogui.sleep(0.3)
     # 关闭错误提示框
     pyautogui.press('esc')
     pyautogui.sleep(0.1)
-    point = wintypes.POINT(555, 310)
+    point = wintypes.POINT(target_x, target_y)
     user32.ClientToScreen(hwnd, ctypes.byref(point))
     pyautogui.doubleClick(point.x, point.y)
     pyautogui.sleep(0.1)

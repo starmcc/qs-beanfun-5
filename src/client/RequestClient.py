@@ -2,7 +2,7 @@ import logging
 import os
 import threading
 from io import BytesIO
-from typing import  Optional
+from typing import Optional
 
 import requests
 from requests.models import Response as RequestsResponse
@@ -53,8 +53,8 @@ class _RequestClient:
         # 初始化requests会话
         self.client = requests.Session()
         self.client.headers.update(headers)  # 设置会话默认请求头
-        self.client.proxies = proxy_dict     # 设置代理
-        self.client.verify = False           # 禁用SSL证书验证
+        self.client.proxies = proxy_dict  # 设置代理
+        self.client.verify = False  # 禁用SSL证书验证
 
     def _create_error_response(self, status_code: int = 500) -> RequestsResponse:
         """构造自定义错误响应"""
@@ -72,8 +72,9 @@ class _RequestClient:
         """GET请求封装，异常时返回500响应"""
         try:
             kwargs.setdefault('timeout', 10)
+            resp = self.client.get(url, **kwargs)
             # requests默认allow_redirects=True
-            return self.client.get(url, **kwargs)
+            return resp
         except Exception as e:
             logging.error(f"Unexpected error during GET request to {url}: {str(e)}")
             return self._create_error_response(500)
@@ -82,7 +83,8 @@ class _RequestClient:
         """POST请求封装，异常时返回500响应"""
         try:
             kwargs.setdefault('timeout', 10)
-            return self.client.post(url, **kwargs)
+            resp = self.client.post(url, **kwargs)
+            return resp
         except Exception as e:
             logging.error(f"Unexpected error during POST request to {url}: {str(e)}")
             return self._create_error_response(500)
