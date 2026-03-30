@@ -1,5 +1,7 @@
 import re
 from abc import abstractmethod
+from json import JSONDecoder
+from typing import Tuple, Union, Dict, Any
 
 from src.config.GlobalConfig import *
 from src.models import Account, ActInfoResult
@@ -7,7 +9,6 @@ from src.models.LoginRecord import LoginRecord
 
 
 class QsClient:
-
 
     @abstractmethod
     def get_login_index(self) -> str:

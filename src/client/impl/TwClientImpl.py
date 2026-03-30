@@ -9,7 +9,7 @@ from src.client.QsClient import QsClient
 from src.models.Account import Account
 from src.models.ActInfoResult import ActInfoResult
 from src.models.LoginRecord import LoginRecord
-from src.utils import De2Utils
+from src.utils import De2Utils, TwResultUtils
 
 
 class TwClientImpl(QsClient):
@@ -31,92 +31,114 @@ class TwClientImpl(QsClient):
         result_text = response.text.encode('iso-8859-1').decode('utf-8')
         return False, f'登入失败,请检查网络环境\n{result_text}'
 
+    # 缺中级验证，号码验证，待开发
     def login(self, act: str, pwd: str) -> LoginRecord:
         RequestClient.get_instance().client.cookies.clear()
         login_record = LoginRecord(status=False, message='')
 
-        ok, data = self.get_session_key()
+        ok, session_key = self.get_session_key()
+
+        if not ok:
+            login_record.message = session_key
+            return login_record
+        login_record.skey = session_key
+        params = {
+            'pSKey': login_record.skey
+        }
+        rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/Index', params=params)
+        if rsp.status_code != 200:
+            login_record.message = session_key
+            return login_record
+        result = re.search(r'<input name="__RequestVerificationToken".*?value="([^"]+?)"', rsp.text)
+        # 取出 token
+        token = result.group(1)
+
+        rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/InitLogin')
+        # 验证 json
+        ok, data = TwResultUtils.result_json(rsp, f'登录接口{rsp.url}请求')
+        if not ok:
+            login_record.message = data
+            return login_record
+        headers = {
+            'content-type': 'application/json; charset=utf-8',
+            'referer': f'https://login.beanfun.com/Login/Index?pSKey={login_record.skey}',
+            'RequestVerificationToken': token,
+        }
+        url = 'https://login.beanfun.com/Login/CheckAccountType'
+        json = {'Account': act}
+        rsp = RequestClient.get_instance().post(url, json=json, headers=headers)
+        # 验证 json
+        ok, data = TwResultUtils.result_json(rsp, f'登录接口{rsp.url}请求')
         if not ok:
             login_record.message = data
             return login_record
 
-        login_record.skey = data
-        url = 'https://tw.newlogin.beanfun.com/login/id-pass_form.aspx'
-        params = {'skey': login_record.skey}
-        rsp = RequestClient.get_instance().get(url, params=params)
-        login_record.content = rsp.text
-        viewstate, eventvalidation, viewstateGenerator = self.regex_login_request_params(login_record.content)
-
-        if not viewstate or not eventvalidation or not viewstateGenerator:
-            login_record.message = '登入失败,无法获取关键参数\r[viewstate][eventvalidation][viewstateGenerator]'
+        url = "https://login.beanfun.com/Login/AccountLogin"
+        json = {
+            'Account': act,
+            'Pasw': pwd,
+            'IsMobile': False,
+        }
+        rsp = RequestClient.get_instance().post(url, headers=headers, json=json)
+        # 验证 json
+        ok, data = TwResultUtils.result_json(rsp, f'登录接口{rsp.url}请求')
+        if not ok:
+            login_record.message = data
             return login_record
 
-        url = f'https://tw.newlogin.beanfun.com/login/id-pass_form.aspx?skey={login_record.skey}'
-
-        data = {'__EVENTTARGET': '',
-                '__EVENTARGUMENT': '',
-                '__VIEWSTATE': viewstate,
-                '__EVENTVALIDATION': eventvalidation,
-                '__VIEWSTATEGENERATOR': viewstateGenerator,
-                't_AccountID': act,
-                't_Password': pwd,
-                'btn_login': '登入'}
-        rsp = RequestClient.get_instance().post(url, data=data)
-        login_record.content = rsp.text
-
-        data_list = re.findall(r"\$\(function\(\)\{MsgBox\.Show\('(.*?)'\);}\);", login_record.content)
-        err_msg = data_list[0] if data_list else None
-        if err_msg:
-            login_record.message = err_msg
-            return login_record
-
-        # ====================== 进阶验证 ======================
-        data_list = re.findall(r"alert\('([^']*)'.*?\);window\.top\.location='([^']*)'", login_record.content)
-        data_list = data_list[0] if data_list else None
-        if data_list:
-            login_record.message = data_list[0]
-            if len(data_list[0]) < 2:
-                return login_record
+        # ====================== adv验证 ======================
+        # ResultCode=2 adv验证
+        result_code = data.get("ResultCode")
+        if result_code == 2:
             login_record.status = True
             login_record.adv_status = True
-            login_record.location = data_list[1]
+            login_record.location = data.get('ResultMessage')
             return login_record
-        # ====================== 进阶验证End ======================
+        # ====================== adv验证End ======================
+        # ====================== 中級验证 ======================
 
-        data_list = re.findall(r'AuthKey\.value\s=\s"(.*?)";parent', login_record.content)
-        login_record.auth_key = data_list[0] if data_list else None
+        # ====================== 中級验证End ======================
 
-        # ====================== 中級進階登錄 ======================
-        data_list = re.findall(r'pollRequest\("bfAPPAutoLogin\.ashx","([A-F0-9]+)"', login_record.content)
-        login_record.lt = data_list[0] if data_list else None
-        if login_record.lt:
-            login_record.status = True
-            login_record.intermediate_login = True
-            return login_record
-        # ====================== 中級進階登錄End ======================
+        url = "https://login.beanfun.com/Login/SendLogin"
+
+        headers = {
+            'Referer': f'https://login.beanfun.com/Login/Index?pSKey={session_key}'
+        }
+        rsp = RequestClient.get_instance().get(url, headers=headers)
+        login_record.content = rsp.text
+
+
+
         return self.login_return_token(login_record)
 
     def login_return_token(self, login_record: LoginRecord) -> LoginRecord:
-        data = {
-            'SessionKey': login_record.skey,
-            'AuthKey': login_record.auth_key,
-            'ServiceCode': '',
-            'ServiceRegion': '',
-            'ServiceAccountSN': '0',
-        }
-        rsp = RequestClient.get_instance().post('https://tw.beanfun.com/beanfun_block/bflogin/return.aspx', data=data)
-        login_record.content = rsp.text
+        payload = {}
+        input_tags = re.findall(r'<input[^>]+>', login_record.content, re.IGNORECASE)
+        for tag in input_tags:
+            tag_str = tag
+            # 匹配 name value 属性
+            name_match = re.search(r'name\s*=\s*[\'\"]([^\'\"]+)[\'\"]', tag_str, re.IGNORECASE)
+            val_match = re.search(r'value\s*=\s*[\'\"]([^\'\"]*)[\'\"]', tag_str, re.IGNORECASE)
+            if name_match and val_match and "type=\"submit\"" not in tag_str.lower():
+                name = name_match.group(1)
+                value = val_match.group(1)
+                payload[name] = value
 
-        if rsp.status_code != 200:
-            login_record.message = f'登入失败,请检查网络环境[2]'
+        if len(payload) == 0:
+            login_record.message = '登录失败'
             return login_record
+        headers = {
+            'Referer': 'https://login.beanfun.com/'
+        }
+        rsp = RequestClient.get_instance().post("https://tw.beanfun.com/beanfun_block/bflogin/return.aspx",
+                                                data=payload, headers=headers, allow_redirects=False)
 
-        # 获取token，如果没有则失败!
-        login_record.bfWebToken = RequestClient.get_ck_val('bfWebToken')
-        if not login_record.bfWebToken:
+        set_cookie_header = rsp.headers.get("Set-Cookie", "")
+        match = re.search(r"bfWebToken=([^;]+)", set_cookie_header)
+        login_record.bfWebToken = match.group(1) if match else None
+        if login_record.bfWebToken is None or login_record.bfWebToken == '':
             login_record.message = '登入失败,请检查网络环境[3]'
             return login_record
-
         login_record.status = True
         login_record.message = '登录成功!'
         return login_record
