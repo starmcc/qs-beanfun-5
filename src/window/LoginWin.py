@@ -159,7 +159,7 @@ class LoginWin(QWidget, Ui_Login):
                 return
 
             if login_record.intermediate_login:
-                # 台号APP驗證
+                # 台号APP驗證 废弃
                 GLOBAL_CONFIG.win_intermediateLogin = IntermediateLoginWin(window, login_record)
                 GLOBAL_CONFIG.win_intermediateLogin.data_sent.connect(__task_login_result)
                 GLOBAL_CONFIG.win_intermediateLogin.exec_()

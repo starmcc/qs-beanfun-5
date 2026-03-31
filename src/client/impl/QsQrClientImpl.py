@@ -3,7 +3,6 @@ import re
 from src.client import QsClient, RequestClient
 from src.client.QsQrClient import QsQrClient
 from src.models.QrCodeResult import QrCodeResult
-from src.utils import TwResultUtils
 
 
 class QsQrClientImpl(QsQrClient):
@@ -17,10 +16,23 @@ class QsQrClientImpl(QsQrClient):
         params = {'pSKey': qr_code_result.session_key}
         RequestClient.get_instance().get('https://login.beanfun.com/Login/Index', params=params)
         rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/InitLogin', params=params)
+        if rsp.status_code != 200:
+            qr_code_result.msg = f"HTTP请求失败，状态码：{rsp.status_code}"
+            return qr_code_result
+        try:
+            # 解析JSON响应
+            entry = rsp.json()
+        except ValueError as e:
+            qr_code_result.msg = f"JSON解析失败: {str(e)}"
+            return qr_code_result
 
-        ok, entry = TwResultUtils.result_json(rsp, f'获取二维码接口：{rsp.url}请求')
-        if not ok:
-            qr_code_result.msg = entry
+            # 检查响应数据结构完整性
+        if not isinstance(entry, dict):
+            qr_code_result.msg = f'获取二维码接口请求失败(1)!'
+            return qr_code_result
+
+        if entry.get('ResultCode') == 0:
+            qr_code_result.msg = entry.get('ResultMessage')
             return qr_code_result
         qr_code_result.status = True
         qr_code_result.qr_image = entry.get('ResultData').get('QRImage')

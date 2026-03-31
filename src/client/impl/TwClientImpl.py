@@ -9,7 +9,8 @@ from src.client.QsClient import QsClient
 from src.models.Account import Account
 from src.models.ActInfoResult import ActInfoResult
 from src.models.LoginRecord import LoginRecord
-from src.utils import De2Utils, TwResultUtils
+from src.models.TwResponseJson import TwResponseJson
+from src.utils import De2Utils
 
 
 class TwClientImpl(QsClient):
@@ -31,7 +32,6 @@ class TwClientImpl(QsClient):
         result_text = response.text.encode('iso-8859-1').decode('utf-8')
         return False, f'登入失败,请检查网络环境\n{result_text}'
 
-    # 缺台号APP驗證，待开发
     def login(self, act: str, pwd: str) -> LoginRecord:
         RequestClient.get_instance().client.cookies.clear()
         login_record = LoginRecord(status=False, message='')
@@ -54,10 +54,8 @@ class TwClientImpl(QsClient):
         token = result.group(1)
 
         rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/InitLogin')
-        # 验证 json
-        ok, data = TwResultUtils.result_json(rsp, f'登录接口{rsp.url}请求')
-        if not ok:
-            login_record.message = data
+        if rsp.status_code != 200:
+            login_record.message = f"HTTP请求失败，状态码：{rsp.status_code}"
             return login_record
         headers = {
             'content-type': 'application/json; charset=utf-8',
@@ -67,11 +65,17 @@ class TwClientImpl(QsClient):
         url = 'https://login.beanfun.com/Login/CheckAccountType'
         json = {'Account': act}
         rsp = RequestClient.get_instance().post(url, json=json, headers=headers)
-        # 验证 json
-        ok, data = TwResultUtils.result_json(rsp, f'登录接口{rsp.url}请求')
-        if not ok:
-            login_record.message = data
+        if rsp.status_code != 200:
+            login_record.message = f"HTTP请求失败，状态码：{rsp.status_code}"
             return login_record
+        jsonEntry = TwResponseJson.from_response(rsp)
+        if jsonEntry.ResultCode != 1:
+            login_record.message = jsonEntry.ResultMessage
+            return login_record
+        else:
+            if jsonEntry.ResultData.get('IsGamaPass'):
+                login_record.message = '请使用GamePass登入,登入器使用官网登入即可!'
+                return login_record
 
         url = "https://login.beanfun.com/Login/AccountLogin"
         json = {
@@ -80,29 +84,26 @@ class TwClientImpl(QsClient):
             'IsMobile': False,
         }
         rsp = RequestClient.get_instance().post(url, headers=headers, json=json)
-        # 验证 json
-        ok, data = TwResultUtils.result_json(rsp, f'登录接口{rsp.url}请求')
-        if not ok:
-            login_record.message = data
+        jsonEntry = TwResponseJson.from_response(rsp)
+        if jsonEntry.ResultCode == 0:
+            login_record.message = jsonEntry.ResultMessage
             return login_record
-
-        # ====================== adv验证 ======================
-        # ResultCode=2 adv验证
-        result_code = data.get("ResultCode")
-        if result_code == 2:
-            login_record.status = True
-            login_record.adv_status = True
-            # 这里获取的是服务端返回的验证地址
-            login_record.location = data.get('ResultMessage')
-            return login_record
-        # ====================== adv验证End ======================
-        # ====================== 台号APP驗證 ======================
-        login_record.lt = None
-        if login_record.lt:
-            login_record.status = True
-            login_record.intermediate_login = True
-            return login_record
-        # ====================== 台号APP驗證End ======================
+        elif jsonEntry.ResultCode == 2:
+            if jsonEntry.ResultMessage == "AccountLock":
+                login_record.message = '您的帳號已被鎖定,可聯繫客服人員了解原因'
+                return login_record
+            else:
+                if jsonEntry.Result == 2:
+                    login_record.message = '請先進行遊戲點數補繳後才能解除鎖定'
+                    return login_record
+                else:
+                    # ====================== adv验证 ======================
+                    login_record.status = True
+                    login_record.adv_status = True
+                    # 这里获取的是服务端返回的验证地址
+                    login_record.location = jsonEntry.ResultMessage
+                    return login_record
+                    # ====================== adv验证End ======================
 
         url = "https://login.beanfun.com/Login/SendLogin"
 
