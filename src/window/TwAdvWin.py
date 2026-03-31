@@ -5,17 +5,19 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QDialog
 
 from src.client import RequestClient
+from src.models.LoginRecord import LoginRecord
 from src.utils import BoxPop, WinManager
 from src.views.Ui_TwAdv import Ui_TwAdv
 
 
 class TwAdvWin(QDialog, Ui_TwAdv):
-    def __init__(self, parent=None):
+    def __init__(self, parent, login_record: LoginRecord):
         super().__init__(parent)
         self.samplecaptcha = ''
         self.viewstate = ''
         self.eventvalidation = ''
         self.viewstateGenerator = ''
+        self.login_record = login_record
         self.setupUi(self)
         WinManager.set_basic_window(self)
         self.init_ui()
@@ -26,7 +28,7 @@ class TwAdvWin(QDialog, Ui_TwAdv):
         self.open_advance_check()
 
     def open_advance_check(self):
-        rsp = RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/LoginCheck/AdvanceCheck.aspx')
+        rsp = RequestClient.get_instance().get(self.login_record.location)
         data_list = re.findall(r'id="__VIEWSTATE"\svalue="(.*?)"\s/>', rsp.text)
         self.viewstate = data_list[0] if data_list else None
         data_list = re.findall(r'id="__EVENTVALIDATION"\svalue="(.*?)"\s/>', rsp.text)
@@ -47,7 +49,8 @@ class TwAdvWin(QDialog, Ui_TwAdv):
             't': self.samplecaptcha,
             'd': time.time() * 1000
         }
-        rsp = RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/LoginCheck/BotDetectCaptcha.ashx', params=params)
+        rsp = RequestClient.get_instance().get('https://tw.newlogin.beanfun.com/LoginCheck/BotDetectCaptcha.ashx',
+                                               params=params)
         # 先将二进制数据转换为QImage对象
         image = QImage.fromData(rsp.content)
         # 再从QImage对象转换得到QPixmap对象
@@ -74,7 +77,7 @@ class TwAdvWin(QDialog, Ui_TwAdv):
             'imgbtnSubmit.y': '23',
             'LBD_VCID_c_logincheck_advancecheck_samplecaptcha': self.samplecaptcha,
         }
-        rsp = RequestClient.get_instance().post('https://tw.newlogin.beanfun.com/LoginCheck/AdvanceCheck.aspx', data=data)
+        rsp = RequestClient.get_instance().post(self.login_record.location, data=data)
         if rsp.status_code != 200:
             BoxPop.err(self, '网络错误')
             return

@@ -154,12 +154,12 @@ class LoginWin(QWidget, Ui_Login):
 
             if login_record.adv_status:
                 # 台号进阶验证 需要显示图形验证码并填写手机号
-                GLOBAL_CONFIG.win_twAdv = TwAdvWin(window)
+                GLOBAL_CONFIG.win_twAdv = TwAdvWin(window, login_record)
                 GLOBAL_CONFIG.win_twAdv.exec_()
                 return
 
             if login_record.intermediate_login:
-                # 台号中級驗證
+                # 台号APP驗證
                 GLOBAL_CONFIG.win_intermediateLogin = IntermediateLoginWin(window, login_record)
                 GLOBAL_CONFIG.win_intermediateLogin.data_sent.connect(__task_login_result)
                 GLOBAL_CONFIG.win_intermediateLogin.exec_()

@@ -31,7 +31,7 @@ class TwClientImpl(QsClient):
         result_text = response.text.encode('iso-8859-1').decode('utf-8')
         return False, f'登入失败,请检查网络环境\n{result_text}'
 
-    # 缺中级验证，号码验证，待开发
+    # 缺台号APP驗證，待开发
     def login(self, act: str, pwd: str) -> LoginRecord:
         RequestClient.get_instance().client.cookies.clear()
         login_record = LoginRecord(status=False, message='')
@@ -92,12 +92,17 @@ class TwClientImpl(QsClient):
         if result_code == 2:
             login_record.status = True
             login_record.adv_status = True
+            # 这里获取的是服务端返回的验证地址
             login_record.location = data.get('ResultMessage')
             return login_record
         # ====================== adv验证End ======================
-        # ====================== 中級验证 ======================
-
-        # ====================== 中級验证End ======================
+        # ====================== 台号APP驗證 ======================
+        login_record.lt = None
+        if login_record.lt:
+            login_record.status = True
+            login_record.intermediate_login = True
+            return login_record
+        # ====================== 台号APP驗證End ======================
 
         url = "https://login.beanfun.com/Login/SendLogin"
 
@@ -106,8 +111,6 @@ class TwClientImpl(QsClient):
         }
         rsp = RequestClient.get_instance().get(url, headers=headers)
         login_record.content = rsp.text
-
-
 
         return self.login_return_token(login_record)
 
