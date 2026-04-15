@@ -51,7 +51,10 @@ class TwClientImpl(QsClient):
             return login_record
         result = re.search(r'<input name="__RequestVerificationToken".*?value="([^"]+?)"', rsp.text)
         # 取出 token
-        token = result.group(1)
+        login_record.requestVerificationToken = result.group(1)
+        if not login_record.requestVerificationToken:
+            login_record.message = 'requestVerificationToken获取失败[1]'
+            return login_record
 
         rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/InitLogin')
         if rsp.status_code != 200:
@@ -60,7 +63,7 @@ class TwClientImpl(QsClient):
         headers = {
             'content-type': 'application/json; charset=utf-8',
             'referer': f'https://login.beanfun.com/Login/Index?pSKey={login_record.skey}',
-            'RequestVerificationToken': token,
+            'RequestVerificationToken': login_record.requestVerificationToken,
         }
         url = 'https://login.beanfun.com/Login/CheckAccountType'
         json = {'Account': act}

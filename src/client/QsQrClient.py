@@ -9,11 +9,11 @@ class QsQrClient:
         pass
 
     @abstractmethod
-    def verify_qr_code_success(self) -> int:
+    def verify_qr_code_success(self, result: QrCodeResult) -> int:
         pass
 
     @abstractmethod
-    def login(self, session_key: str) -> (bool, str):
+    def login(self, result: QrCodeResult) -> (bool, str):
         pass
 
 

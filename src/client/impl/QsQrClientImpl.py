@@ -14,7 +14,16 @@ class QsQrClientImpl(QsQrClient):
             qr_code_result.msg = qr_code_result.session_key
             return qr_code_result
         params = {'pSKey': qr_code_result.session_key}
-        RequestClient.get_instance().get('https://login.beanfun.com/Login/Index', params=params)
+        rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/Index', params=params)
+        if rsp.status_code != 200:
+            qr_code_result.msg = 'requestVerificationToken获取失败[0]'
+            return qr_code_result
+        result = re.search(r'<input name="__RequestVerificationToken".*?value="([^"]+?)"', rsp.text)
+        # 取出 token
+        qr_code_result.requestVerificationToken = result.group(1)
+        if not qr_code_result.requestVerificationToken:
+            qr_code_result.msg = 'requestVerificationToken获取失败[1]'
+            return qr_code_result
         rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/InitLogin', params=params)
         if rsp.status_code != 200:
             qr_code_result.msg = f"HTTP请求失败，状态码：{rsp.status_code}"
@@ -38,16 +47,23 @@ class QsQrClientImpl(QsQrClient):
         qr_code_result.qr_image = entry.get('ResultData').get('QRImage')
         return qr_code_result
 
-    def verify_qr_code_success(self) -> int:
-        rsp = RequestClient.get_instance().get('https://login.beanfun.com/QRLogin/CheckLoginStatus')
+    def verify_qr_code_success(self, result: QrCodeResult) -> int:
+        headers = {
+            'content-type': 'application/json; charset=utf-8',
+            'Referer': f'https://login.beanfun.com/Login/Index?pSKey={result.session_key}',
+            'RequestVerificationToken': result.requestVerificationToken,
+        }
+        rsp = RequestClient.get_instance().post('https://login.beanfun.com/QRLogin/CheckLoginStatus', headers=headers)
         if rsp.status_code != 200:
             return -1
         content = rsp.json()
         return content.get('ResultCode')
 
-    def login(self, session_key: str) -> (bool, str):
+    def login(self, result: QrCodeResult) -> (bool, str):
         headers = {
-            'Referer': f'https://login.beanfun.com/Login/Index?pSKey={session_key}'
+            'content-type': 'application/json; charset=utf-8',
+            'Referer': f'https://login.beanfun.com/Login/Index?pSKey={result.session_key}',
+            'RequestVerificationToken': result.requestVerificationToken,
         }
         rsp = RequestClient.get_instance().get('https://login.beanfun.com/QRLogin/QRLogin', headers=headers)
 

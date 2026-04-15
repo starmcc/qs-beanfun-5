@@ -44,7 +44,7 @@ class LoginWin(QWidget, Ui_Login):
         self.pushButton_actManager.clicked.connect(self.actManager_clicked)
         self.pushButton_web.clicked.connect(self.login_web_clicked)
         CustomToolTipWin.build_tips(self, self.pushButton_web,
-                                    "谷歌人机验证/邮箱验证/门号验证/疑难杂症等..\n可使用原生态【官网登入】解决问题")
+                                    "谷歌人机验证/邮箱验证/门号验证/疑难杂症等..\n请使用【官网登入】解决问题\n点击打开内置浏览器进行原生态登入操作")
         self.label_register.mousePressEvent = self.register_mousePressEvent
         self.label_forgotPassword.mousePressEvent = self.forgotPassword_mousePressEvent
         self.lineEdit_account.returnPressed.connect(self.lineEdit_password.setFocus)

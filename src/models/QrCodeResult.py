@@ -5,3 +5,4 @@ class QrCodeResult:
         self.msg = ''
         self.session_key: str = ''
         self.qr_image: bytes = bytes()
+        self.requestVerificationToken: str = ''

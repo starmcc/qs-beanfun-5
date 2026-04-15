@@ -15,3 +15,4 @@ class LoginRecord:
         self.location = ''
         self.lt = ''
         self.intermediate_login = False
+        self.requestVerificationToken = False

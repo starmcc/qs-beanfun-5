@@ -56,12 +56,12 @@ class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
         get_thread_pool().submit_task(__load_qr_code, __load_qr_code_result, self, False, win=self)
 
     def check_login(self, task_id, result: QrCodeResult):
-        status = QsQrClient.get_instance().verify_qr_code_success()
+        status = QsQrClient.get_instance().verify_qr_code_success(result)
         if status == 1:
             self.task_id = None
             SchedulerManager.stop_task(task_id)
             # 状态验证成功，已扫码！
-            ok, token = QsQrClient.get_instance().login(result.session_key)
+            ok, token = QsQrClient.get_instance().login(result)
             if not ok:
                 return
             # 登录成功
