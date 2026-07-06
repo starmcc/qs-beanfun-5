@@ -2,7 +2,7 @@ import re
 from abc import abstractmethod
 from typing import Tuple
 
-from client import RequestClient
+from src.client import RequestClient
 from src.config.GlobalConfig import *
 from src.models import Account, ActInfoResult
 from src.models.LoginRecord import LoginRecord
