@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Tuple
 
 from src.models.QrCodeResult import QrCodeResult
 
@@ -13,7 +14,7 @@ class QsQrClient:
         pass
 
     @abstractmethod
-    def login(self, result: QrCodeResult) -> (bool, str):
+    def login(self, result: QrCodeResult) -> Tuple[bool, str]:
         pass
 
 

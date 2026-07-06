@@ -3,6 +3,7 @@ import logging
 import subprocess
 import time
 from ctypes import wintypes
+from typing import Tuple
 
 import psutil
 import pyautogui
@@ -140,7 +141,7 @@ def _run_game_result(win, status, msg):
         BoxPop.warn(win, msg)
 
 
-def select_game_path() -> (str, str):
+def select_game_path() -> Tuple[str, str]:
     options = QFileDialog.Options()
     directory = QFileDialog.getExistingDirectory(None, "选择新枫之谷游戏目录", "", options=options)
     errorMsg = ""
@@ -169,7 +170,7 @@ def getMapleStoryHwnd():
     return hwnd if hwnd else 0
 
 
-def auto_input_act_pwd(act, pwd) -> (int, str):
+def auto_input_act_pwd(act, pwd) -> Tuple[int, str]:
     if not check_game_running():
         msg = '游戏未启动，无法自动输入!'
         logging.info(msg)

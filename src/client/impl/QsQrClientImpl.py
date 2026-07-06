@@ -1,4 +1,5 @@
 import re
+from typing import Tuple
 
 from src.client import QsClient, RequestClient
 from src.client.QsQrClient import QsQrClient
@@ -59,7 +60,7 @@ class QsQrClientImpl(QsQrClient):
         content = rsp.json()
         return content.get('ResultCode')
 
-    def login(self, result: QrCodeResult) -> (bool, str):
+    def login(self, result: QrCodeResult) -> Tuple[bool, str]:
         headers = {
             'content-type': 'application/json; charset=utf-8',
             'Referer': f'https://login.beanfun.com/Login/Index?pSKey={result.session_key}',

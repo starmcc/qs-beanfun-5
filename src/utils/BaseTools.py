@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 import webbrowser
+from typing import Tuple
 
 from PyQt5.QtWidgets import QMessageBox
 from packaging import version
@@ -72,7 +73,7 @@ def check_new_version(win, quiet: bool = True):
     get_thread_pool().submit_task(__check_version, __check_update_result, win, not quiet)
 
 
-def __check_version() -> (bool, str):
+def __check_version() -> Tuple[bool, str]:
     # bool = 是否有更新
     # str = 更新内容,错误消息
     msg = '无法获取版本信息'

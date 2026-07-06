@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QInputDialog
 
@@ -39,7 +41,7 @@ def custom_question(self, msg, buttons: dict[str, int]) -> int:
     return msg_box.exec_()
 
 
-def input_dialog(parent, title: str, label: str) -> (str, bool):
+def input_dialog(parent, title: str, label: str) -> Tuple[str, bool]:
     dialog = QInputDialog(parent)
     dialog.setWindowFlags(
         dialog.windowFlags() & ~Qt.WindowContextHelpButtonHint | Qt.MSWindowsFixedSizeDialogHint)

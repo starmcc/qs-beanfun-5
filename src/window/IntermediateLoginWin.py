@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from typing import Tuple
 
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QDialog
@@ -53,7 +54,7 @@ class IntermediateLoginWin(QDialog, Ui_IntermediateLogin):
         self.data_sent.emit(self.login_record)
         super().closeEvent(event)
 
-    def intermediate_login(self) -> (int, str):
+    def intermediate_login(self) -> Tuple[int, str]:
         akey = ''
         try:
             # 开始轮询请求获取登录状态

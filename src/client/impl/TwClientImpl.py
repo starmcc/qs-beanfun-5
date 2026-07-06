@@ -3,6 +3,7 @@ import html
 import logging
 import re
 import time
+from typing import Tuple
 
 from src.client import RequestClient
 from src.client.QsClient import QsClient
@@ -17,20 +18,6 @@ class TwClientImpl(QsClient):
 
     def get_login_index(self) -> str:
         return "https://tw.beanfun.com/beanfun_block/bflogin/default.aspx?service=999999_T0"
-
-    def get_session_key(self) -> (bool, str):
-        url = 'https://tw.beanfun.com/beanfun_block/bflogin/default.aspx'
-        params = {'service': '999999_T0'}
-        response = RequestClient.get_instance().get(url, params=params)
-        if response.status_code != 200:
-            return False, '登入失败,请检查网络环境[0]'
-        redirect_urls = [r.url for r in response.history]
-        for url in redirect_urls:
-            match = re.search(r'skey=([\w]+)', str(url))
-            if match:
-                return True, match.group(1)
-        result_text = response.text.encode('iso-8859-1').decode('utf-8')
-        return False, f'登入失败,请检查网络环境\n{result_text}'
 
     def login(self, act: str, pwd: str) -> LoginRecord:
         RequestClient.get_instance().client.cookies.clear()
@@ -207,7 +194,7 @@ class TwClientImpl(QsClient):
         dataList = re.findall(r'ServiceAccountCreateTime:\s"([^"]+)"', rsp.text)
         return dataList[0] if dataList else None
 
-    def add_account(self, new_name: str) -> (bool, str):
+    def add_account(self, new_name: str) -> Tuple[bool, str]:
         url = 'https://tw.beanfun.com/generic_handlers/gamezone.ashx'
         data = {
             'strFunction': 'AddServiceAccount',
@@ -221,7 +208,7 @@ class TwClientImpl(QsClient):
         rsp = RequestClient.get_instance().post(url, data=data, timeout=60)
         return self.result_json_handler(rsp, '创建')
 
-    def change_account_name(self, account_id: str, new_name: str) -> (bool, str):
+    def change_account_name(self, account_id: str, new_name: str) -> Tuple[bool, str]:
         url = "https://tw.beanfun.com/generic_handlers/gamezone.ashx"
         data = {
             'strFunction': 'ChangeServiceAccountDisplayName',
@@ -337,8 +324,8 @@ class TwClientImpl(QsClient):
             logging.error(f"发生错误:\n{str(e)}")
             return 0
 
-    def regex_login_request_params(self, text: str) -> (str, str, str):
+    def regex_login_request_params(self, text: str) -> Tuple[str, str, str]:
         return super().regex_login_request_params(text)
 
-    def result_json_handler(self, rsp, msg) -> (bool, str):
+    def result_json_handler(self, rsp, msg) -> Tuple[bool, str]:
         return super().result_json_handler(rsp, msg)

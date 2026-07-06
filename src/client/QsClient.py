@@ -1,8 +1,8 @@
 import re
 from abc import abstractmethod
-from json import JSONDecoder
-from typing import Tuple, Union, Dict, Any
+from typing import Tuple
 
+from client import RequestClient
 from src.config.GlobalConfig import *
 from src.models import Account, ActInfoResult
 from src.models.LoginRecord import LoginRecord
@@ -26,20 +26,36 @@ class QsClient:
     def get_account_list(self, bf_web_token: str) -> ActInfoResult:
         pass
 
-    @abstractmethod
-    def get_session_key(self) -> (bool, str):
-        pass
+    def get_session_key(self) -> Tuple[bool, str]:
+        url = ''
+        if GLOBAL_CONFIG.now_login_type == ActType.TW.value:
+            url = 'https://tw.beanfun.com/beanfun_block/bflogin/default.aspx'
+        else:
+            url = "https://bfweb.hk.beanfun.com/beanfun_block/bflogin/default.aspx"
+        params = {'service': '999999_T0'}
+        response = RequestClient.get_instance().get(url, params=params)
+        if response.status_code != 200:
+            return False, '登入失败,请检查网络环境[0]'
+        redirect_urls = [r.url for r in response.history]
+        for url in redirect_urls:
+            match = re.search(r'skey=([\w]+)', str(url))
+            if match:
+                return True, match.group(1)
+        result_text = response.text.encode('iso-8859-1').decode('utf-8')
+        if "IP已自動被系統鎖定" in result_text:
+            return False, '登入频繁,IP已自动被官方锁定,请检查网络环境'
+        return False, f'登入失败,请检查网络环境\n{result_text}'
 
     @abstractmethod
     def __get_act_create_time(self, sn: str):
         pass
 
     @abstractmethod
-    def add_account(self, new_name: str) -> (bool, str):
+    def add_account(self, new_name: str) -> Tuple[bool, str]:
         pass
 
     @abstractmethod
-    def change_account_name(self, account_id: str, new_name: str) -> (bool, str):
+    def change_account_name(self, account_id: str, new_name: str) -> Tuple[bool, str]:
         pass
 
     @abstractmethod
@@ -82,7 +98,7 @@ class QsClient:
     def get_game_points(self, bf_web_token: str) -> int:
         pass
 
-    def regex_login_request_params(self, text: str) -> (str, str, str):
+    def regex_login_request_params(self, text: str) -> Tuple[str, str, str]:
         data_list = re.findall(r'id="__VIEWSTATE"\svalue="(.*?)"\s/>', text)
         viewstate = data_list[0] if data_list else None
         data_list = re.findall(r'id="__EVENTVALIDATION"\svalue="(.*?)"\s/>', text)
@@ -91,7 +107,7 @@ class QsClient:
         viewstateGenerator = data_list[0] if data_list else None
         return viewstate, eventvalidation, viewstateGenerator
 
-    def result_json_handler(self, rsp, msg) -> (bool, str):
+    def result_json_handler(self, rsp, msg) -> Tuple[bool, str]:
         # 检查HTTP响应状态码
         if rsp.status_code != 200:
             return False, f'请求失败，状态码: {rsp.status_code}'
