@@ -1,13 +1,22 @@
 import logging
 import os
-import tempfile
-
-from PyQt5.QtCore import QUrl, QEventLoop, pyqtSignal
+from PyQt5.QtCore import QUrl, QEventLoop, Qt
 from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QProgressBar, QPushButton)
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage, QWebEngineSettings
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QProgressBar, QPushButton, QLabel)
 
+os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = (
+    "--disable-blink-features=AutomationControlled "
+    "--no-first-run --no-default-browser-check "
+    "--disable-automation --disable-ui-devtools "
+    "--exclude-switches=enable-automation "
+    "--disable-dev-shm-usage "
+    "--window-size=1024,800 "
+    "--ignore-gpu-blacklist "
+    "--enable-webgl "
+    "--disable-gpu-sandbox"
+)
 from src.client import RequestClient
 from src.config.GlobalConfig import GLOBAL_CONFIG, ActType
 from src.utils import WinManager, BoxPop
@@ -16,95 +25,115 @@ from src.utils import WinManager, BoxPop
 class CustomWebEngineView(QWebEngineView):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.temp_dir = tempfile.TemporaryDirectory()  # 自动管理的临时目录
-        self.profile = QWebEngineProfile(self.temp_dir.name, self)  # 绑定临时目录
-        # 禁用Cookie持久化
-        self.profile.setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies)
-        # 设置缓存和存储路径到临时目录
-        self.profile.setCachePath(os.path.join(self.temp_dir.name, "cache"))
-        self.profile.setPersistentStoragePath(os.path.join(self.temp_dir.name, "storage"))
-        # 使用自定义Profile创建页面
+        # 持久化配置目录
+        self.profile_dir = os.path.expanduser(r"~\.qt_beanfun_profile")
+        self.profile = QWebEngineProfile(self.profile_dir, self)
+
+        # 繁体中文UA+语言头
+        chrome_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.168 Safari/537.36"
+        self.profile.setHttpUserAgent(chrome_ua)
+        self.profile.setHttpAcceptLanguage("zh-TW,zh;q=0.9,en;q=0.8")
+
+        # 网页基础权限
+        settings = self.page().settings()
+        settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+        settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, True)
+        settings.setAttribute(QWebEngineSettings.AllowRunningInsecureContent, True)
+        settings.setAttribute(QWebEngineSettings.JavascriptCanAccessClipboard, True)
+        settings.setAttribute(QWebEngineSettings.AllowGeolocationOnInsecureOrigins, True)
+
+        # 开启持久Cookie
+        self.profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
+        self.profile.setCachePath(os.path.join(self.profile_dir, "cache"))
+        self.profile.setPersistentStoragePath(os.path.join(self.profile_dir, "storage"))
+
         self.custom_page = QWebEnginePage(self.profile, self)
         self.setPage(self.custom_page)
         self.page().profile().cookieStore().cookieAdded.connect(self.onCookieAdd)
+
         self.cookies = {}
+        self.load_finished_flag = False
+        self.page().loadFinished.connect(self.inject_full_stealth_js)
+
+    def inject_full_stealth_js(self, ok):
+        if not ok or self.load_finished_flag:
+            return
+        self.load_finished_flag = True
+
+        # 反检测JS
+        script = """
+        Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+        delete navigator.__webdriver;
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+
+        // 模拟原生Chrome window.chrome对象
+        window.chrome = {
+            runtime: {},
+            webstore: {},
+            app: {},
+            csi: () => {},
+            loadTimes: () => {}
+        };
+
+        // 模拟真实PDF插件列表
+        Object.defineProperty(navigator, 'plugins', {
+            get: () => [
+                {name: "Chrome PDF Plugin", description: "Portable Document Format", filename: "internal-pdf-viewer"},
+                {name: "Chrome PDF Viewer", description: "", filename: "mhjfbmdgcfjbbpaeojofohoefgiehjai"}
+            ]
+        });
+
+        // 权限检测返回值
+        const originalQuery = window.navigator.permissions.query;
+        window.navigator.permissions.query = (params) => originalQuery(params).then(res => {
+            if (params.name === 'notifications') res.state = 'prompt';
+            return res;
+        });
+
+        // 强制繁体中文
+        function setTwCaptchaLang(){
+            const iframe = document.querySelector('iframe[src*="recaptcha"]');
+            if(!iframe) return;
+            const url = new URL(iframe.src);
+            url.searchParams.set('hl','zh-TW');
+            iframe.src = url.toString();
+        }
+        setTimeout(setTwCaptchaLang, 1000);
+        """
+        self.page().runJavaScript(script)
 
     def createWindow(self, windowType):
         return self
 
-    def onCookieAdd(self, cookie):  # 处理cookie添加的事件
+    def onCookieAdd(self, cookie):
         key = cookie.name().data().decode('utf-8')
         value = cookie.value().data().decode('utf-8')
-        self.cookies[(key, str(cookie.domain()))] = value  # 将cookie保存到字典里
+        domain = str(cookie.domain())
+        self.cookies[(key, domain)] = value
         if key == "bfWebToken":
             GLOBAL_CONFIG.bf_web_token = value
 
     def sync_requests_cookies(self):
         try:
-            # 1. 获取 requests 的 CookieJar
             cookies_jar = RequestClient.get_instance().client.cookies
-            # 2. 清空原有 Cookie
             cookies_jar.clear()
-
-            # 3. 遍历本地 Cookie 字典，同步到 requests 的 CookieJar
             for (key, domain), value in self.cookies.items():
-                # 使用 requests CookieJar 的 set 方法添加 Cookie
+                secure = domain.endswith("beanfun.com") or domain.endswith("google.com")
                 cookies_jar.set(
-                    name=key,  # Cookie 名称
-                    value=value,  # Cookie 值
-                    domain=domain,  # Cookie 域名
-                    path="/",  # Cookie 路径
-                    secure=False,  # 是否仅 HTTPS 生效
-                    expires=None,  # 过期时间
-                    rest={},  # 其他扩展属性
-                    version=0  # Cookie 版本
+                    name=key, value=value, domain=domain, path="/", secure=secure,
+                    expires=None, rest={}, version=0
                 )
             logging.info("Cookie 已成功同步到 requests 客户端")
         except Exception as e:
             logging.error(f"同步 Cookie 到 requests 时出错: {str(e)}")
 
-    def clear_all_data(self):
-        self.cookies.clear()  # 清除内存Cookie
-        self.profile.cookieStore().deleteAllCookies()  # 清除Profile中的Cookie
-        self.profile.clearAllVisitedLinks()  # 清除访问记录
-        
-        if hasattr(self, 'temp_dir') and self.temp_dir:
-            try:
-                # 先停止所有WebEngine活动
-                self.stop()
-                self.load(QUrl("about:blank"))  # 加载空白页面释放资源
-                
-                # 更安全的清理策略
-                import threading
-                import shutil
-                import os
-                
-                def safe_cleanup():
-                    import time
-                    time.sleep(2)  # 等待2秒确保资源释放
-                    
-                    try:
-                        # 尝试标准清理
-                        self.temp_dir.cleanup()
-                    except Exception as e:
-                        # 如果标准清理失败，尝试手动清理
-                        logging.warning(f"标准清理失败，尝试手动清理: {str(e)}")
-                        try:
-                            temp_path = self.temp_dir.name
-                            if os.path.exists(temp_path):
-                                # 使用更安全的清理方法
-                                shutil.rmtree(temp_path, ignore_errors=True)
-                        except Exception as e2:
-                            # 如果手动清理也失败，记录警告但继续
-                            logging.warning(f"手动清理也失败，临时目录可能残留: {str(e2)}")
-                
-                # 在后台线程中执行清理
-                cleanup_thread = threading.Thread(target=safe_cleanup)
-                cleanup_thread.daemon = True
-                cleanup_thread.start()
-                
-            except Exception as e:
-                logging.warning(f"清理临时文件时出现警告: {str(e)}")
+    def clear_memory_cookies(self):
+        # 仅清空内存Cookie，保留磁盘持久缓存
+        self.cookies.clear()
+        self.profile.cookieStore().deleteAllCookies()
+        self.load_finished_flag = False
 
 
 class LoginWeb(QDialog):
@@ -116,11 +145,8 @@ class LoginWeb(QDialog):
         super().__init__(parent)
         LoginWeb._instance = self
         GLOBAL_CONFIG.bf_web_token = None
-        # 设置基本窗口属性
         self.setup_window()
-        # 初始化界面组件
         self.init_ui()
-        # 连接信号和槽
         self.connect_signals()
 
     def setup_window(self):
@@ -132,13 +158,11 @@ class LoginWeb(QDialog):
         self.setWindowTitle(WinManager.translate(f"{type_act}游戏橘子 - 登入"))
 
     def init_ui(self):
-        # 创建界面组件
         self.web_view = CustomWebEngineView(self)
         self.progress_bar = QProgressBar()
         self.enter_btn = QPushButton(WinManager.translate("确认登入状态(请成功登入后点击此处)"))
         self.enter_btn.setFixedHeight(38)
 
-        # 设置进度条样式
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setFixedHeight(3)
         self.progress_bar.setStyleSheet("""
@@ -152,9 +176,8 @@ class LoginWeb(QDialog):
                 border-radius: 1px;
             }
         """)
-        self.progress_bar.hide()  # 初始隐藏
+        self.progress_bar.hide()
 
-        # 布局设置
         main_layout = QVBoxLayout()
         botton_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -178,7 +201,7 @@ class LoginWeb(QDialog):
             self.parent().login_go_to_main_event.emit()
             self.close()
         else:
-            BoxPop.info(self, "請先在網頁進行登入\n登入成功後在點此處完成登入")
+            BoxPop.info(self, "請先在網頁進行登入\n登入成功後再點此處完成登入")
 
     def on_load_started(self):
         self.progress_bar.setValue(0)
@@ -210,60 +233,41 @@ class LoginWeb(QDialog):
         self.web_view.load(self.build_url(url_str))
 
     def build_url(self, url):
-        """构建URL，使用共享的网络管理器并确保资源正确清理"""
         if not url or not isinstance(url, str):
             return QUrl()
-            
-        # 如果已经是完整URL，直接返回
         if url.startswith(("http://", "https://")):
             return QUrl(url)
-        
-        # 创建一次性的网络管理器
+
         manager = QNetworkAccessManager(self)
         reply = None
         loop = None
-        
         try:
-            # 先尝试HTTPS
             https_url = f"https://{url}"
             https_qurl = QUrl(https_url)
             request = QNetworkRequest(https_qurl)
             reply = manager.get(request)
-            
-            # 使用事件循环等待请求完成
             loop = QEventLoop()
             reply.finished.connect(loop.quit)
             loop.exec_()
-            
-            # 检查响应状态
             if reply.error() == QNetworkReply.NoError:
                 return https_qurl
             else:
-                # HTTPS失败，回退到HTTP
                 return QUrl(f"http://{url}")
-                
         except Exception as e:
             logging.error(f"URL构建失败: {str(e)}")
-            # 发生异常时回退到HTTP
             return QUrl(f"http://{url}")
         finally:
-            # 确保资源正确清理
             if reply:
                 reply.deleteLater()
             if loop:
                 loop.deleteLater()
-            # 网络管理器会自动被Qt的父子关系管理清理
 
     def closeEvent(self, event: QCloseEvent):
-        """安全关闭窗口，确保资源正确释放"""
         if hasattr(self, 'web_view'):
-            # 先停止WebEngine活动
             self.web_view.stop()
-            # 加载空白页面释放资源
             self.web_view.load(QUrl("about:blank"))
-            # 异步清理数据
-            self.web_view.clear_all_data()
-            # 延迟删除视图
+            # 仅清空内存Cookie，保留磁盘缓存目录
+            self.web_view.clear_memory_cookies()
             self.web_view.deleteLater()
         LoginWeb._instance = None
         event.accept()
