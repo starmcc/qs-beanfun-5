@@ -52,6 +52,12 @@ class TwClientImpl(QsClient):
             'referer': f'https://login.beanfun.com/Login/Index?pSKey={login_record.skey}',
             'RequestVerificationToken': login_record.requestVerificationToken,
         }
+        jsonEntry = TwResponseJson.from_response(rsp)
+        if jsonEntry.ResultData.get("IsRecaptcha"):
+            # 如果需要谷歌验证，则返回 我不是機器人
+            login_record.isRecaptcha = True
+            return login_record
+
         url = 'https://login.beanfun.com/Login/CheckAccountType'
         json = {'Account': act}
         rsp = RequestClient.get_instance().post(url, json=json, headers=headers)
@@ -60,11 +66,12 @@ class TwClientImpl(QsClient):
             return login_record
         jsonEntry = TwResponseJson.from_response(rsp)
         if jsonEntry.ResultCode != 1:
-            login_record.message = jsonEntry.ResultMessage
+            if "我不是機器人" in jsonEntry.ResultMessage:
+                login_record.isRecaptcha = True
             return login_record
         else:
             if jsonEntry.ResultData.get('IsGamaPass'):
-                login_record.message = '请使用GamePass登入,登入器使用官网登入即可!'
+                login_record.message = '请使用GamePass进行登入,登陆器使用【官网登入】或扫码登录！'
                 return login_record
 
         url = "https://login.beanfun.com/Login/AccountLogin"
@@ -278,7 +285,7 @@ class TwClientImpl(QsClient):
         return De2Utils.decrypt_des_no_pkcs_hex(rsp.text)
 
     def get_web_url_member_center(self, bf_web_token: str) -> str:
-        return 'https://tw.beanfun.com/TW/auth.aspx?channel=member&page_and_query=default.aspx%3Fservice_code%3D999999%26service_region%3DT0&web_token=' + bf_web_token
+        return 'https://tw.beanfun.com/TW/auth.aspx?channel=member&page_and_query=index_new.aspx&web_token=' + bf_web_token
 
     def get_web_url_service_center(self) -> str:
         return 'https://tw.beanfun.com/customerservice/www/main.aspx'

@@ -30,7 +30,7 @@ class CustomWebEngineView(QWebEngineView):
         self.profile = QWebEngineProfile(self.profile_dir, self)
 
         # 繁体中文UA+语言头
-        chrome_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.168 Safari/537.36"
+        chrome_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
         self.profile.setHttpUserAgent(chrome_ua)
         self.profile.setHttpAcceptLanguage("zh-TW,zh;q=0.9,en;q=0.8")
 

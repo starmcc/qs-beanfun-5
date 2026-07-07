@@ -149,13 +149,13 @@ class LoginWin(QWidget, Ui_Login):
                 return
 
             if not login_record.status:
-                if ("我不是機器人" in login_record.message
-                        and GLOBAL_CONFIG.now_login_type == ActType.TW.value):
+                if login_record.isRecaptcha:
                     buttons = {
                         "官网登入": QMessageBox.AcceptRole,
                         "取消": QMessageBox.RejectRole
                     }
-                    go_login = BoxPop.custom_question(window, "当前需完成谷歌人机验证\n要使用【官网登入】模式完成登录？", buttons)
+                    go_login = BoxPop.custom_question(window, "当前需完成谷歌人机验证\n要使用【官网登入】模式完成登录？",
+                                                      buttons)
                     if go_login == 0:
                         self.login_web_clicked()
                     return

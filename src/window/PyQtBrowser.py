@@ -1,9 +1,10 @@
 import logging
+import os
 
 from PyQt5.QtCore import QUrl, QEventLoop, QDateTime
 from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtNetwork import QNetworkCookie, QNetworkRequest, QNetworkAccessManager, QNetworkReply
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile
 from PyQt5.QtWidgets import (QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
                              QProgressBar)
 
@@ -14,6 +15,11 @@ from src.utils import WinManager
 class CustomWebEngineView(QWebEngineView):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.profile_dir = os.path.expanduser(r"~\.qt_beanfun_profile")
+        self.profile = QWebEngineProfile(self.profile_dir, self)
+        chrome_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+        self.profile.setHttpUserAgent(chrome_ua)
+        self.profile.setHttpAcceptLanguage("zh-TW,zh;q=0.9,en;q=0.8")
 
     def createWindow(self, windowType):
         return self

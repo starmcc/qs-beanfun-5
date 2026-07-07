@@ -7,6 +7,7 @@ class LoginRecord:
         self.status = status
         self.daul_status = False
         self.adv_status = False
+        self.isRecaptcha = False
         self.content = ''
         self.message = message
         self.dual_code = ''
