@@ -1,5 +1,5 @@
-from PyQt6.QtCore import QEvent, Qt
-from PyQt6.QtWidgets import QDialog
+from PySide6.QtCore import QEvent, Qt
+from PySide6.QtWidgets import QDialog
 
 from src.utils import WinManager
 from src.views.UI_DoubleCodeInput import Ui_DoubleCodeInput

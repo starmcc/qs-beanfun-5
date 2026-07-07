@@ -3,7 +3,7 @@ import os
 import sys
 
 import urllib3
-from PyQt6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 # 确保正确加载qrc资源，防止Pycharm误删
 # noinspection PyUnresolvedReferences
@@ -35,13 +35,12 @@ class QsBeanfun(QApplication):
 # -------------------------- 主程序入口 --------------------------
 if __name__ == '__main__':
     LoggingConfig.setup_logging()
-    # 关闭WebEngine GPU硬件加速，解决虚拟机/远程桌面GPU上下文失败
-    os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu --disable-gpu-sandbox --disable-software-rasterizer"
-    # 屏蔽WebEngine冗余错误日志
-    os.environ["QT_LOGGING_RULES"] = "qt.webengine.debug=false;qt.webengine.warning=false;qt.webengine.error=false"
+    # 关闭WebEngine GPU硬件加速，消除GLES报错
+    os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu --disable-gpu-sandbox"
+    # 原有屏蔽系统深色代码保留
+    os.environ["QT_QPA_PLATFORM"] = "windows:darkmode=0"
+
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    # Qt6 自带高DPI缩放，该环境变量可注释删除
-    # os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     # try:
     #     chrome_path = BaseTools.build_chrome()
     #     if chrome_path:

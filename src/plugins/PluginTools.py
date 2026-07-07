@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 
-from PyQt6.QtCore import QFile, QIODevice
+from PySide6.QtCore import QFile, QIODevice
 
 from src.plugins.Plugins import Plugins
 from src.utils import BaseTools

@@ -6,7 +6,7 @@ from ctypes import wintypes
 from typing import Tuple
 
 import psutil
-from PyQt6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QFileDialog
 
 from src.config import Config
 from src.config.GlobalConfig import GLOBAL_CONFIG

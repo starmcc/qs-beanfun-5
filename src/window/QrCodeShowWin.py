@@ -1,8 +1,8 @@
 from io import BytesIO
 
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtGui import QMovie, QPixmap
-from PyQt6.QtWidgets import QDialog
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QMovie, QPixmap
+from PySide6.QtWidgets import QDialog
 
 from src.client import RequestClient
 from src.models.QrCodeResult import QrCodeResult
@@ -12,7 +12,7 @@ from src.views.Ui_QrCodeShow import Ui_QrCodeShow
 
 
 class QrCodeShowWin(QDialog, Ui_QrCodeShow):
-    refresh_event = pyqtSignal()
+    refresh_event = Signal()
 
     def __init__(self, parent, title: str, data: str):
         super().__init__(parent)

@@ -1,8 +1,8 @@
 import subprocess
 import sys
 
-from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QMenu
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QMenu
 
 from src.client import QsClient
 from src.config.GlobalConfig import GLOBAL_CONFIG

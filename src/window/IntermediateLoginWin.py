@@ -3,8 +3,8 @@ import logging
 import re
 from typing import Tuple
 
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QDialog
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QDialog
 
 from src.client import RequestClient, QsClient
 from src.models.LoginRecord import LoginRecord
@@ -13,8 +13,8 @@ from src.views.Ui_IntermediateLogin import Ui_IntermediateLogin
 
 
 class IntermediateLoginWin(QDialog, Ui_IntermediateLogin):
-    data_sent = pyqtSignal(LoginRecord)
-    close_signal = pyqtSignal()
+    data_sent = Signal(LoginRecord)
+    close_signal = Signal()
     # 最大等待秒數
     MAX_AWAIT_SECONDS = 60 * 3
 

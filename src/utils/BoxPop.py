@@ -1,7 +1,7 @@
 from typing import Tuple, Optional
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QMessageBox, QInputDialog, QDialog, QAbstractButton
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QMessageBox, QInputDialog, QDialog, QAbstractButton
 
 from src.utils import WinManager
 

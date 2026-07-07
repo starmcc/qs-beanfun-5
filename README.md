@@ -7,7 +7,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/starmcc/qs-beanfun-5?display_name=tag&label=Latest&color=red&style=flat-square)](https://github.com/starmcc/qs-beanfun-5/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/starmcc/qs-beanfun-5/total?label=Downloads&style=flat-square)](https://github.com/starmcc/qs-beanfun-5/releases/latest)
 [![Last Commit](https://img.shields.io/github/last-commit/starmcc/qs-beanfun-5?label=LastCommit&style=flat-square)](https://github.com/starmcc/qs-beanfun-5/commits/master)
-[![Python](https://img.shields.io/badge/Python-3.9.13-8d38dc?style=flat-square)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10.11-8d38dc?style=flat-square)](https://www.python.org/)
 
 **简体中文** | [繁體中文](./README-TW.md)
 
@@ -80,7 +80,7 @@ pip install -r requirements.txt
 
 ```bash
 # 编译qrc文件
-pyrcc5 ./resources/resources.qrc -o ./src/Resources_rc.py
+pyrcc6 ./resources/resources.qrc -o ./src/Resources_rc.py
 # 打包
 .\build.bat
 ```

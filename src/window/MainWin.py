@@ -3,9 +3,9 @@ import math
 from decimal import Decimal
 from typing import Tuple
 
-from PyQt6.QtCore import QEvent
-from PyQt6.QtGui import QPalette, QColor
-from PyQt6.QtWidgets import QWidget
+from PySide6.QtCore import QEvent
+from PySide6.QtGui import QPalette, QColor
+from PySide6.QtWidgets import QWidget
 
 from src.client import QsClient
 from src.config import Config

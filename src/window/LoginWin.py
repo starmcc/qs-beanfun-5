@@ -1,9 +1,9 @@
 import time
 
-from PyQt6 import QtWidgets
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPixmap, QIcon, QAction
-from PyQt6.QtWidgets import QWidget, QButtonGroup, QDialog, QMessageBox
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QPixmap, QIcon, QAction
+from PySide6.QtWidgets import QWidget, QButtonGroup, QDialog, QMessageBox
 
 from src.client import QsClient
 from src.config import Config
@@ -23,7 +23,7 @@ from src.window.TwAdvWin import TwAdvWin
 
 class LoginWin(QWidget, Ui_Login):
     trayIcon: TrayIcon
-    login_go_to_main_event = pyqtSignal()
+    login_go_to_main_event = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)

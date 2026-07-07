@@ -29,7 +29,7 @@ import sys
 import re
 import json
 
-from PyQt6.QtCore import QFile, QIODevice
+from PySide6.QtCore import QFile, QIODevice
 
 try:
     from pkg_resources import resource_stream

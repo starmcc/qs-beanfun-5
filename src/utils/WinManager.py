@@ -1,10 +1,11 @@
 import locale
 import logging
 
-from PyQt6.QtCore import QEvent, Qt, QObject, QSize, pyqtSlot
-from PyQt6.QtGui import QIcon, QColor, QPixmap
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QHBoxLayout, QDialog,
-                             QGraphicsDropShadowEffect, QPushButton, QMenu)
+from PySide6.QtCore import QEvent, Qt, QObject, QSize, Slot
+from PySide6.QtGui import QIcon, QColor, QPixmap
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QHBoxLayout, QDialog,
+                               QGraphicsDropShadowEffect, QPushButton, QMenu, QCheckBox, QRadioButton, QGroupBox,
+                               QComboBox)
 
 from src.config.GlobalConfig import GlobalConstants
 from src.config.StyleConstants import StyleConstants
@@ -15,8 +16,8 @@ from src.zhconv import zhconv
 
 def set_basic_window(window):
     titleBarConfig: TitleBarConfig = TitleBarConfig()
-    # from src.window.PyQtBrowser import PyQtBrowser
-    # from src.window.LoginWeb import LoginWeb
+    from src.window.PyQtBrowser import PyQtBrowser
+    from src.window.LoginWeb import LoginWeb
     from src.window.LoginWin import LoginWin
     if isinstance(window, LoginWin):
         titleBarConfig.title = f'v {GlobalConstants.APP_VERSION}'
@@ -24,10 +25,10 @@ def set_basic_window(window):
         titleBarConfig.title = f'{window.windowTitle()} {GlobalConstants.APP_VERSION}'
 
     if isinstance(window, QDialog):
-        # if isinstance(window, PyQtBrowser) or isinstance(window, LoginWeb):
-        #     window.setWindowFlags(
-        #         window.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
-        # else:
+        if isinstance(window, PyQtBrowser) or isinstance(window, LoginWeb):
+            window.setWindowFlags(
+                window.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
+        else:
             window.setWindowFlags(
                 window.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint | Qt.WindowType.MSWindowsFixedSizeDialogHint)
     window.setWindowIcon(QIcon(":/images/logo"))
@@ -74,22 +75,24 @@ class __WindowDragFilter(QObject):
 
 def __build_title_bar(window, config: TitleBarConfig):
     TITLE_BAR_HEIGHT = 32
+    SHADOW_MARGIN = 20  # 与 blurRadius 匹配，确保阴影不被裁剪
     window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
     window.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
     shadow_container = __create_shadow_container()
     background_container = __create_background_container()
+    __apply_shadow_effect(background_container)
     title_bar = __create_title_bar(window, config, TITLE_BAR_HEIGHT)
     content_widget = __create_content_widget(window)
 
     __setup_background_layout(background_container, title_bar, content_widget)
-    __setup_shadow_layout(shadow_container, background_container)
+    __setup_shadow_layout(shadow_container, background_container, SHADOW_MARGIN)
     __setup_window_layout(window, shadow_container)
 
     original_size = window.size()
     window.resize(
-        original_size.width() + 12,
-        original_size.height() + 12 + TITLE_BAR_HEIGHT
+        original_size.width() + SHADOW_MARGIN * 2,
+        original_size.height() + SHADOW_MARGIN * 2 + TITLE_BAR_HEIGHT
     )
 
     drag_filter = __WindowDragFilter(window)
@@ -99,19 +102,23 @@ def __build_title_bar(window, config: TitleBarConfig):
 def __create_shadow_container():
     shadow_container = QWidget()
     shadow_container.setObjectName("shadow_container")
+    shadow_container.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     shadow_container.setStyleSheet("""
         #shadow_container {
             background-color: transparent;
-            border-radius: 6px;
-            overflow: hidden !important;
         }
     """)
-    shadow = QGraphicsDropShadowEffect()
-    shadow.setBlurRadius(10)
-    shadow.setColor(QColor(0, 0, 0, 80))
-    shadow.setOffset(0, 2)
-    shadow_container.setGraphicsEffect(shadow)
     return shadow_container
+
+
+def __apply_shadow_effect(target_widget):
+    """在 PySide6 中，QGraphicsDropShadowEffect 需要应用到有实际背景的 widget 上才能正确渲染。
+    同时需要确保父容器有足够的 padding 来容纳阴影的 blur radius。"""
+    shadow = QGraphicsDropShadowEffect(target_widget)
+    shadow.setBlurRadius(20)
+    shadow.setColor(QColor(0, 0, 0, 60))
+    shadow.setOffset(0, 4)
+    target_widget.setGraphicsEffect(shadow)
 
 
 def __create_background_container():
@@ -238,9 +245,9 @@ def __setup_background_layout(background_container, title_bar, content_widget):
     bg_layout.addWidget(content_widget, 1)
 
 
-def __setup_shadow_layout(shadow_container, background_container):
+def __setup_shadow_layout(shadow_container, background_container, margin=20):
     shadow_layout = QVBoxLayout(shadow_container)
-    shadow_layout.setContentsMargins(6, 6, 6, 6)
+    shadow_layout.setContentsMargins(margin, margin, margin, margin)
     shadow_layout.addWidget(background_container)
 
 
@@ -251,10 +258,11 @@ def __setup_window_layout(window, shadow_container):
 
 
 def __translate_all_controls(self):
-    # 直接使用已导入的控件类，不再依赖 QtWidgets 别名
-    from PyQt6.QtWidgets import QLabel, QPushButton, QCheckBox, QRadioButton, QGroupBox, QComboBox, QMenu
     control_types = (QLabel, QPushButton, QCheckBox, QRadioButton, QGroupBox, QComboBox, QMenu)
-    widgets = self.findChildren(control_types)
+    widgets = []
+    for cls in control_types:
+        widgets.extend(self.findChildren(cls))
+
     for widget in widgets:
         if hasattr(widget, 'text') and callable(widget.text):
             text = translate(widget.text())
@@ -335,6 +343,6 @@ class TitleButton(QPushButton):
         if self.menu:
             self.menu.exec(self.mapToGlobal(self.rect().bottomLeft()))
 
-    @pyqtSlot()
+    @Slot()
     def reset_state(self):
         self.update()

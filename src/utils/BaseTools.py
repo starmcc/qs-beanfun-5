@@ -6,7 +6,7 @@ import sys
 import webbrowser
 from typing import Tuple
 
-from PyQt6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox
 from packaging import version
 
 from src.client import RequestClient

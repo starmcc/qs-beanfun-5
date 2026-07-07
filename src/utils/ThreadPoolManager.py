@@ -4,8 +4,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor, Future
 from typing import Callable, Optional, Any, Dict
 
-from PyQt6.QtCore import QObject, pyqtSignal, QTimer, Qt
-from PyQt6.QtWidgets import QWidget
+from PySide6.QtCore import QObject, Signal, QTimer, Qt
+from PySide6.QtWidgets import QWidget
 
 from src.window.LoadingTask import LoadingMask
 
@@ -15,7 +15,7 @@ class ThreadPoolManager(QObject):
     线程池管理器 - 优化线程使用效率
     """
     # 任务完成信号
-    task_finished = pyqtSignal(dict)
+    task_finished = Signal(dict)
 
     def __init__(self, max_workers: int = 4, parent: Optional[QObject] = None):
         super().__init__(parent)

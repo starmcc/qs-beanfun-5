@@ -1,6 +1,6 @@
-from PyQt6.QtCore import Qt, QTimer, QRectF
-from PyQt6.QtGui import QFont, QColor, QPainter, QPen, QPalette
-from PyQt6.QtWidgets import (QWidget, QLabel, QVBoxLayout,
+from PySide6.QtCore import Qt, QTimer, QRectF
+from PySide6.QtGui import QFont, QColor, QPainter, QPen, QPalette
+from PySide6.QtWidgets import (QWidget, QLabel, QVBoxLayout,
                              QGraphicsDropShadowEffect, QGraphicsBlurEffect)
 
 

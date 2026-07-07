@@ -1,10 +1,10 @@
 import logging
 
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from PySide6.QtCore import QObject, Signal, Slot
 
 
 class TaskQueue(QObject):
-    taskSignal = pyqtSignal(object)  # 信号传递任务信息
+    taskSignal = Signal(object)  # 信号传递任务信息
 
     def __init__(self):
         super().__init__()
@@ -20,7 +20,7 @@ class TaskQueue(QObject):
         if len(self.taskQueue) == 1:
             self.taskSignal.emit(self.taskQueue[0])
 
-    @pyqtSlot(object)
+    @Slot(object)
     def processTask(self, task_info):
         """处理任务，执行后自动调度下一个任务"""
         task, args, kwargs = task_info

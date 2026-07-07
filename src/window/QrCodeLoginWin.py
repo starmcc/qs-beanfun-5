@@ -2,9 +2,9 @@ import logging
 from base64 import b64decode
 from io import BytesIO
 
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtGui import QPixmap, QMovie
-from PyQt6.QtWidgets import QDialog
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QPixmap, QMovie
+from PySide6.QtWidgets import QDialog
 
 from src.client import QsQrClient
 from src.config.GlobalConfig import GLOBAL_CONFIG
@@ -15,9 +15,9 @@ from src.views.Ui_QrCodeLogin import Ui_QrCodeLogin
 
 
 class QrCodeLoginWin(QDialog, Ui_QrCodeLogin):
-    login_win_event = pyqtSignal()
-    login_success = pyqtSignal()
-    refresh_event = pyqtSignal()
+    login_win_event = Signal()
+    login_success = Signal()
+    refresh_event = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)

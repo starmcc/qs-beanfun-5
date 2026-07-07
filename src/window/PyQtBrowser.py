@@ -1,12 +1,12 @@
 import logging
 import os
 
-from PyQt6.QtCore import QUrl, QEventLoop, QDateTime
-from PyQt6.QtGui import QCloseEvent
-from PyQt6.QtNetwork import QNetworkCookie, QNetworkRequest, QNetworkAccessManager, QNetworkReply
-from PyQt6.QtWebEngineCore import QWebEngineProfile
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWidgets import (QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
+from PySide6.QtCore import QUrl, QEventLoop, QDateTime
+from PySide6.QtGui import QCloseEvent
+from PySide6.QtNetwork import QNetworkCookie, QNetworkRequest, QNetworkAccessManager, QNetworkReply
+from PySide6.QtWebEngineCore import QWebEngineProfile
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import (QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
                              QProgressBar)
 
 from src.client import RequestClient

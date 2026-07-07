@@ -3,16 +3,16 @@
 pyinstaller --clean -w ^
 --uac-admin ^
 --name="Beanfun" ^
---icon="resources/images/logo.png" ^
+--icon="resources/images/logo.ico" ^
 --distpath="compile/dist" ^
 --workpath="compile/build" ^
---exclude PyQt6.QtBluetooth ^
---exclude PyQt6.QtMultimedia ^
---exclude PyQt6.QtOpenGL ^
---exclude PyQt6.QtQuick ^
---exclude PyQt6.QtQml ^
---exclude PyQt6.QtSerialPort ^
---exclude PyQt6.QtSql ^
---exclude PyQt6.QtTest ^
---exclude PyQt6.QtWebSockets ^
+--exclude PySide6.QtBluetooth ^
+--exclude PySide6.QtMultimedia ^
+--exclude PySide6.QtOpenGL ^
+--exclude PySide6.QtQuick ^
+--exclude PySide6.QtQml ^
+--exclude PySide6.QtSerialPort ^
+--exclude PySide6.QtSql ^
+--exclude PySide6.QtTest ^
+--exclude PySide6.QtWebSockets ^
 src/QsBeanfun.py -y

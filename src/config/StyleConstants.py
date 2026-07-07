@@ -25,7 +25,7 @@ class StyleConstants:
         QLineEdit[echoMode="2"] {
             lineedit-password-character: 9679;
         }
-        
+
         QMenu {
             background-color: #ffffff;
             border: 1px solid #dcdcdc;
@@ -33,22 +33,31 @@ class StyleConstants:
             padding: 2px 0;
             font-size: 12px;
         }
-        
+
         QMenu::item {
             padding: 4px 20px 4px 12px;
             margin: 1px 0;
             color: #333333;
         }
-        
+
         QMenu::item:selected {
             background-color: #e6f2ff;
             color: #0052cc;
         }
-        
+
         QMenu::separator {
             height: 1px;
             background-color: #eeeeee;
             margin: 2px 4px;
+        }
+
+        /* 新增按钮基础+移入浅蓝效果，匹配你菜单浅蓝色 #e6f2ff */
+        QPushButton {
+            color: #333333;
+        }
+        QPushButton:hover {
+            background-color: #e6f2ff;
+            color: #0052cc;
         }
     """
 

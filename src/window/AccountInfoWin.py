@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
 
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtGui import QPalette, QColor
-from PyQt6.QtWidgets import QDialog
+from PySide6.QtCore import pyqtSignal
+from PySide6.QtGui import QPalette, QColor
+from PySide6.QtWidgets import QDialog
 
 from src.client import QsClient
 from src.models.Account import Account

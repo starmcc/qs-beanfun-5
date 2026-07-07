@@ -1,8 +1,8 @@
 import re
 import time
 
-from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtWidgets import QDialog
+from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtWidgets import QDialog
 
 from src.client import RequestClient
 from src.models.LoginRecord import LoginRecord

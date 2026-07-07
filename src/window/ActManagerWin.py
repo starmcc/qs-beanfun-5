@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QTableWidgetItem, QMenu, QHeaderView, QDialog
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QTableWidgetItem, QMenu, QHeaderView, QDialog
 
 from src.config import Config
 from src.config.GlobalConfig import ActType
