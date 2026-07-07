@@ -99,10 +99,11 @@ pyrcc6 ./resources/resources.qrc -o ./src/Resources_rc.py
 Get-FileHash -Algorithm 该程序路径
 ```
 
-> v5.4.1之前的版本，账密加密使用的是windows wmic组件，如系统缺少组件将使用默认加密密令，将使用默认秘钥！
+*以下版本需要重新下载整个程序包*
 
-**v5.4.2已进行优化，强烈建议升级到5.4.2版本以上**
+> v5.4.1之前，账密加密使用的是windows wmic组件，如系统缺少组件将使用默认加密密令，将使用默认秘钥！v5.4.2已进行优化!
 
+> v5.6.0之后，使用PySide6构建，Python版本升级到3.10.11
 
 ---
 

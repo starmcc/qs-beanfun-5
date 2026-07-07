@@ -93,19 +93,34 @@ def __check_version() -> Tuple[bool, str]:
 
 
 def build_chrome():
-    # 构建QtWebEngineProcess的复制品chrome.exe 适配加速器
-    spec = importlib.util.find_spec('PyQt6')
+    """将 QtWebEngineProcess.exe 复制为 chrome.exe，使游戏加速器识别为浏览器进程并放行流量。
+    兼容开发环境（PySide6 site-packages）和 PyInstaller 打包后（_internal 目录）两种场景。"""
+    # 优先查找 PySide6 中的 QtWebEngineProcess.exe
+    spec = importlib.util.find_spec('PySide6')
     if spec and spec.submodule_search_locations:
-        pyqt6_dir = spec.submodule_search_locations[0]
-        possible_path = os.path.join(pyqt6_dir, 'Qt6', 'bin', 'QtWebEngineProcess.exe')
-        target_path = os.path.join(os.path.dirname(possible_path), 'chrome.exe')
-        if os.path.exists(possible_path) and not os.path.exists(target_path):
-            # 复制文件
-            shutil.copy2(possible_path, target_path)
-            os.chmod(target_path, 0o777)
-            logging.info(f"已初始化 {target_path}")
+        pyside6_dir = spec.submodule_search_locations[0]
+        source_path = os.path.join(pyside6_dir, 'QtWebEngineProcess.exe')
+    else:
+        # PyInstaller 打包后：QtWebEngineProcess.exe 在 _internal 目录
+        base_dir = os.path.dirname(sys.executable)
+        source_path = os.path.join(base_dir, '_internal', 'QtWebEngineProcess.exe')
+
+    if not os.path.exists(source_path):
+        logging.warning(f"未找到 QtWebEngineProcess.exe: {source_path}")
+        return None
+
+    target_path = os.path.join(os.path.dirname(source_path), 'chrome.exe')
+    if os.path.exists(target_path):
+        logging.info(f"chrome.exe 已存在: {target_path}")
         return target_path
-    return None
+
+    try:
+        shutil.copy2(source_path, target_path)
+        logging.info(f"已创建 chrome.exe: {target_path}")
+        return target_path
+    except Exception as e:
+        logging.error(f"创建 chrome.exe 失败: {e}")
+        return None
 
 
 def check_cn_path(path):

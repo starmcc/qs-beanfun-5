@@ -35,20 +35,18 @@ class QsBeanfun(QApplication):
 # -------------------------- 主程序入口 --------------------------
 if __name__ == '__main__':
     LoggingConfig.setup_logging()
-    # 关闭WebEngine GPU硬件加速，消除GLES报错
-    os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu --disable-gpu-sandbox"
     # 原有屏蔽系统深色代码保留
     os.environ["QT_QPA_PLATFORM"] = "windows:darkmode=0"
 
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    # try:
-    #     chrome_path = BaseTools.build_chrome()
-    #     if chrome_path:
-    #         os.environ["QTWEBENGINEPROCESS_PATH"] = chrome_path
-    #     else:
-    #         logging.warning("未找到chrome.exe, QTWebEngine可能无法正常加载加速器")
-    # except Exception as e:
-    #     logging.error(f"file chrome.exe build error {str(e)}")
+    try:
+        chrome_path = BaseTools.build_chrome()
+        if chrome_path:
+            os.environ["QTWEBENGINEPROCESS_PATH"] = chrome_path
+        else:
+            logging.warning("未找到chrome.exe, QTWebEngine可能无法正常加载加速器")
+    except Exception as e:
+        logging.error(f"file chrome.exe build error {str(e)}")
 
     app = QsBeanfun(sys.argv)
 
