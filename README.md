@@ -36,7 +36,7 @@
 
 [**📦点击进入发布页**](https://starmcc.github.io/qs-beanfun-5/)
 
-**下载最新 `Beanfun.zip` 开箱即用。**
+**下载最新 `QsBeanfun.zip` 开箱即用。**
 
 > ⚠️ **特别注意**
 > 
