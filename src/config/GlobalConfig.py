@@ -12,7 +12,7 @@ class ActType(Enum):
 
 class GlobalConstants:
     """全局常量集中管理"""
-    APP_VERSION = "5.5.3"
+    APP_VERSION = "5.6.0"
     GITHUB_URL = "https://github.com/starmcc/qs-beanfun-5"
     GITHUB_API_URL = "https://api.github.com/repos/starmcc/qs-beanfun-5"
     NAV_API_URL = "https://gitee.com/starmcc/qs-beanfun-nav/raw/master/config.json"

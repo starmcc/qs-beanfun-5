@@ -3,9 +3,9 @@ import math
 from decimal import Decimal
 from typing import Tuple
 
-from PyQt5.QtCore import QEvent
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QWidget
+from PyQt6.QtCore import QEvent
+from PyQt6.QtGui import QPalette, QColor
+from PyQt6.QtWidgets import QWidget
 
 from src.client import QsClient
 from src.config import Config
@@ -61,20 +61,23 @@ class MainWin(QWidget, Ui_Main):
         self.label_points.mousePressEvent = self.refresh_points
         self.label_status.mousePressEvent = self.get_account_info
         CustomToolTipWin.build_tips(self, self.label_points, "账户拥有的储值点数")
-        CustomToolTipWin.build_tips(self, self.label_status, "如显示封禁请立刻联系官方客服解除!\n菜单 -> 用户中心 -> 客服中心 -> 联系客服 -> 填写信息并等待客服邮件回复\n建议勿使用外挂/辅助/宏/VPN等软件\n官方一经查实永久封禁,误封可解除")
-        CustomToolTipWin.build_tips(self, self.checkBox_autoInput, f"勾选后点击{self.pushButton_dynamicPwd.text()}将自动聚焦《新枫之谷》\n并自动在游戏中输入数字账号和动态密令")
+        CustomToolTipWin.build_tips(self, self.label_status,
+                                    "如显示封禁请立刻联系官方客服解除!\n菜单 -> 用户中心 -> 客服中心 -> 联系客服 -> 填写信息并等待客服邮件回复\n建议勿使用外挂/辅助/宏/VPN等软件\n官方一经查实永久封禁,误封可解除")
+        CustomToolTipWin.build_tips(self, self.checkBox_autoInput,
+                                    f"勾选后点击{self.pushButton_dynamicPwd.text()}将自动聚焦《新枫之谷》\n并自动在游戏中输入数字账号和动态密令")
         self.pushButton_loginOut.setFocus()
 
     def eventFilter(self, obj, event):
+        # Qt6 事件类型枚举无需修改判断逻辑，event.type() 兼容
         if obj == self.lineEdit_numAct:
-            if event.type() == QEvent.HoverEnter:
+            if event.type() == QEvent.Type.HoverEnter:
                 self.lineEdit_numAct.setText(self.nowAccount.id)
-            elif event.type() == QEvent.HoverLeave:
+            elif event.type() == QEvent.Type.HoverLeave:
                 self.lineEdit_numAct.setText(BaseTools.hidden_str(self.nowAccount.id))
         elif obj == self.lineEdit_dynamicPwd:
-            if event.type() == QEvent.HoverEnter:  # 获取焦点事件
+            if event.type() == QEvent.Type.HoverEnter:
                 self.lineEdit_dynamicPwd.setText(self.nowAccount.dynamic_pwd)
-            elif event.type() == QEvent.HoverLeave:  # 失去焦点事件
+            elif event.type() == QEvent.Type.HoverLeave:
                 self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(self.nowAccount.dynamic_pwd))
 
         return super().eventFilter(obj, event)
@@ -202,10 +205,10 @@ class MainWin(QWidget, Ui_Main):
         palette = self.label_status.palette()
         if self.nowAccount.status:
             self.label_status.setText('正常')
-            palette.setColor(QPalette.WindowText, QColor(0, 0, 0))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor(0, 0, 0))
         else:
             self.label_status.setText('封禁')
-            palette.setColor(QPalette.WindowText, QColor(255, 0, 0))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 0, 0))
         self.label_status.setPalette(palette)
         self.lineEdit_numAct.setText(BaseTools.hidden_str(self.nowAccount.id))
         self.lineEdit_dynamicPwd.setText('')
@@ -213,7 +216,7 @@ class MainWin(QWidget, Ui_Main):
 
     def config_clicked(self):
         GLOBAL_CONFIG.win_config = ConfigWin(self)
-        GLOBAL_CONFIG.win_config.exec_()
+        GLOBAL_CONFIG.win_config.exec()
 
     def refresh_points(self, event=None):
         def __task():

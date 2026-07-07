@@ -1,7 +1,7 @@
 import webbrowser
 
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QDialog
 
 from src.config.GlobalConfig import GlobalConstants
 from src.utils import BaseTools, WinManager

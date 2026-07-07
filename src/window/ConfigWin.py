@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog
 
 from src.config import Config
 from src.utils import WinManager, BoxPop, SystemCom

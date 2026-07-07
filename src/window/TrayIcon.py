@@ -1,11 +1,12 @@
-import sys
 import logging
+import sys
 
-from PyQt5.QtGui import QIcon, QPixmap, QPainter, QColor
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction, QWidget
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QIcon, QPixmap, QPainter, QColor, QAction
+from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget
 
 from src.config.StyleConstants import StyleConstants
+
 
 def get_win_manager():
     from src.utils import WinManager
@@ -30,7 +31,7 @@ class TrayIcon(QSystemTrayIcon):
     def create_menu(self, menus: list[dict]):
         self.menu = QMenu()
         self.menu.setStyleSheet(StyleConstants.TRAY_MENU_STYLE)
-        
+
         if menus:
             for menu in menus:
                 action = QAction(menu['name'], self)
@@ -38,7 +39,7 @@ class TrayIcon(QSystemTrayIcon):
                 self.menu.addAction(action)
 
         self.menu.addSeparator()
-        
+
         quit_action = QAction("退出", self)
         quit_action.triggered.connect(self.quit)
         self.menu.addAction(quit_action)
@@ -46,7 +47,8 @@ class TrayIcon(QSystemTrayIcon):
 
     def icon_clicked(self, reason):
         """ 处理图标点击事件 """
-        if reason == 2 or reason == 3:  # DoubleClick or Trigger
+        # Qt6 QSystemTrayIcon.ActivationReason 枚举
+        if reason == QSystemTrayIcon.ActivationReason.DoubleClick or reason == QSystemTrayIcon.ActivationReason.Trigger:
             if self.parent().isVisible():
                 self.parent().showMinimized()
                 self.parent().hide()
@@ -66,9 +68,9 @@ class TrayIcon(QSystemTrayIcon):
         """显示优雅的通知"""
         win_manager = get_win_manager()
         self.showMessage(
-            win_manager.translate(title), 
-            win_manager.translate(msg), 
-            QIcon(self.create_notification_icon()), 
+            win_manager.translate(title),
+            win_manager.translate(msg),
+            QIcon(self.create_notification_icon()),
             2000
         )
 
@@ -77,21 +79,21 @@ class TrayIcon(QSystemTrayIcon):
         base_pixmap = QPixmap(':/images/logo')
         if base_pixmap.isNull():
             return QIcon(':/images/logo')
-            
+
         highlighted = QPixmap(base_pixmap.size())
-        highlighted.fill(Qt.transparent)
-        
+        highlighted.fill(Qt.GlobalColor.transparent)
+
         painter = QPainter(highlighted)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform)
-        
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+
         # 绘制基础图标
         painter.drawPixmap(0, 0, base_pixmap)
-        
+
         # 添加轻微发光效果
-        painter.setCompositionMode(QPainter.CompositionMode_Overlay)
+        painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_Overlay)
         painter.fillRect(highlighted.rect(), QColor(255, 255, 255, 30))
-        
+
         painter.end()
         return highlighted
 
@@ -99,11 +101,10 @@ class TrayIcon(QSystemTrayIcon):
         """优雅退出程序"""
         logging.info("QsBeanfun正在退出")
         self.showMsg("正在安全退出...", "QsBeanfun")
-        
+
         # 延迟退出确保通知显示
-        from PyQt5.QtCore import QTimer
         QTimer.singleShot(500, self._safe_quit)
-        
+
     def _safe_quit(self):
         """安全退出"""
         try:

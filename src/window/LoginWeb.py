@@ -1,11 +1,13 @@
 import logging
 import os
-from PyQt5.QtCore import QUrl, QEventLoop, Qt
-from PyQt5.QtGui import QCloseEvent
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage, QWebEngineSettings
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QProgressBar, QPushButton, QLabel)
+from PyQt6.QtCore import QUrl, QEventLoop, Qt
+from PyQt6.QtGui import QCloseEvent
+from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
+from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage, QWebEngineSettings
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QProgressBar, QPushButton, QLabel)
 
+# 放在最顶部，所有Qt导入之前，解决GPU/GLES报错、虚拟机渲染失败
 os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = (
     "--disable-blink-features=AutomationControlled "
     "--no-first-run --no-default-browser-check "
@@ -15,8 +17,12 @@ os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = (
     "--window-size=1024,800 "
     "--ignore-gpu-blacklist "
     "--enable-webgl "
-    "--disable-gpu-sandbox"
+    "--disable-gpu-sandbox "
+    "--disable-gpu --disable-software-rasterizer"
 )
+# 屏蔽WebEngine冗余错误日志
+os.environ["QT_LOGGING_RULES"] = "qt.webengine.debug=false;qt.webengine.warning=false;qt.webengine.error=false"
+
 from src.client import RequestClient
 from src.config.GlobalConfig import GLOBAL_CONFIG, ActType
 from src.utils import WinManager, BoxPop
@@ -34,16 +40,17 @@ class CustomWebEngineView(QWebEngineView):
         self.profile.setHttpUserAgent(chrome_ua)
         self.profile.setHttpAcceptLanguage("zh-TW,zh;q=0.9,en;q=0.8")
 
-        # 网页基础权限
+        # 网页基础权限 Qt6 修复
         settings = self.page().settings()
-        settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
-        settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, True)
-        settings.setAttribute(QWebEngineSettings.AllowRunningInsecureContent, True)
-        settings.setAttribute(QWebEngineSettings.JavascriptCanAccessClipboard, True)
-        settings.setAttribute(QWebEngineSettings.AllowGeolocationOnInsecureOrigins, True)
+        attr = QWebEngineSettings.WebAttribute
+        settings.setAttribute(attr.JavascriptEnabled, True)
+        settings.setAttribute(attr.LocalStorageEnabled, True)
+        settings.setAttribute(attr.AllowRunningInsecureContent, True)
+        settings.setAttribute(attr.JavascriptCanAccessClipboard, True)
+        settings.setAttribute(attr.AllowGeolocationOnInsecureOrigins, True)
 
-        # 开启持久Cookie
-        self.profile.setPersistentCookiesPolicy(QWebEngineProfile.AllowPersistentCookies)
+        # 开启持久Cookie Qt6枚举不变
+        self.profile.setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies)
         self.profile.setCachePath(os.path.join(self.profile_dir, "cache"))
         self.profile.setPersistentStoragePath(os.path.join(self.profile_dir, "storage"))
 
@@ -248,8 +255,10 @@ class LoginWeb(QDialog):
             reply = manager.get(request)
             loop = QEventLoop()
             reply.finished.connect(loop.quit)
-            loop.exec_()
-            if reply.error() == QNetworkReply.NoError:
+            # Qt6 废弃 exec_()
+            loop.exec()
+            # Qt6 网络枚举修复
+            if reply.error() == QNetworkReply.NetworkError.NoError:
                 return https_qurl
             else:
                 return QUrl(f"http://{url}")

@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 
-from PyQt5.QtCore import QFile, QIODevice
+from PyQt6.QtCore import QFile, QIODevice
 
 from src.plugins.Plugins import Plugins
 from src.utils import BaseTools
@@ -77,7 +77,7 @@ def _write_qrc_file(plugin_directory: str, plugin_name: str, file_name: str) -> 
         target_file_path.parent.mkdir(parents=True, exist_ok=True)
 
         qfile = QFile(qrc_file_path)
-        if not qfile.exists() or not qfile.open(QIODevice.ReadOnly):
+        if not qfile.exists() or not qfile.open(QIODevice.OpenModeFlag.ReadOnly):
             logging.error(f"无法读取qrc文件: {qrc_file_path}")
             return False
 

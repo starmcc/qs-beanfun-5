@@ -1,8 +1,8 @@
 from io import BytesIO
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QMovie, QPixmap
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtGui import QMovie, QPixmap
+from PyQt6.QtWidgets import QDialog
 
 from src.client import RequestClient
 from src.models.QrCodeResult import QrCodeResult
@@ -17,6 +17,7 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
     def __init__(self, parent, title: str, data: str):
         super().__init__(parent)
         self.data = data
+        self.movie = None
         self.setupUi(self)
         WinManager.set_basic_window(self)
         self.setWindowTitle(title)
@@ -55,9 +56,9 @@ class QrCodeShowWin(QDialog, Ui_QrCodeShow):
         get_thread_pool().submit_task(__load_qr_code, __load_qr_code_result, self, False)
 
     def loaded_loading_gif(self):
-        movie = QMovie(":/images/qrLoading")
-        self.label_qrCode.setMovie(movie)
-        movie.start()
+        self.movie = QMovie(":/images/qrLoading")
+        self.label_qrCode.setMovie(self.movie)
+        self.movie.start()
 
     def closeEvent(self, event):
         """确保动画资源正确清理"""

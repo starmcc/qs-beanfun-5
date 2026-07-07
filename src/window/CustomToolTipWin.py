@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt, QPoint, QRect
-from PyQt5.QtGui import QFont, QCursor
-from PyQt5.QtWidgets import QLabel
+from PyQt6.QtCore import Qt, QPoint, QRect
+from PyQt6.QtGui import QFont, QCursor
+from PyQt6.QtWidgets import QLabel
 
 from src.config.StyleConstants import StyleConstants
 from src.utils import WinManager
@@ -26,10 +26,10 @@ class __CustomToolTipWin:
         """创建提示框控件"""
         tooltip = QLabel(self.parent)
         tooltip.setWindowFlags(
-            Qt.ToolTip |  # 工具提示类型（无任务栏图标）
-            Qt.FramelessWindowHint  # 无边框
+            Qt.WindowType.ToolTip |
+            Qt.WindowType.FramelessWindowHint
         )
-        tooltip.setAttribute(Qt.WA_TranslucentBackground, False)  # 背景不透明
+        tooltip.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
         tooltip.hide()  # 初始隐藏
 
         tooltip.setStyleSheet(StyleConstants.TIPS_WIN_STYLE)

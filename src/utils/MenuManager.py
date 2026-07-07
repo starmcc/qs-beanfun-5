@@ -1,14 +1,15 @@
 import subprocess
 import sys
 
-from PyQt5.QtWidgets import (QMenu, QAction)
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QMenu
 
 from src.client import QsClient
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.CustomMenu import CustomMenu
 from src.utils import BoxPop, SystemCom, BaseTools
-from src.window import PyQtBrowser
 from src.window.MainWin import MainWin
+from src.window import PyQtBrowser
 
 
 def init_menu(self):
@@ -80,19 +81,19 @@ def open_win(self, win_type):
     if win_type == "nav":
         from src.window.NavWin import NavWin
         GLOBAL_CONFIG.win_nav = NavWin(self)
-        GLOBAL_CONFIG.win_nav.exec_()
+        GLOBAL_CONFIG.win_nav.exec()
     elif win_type == "about":
         from src.window.AboutWin import AboutWin
         GLOBAL_CONFIG.win_about = AboutWin(self)
-        GLOBAL_CONFIG.win_about.exec_()
+        GLOBAL_CONFIG.win_about.exec()
     elif win_type == "userInfo":
         from src.window.AccountInfoWin import AccountInfoWin
         GLOBAL_CONFIG.win_accountInfo = AccountInfoWin(self, self.nowAccount)
-        GLOBAL_CONFIG.win_accountInfo.exec_()
+        GLOBAL_CONFIG.win_accountInfo.exec()
     elif win_type == "config":
         from src.window.ConfigWin import ConfigWin
         GLOBAL_CONFIG.win_config = ConfigWin(self)
-        GLOBAL_CONFIG.win_config.exec_()
+        GLOBAL_CONFIG.win_config.exec()
 
 
 def user_loginOut_triggerd(self):
@@ -101,4 +102,3 @@ def user_loginOut_triggerd(self):
     win_login = LoginWin()
     win_login.show()
     self.close()
-

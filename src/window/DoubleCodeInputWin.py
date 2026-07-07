@@ -1,5 +1,5 @@
-from PyQt5.QtCore import QEvent, Qt
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtWidgets import QDialog
 
 from src.utils import WinManager
 from src.views.UI_DoubleCodeInput import Ui_DoubleCodeInput
@@ -30,12 +30,12 @@ class DoubleCodeInputWin(QDialog, Ui_DoubleCodeInput):
         self.lineEdit_1.setFocus()
 
     def eventFilter(self, obj, event):
-        if obj in self.input_boxes and event.type() == QEvent.KeyPress:
+        if obj in self.input_boxes and event.type() == QEvent.Type.KeyPress:
             key = event.key()
             idx = self.input_boxes.index(obj)
 
             # 处理删除键
-            if key == Qt.Key_Backspace and idx > 0:
+            if key == Qt.Key.Key_Backspace and idx > 0:
                 if idx == len(self.input_boxes) - 1 and self.input_boxes[idx].text():
                     self.input_boxes[idx].clear()
                     return True
@@ -45,11 +45,11 @@ class DoubleCodeInputWin(QDialog, Ui_DoubleCodeInput):
                 return True
 
             # 允许Tab键
-            if key == Qt.Key_Tab:
+            if key == Qt.Key.Key_Tab:
                 return super().eventFilter(obj, event)
 
             # 允许Enter键
-            if key == Qt.Key_Return:
+            if key == Qt.Key.Key_Return:
                 if len(self.input_code) == 6:
                     self.pushButton_enter.click()
                 return super().eventFilter(obj, event)

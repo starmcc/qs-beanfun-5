@@ -1,9 +1,9 @@
 import time
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWidgets import QWidget, QButtonGroup, QDialog, QMessageBox
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QPixmap, QIcon, QAction
+from PyQt6.QtWidgets import QWidget, QButtonGroup, QDialog, QMessageBox
 
 from src.client import QsClient
 from src.config import Config
@@ -63,25 +63,25 @@ class LoginWin(QWidget, Ui_Login):
         # 初始状态为隐藏密码
         self.is_password_visible = False
         # 创建显示密码动作按钮
-        self.show_password_action = QtWidgets.QAction(self)
+        self.show_password_action = QAction(self)
         # 获取系统自带的可见图标，这里以开启眼睛图标作示例，不同系统显示效果可能有差异
         self.show_password_action.setIcon(QIcon(':/images/pwd_close'))
 
         def toggle_password_visibility():
             if self.is_password_visible:
                 # 如果密码当前可见，将其设为隐藏状态
-                self.lineEdit_password.setEchoMode(QtWidgets.QLineEdit.Password)
+                self.lineEdit_password.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
                 self.show_password_action.setIcon(QIcon(':/images/pwd_close'))
                 self.is_password_visible = False
             else:
                 # 如果密码当前隐藏，将其设为可见状态
-                self.lineEdit_password.setEchoMode(QtWidgets.QLineEdit.Normal)
+                self.lineEdit_password.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
                 self.show_password_action.setIcon(QIcon(':/images/pwd_open'))
                 self.is_password_visible = True
 
         self.show_password_action.triggered.connect(toggle_password_visibility)
         # 将动作添加到密码输入框
-        self.lineEdit_password.addAction(self.show_password_action, QtWidgets.QLineEdit.TrailingPosition)
+        self.lineEdit_password.addAction(self.show_password_action, QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
 
         if self.lineEdit_password.text() != "":
             self.lineEdit_password.setFocus()
@@ -89,7 +89,7 @@ class LoginWin(QWidget, Ui_Login):
     def open_qr_code_win(self, event=None):
         GLOBAL_CONFIG.win_qrCode = QrCodeLoginWin(self)
         GLOBAL_CONFIG.win_qrCode.login_win_event.connect(self.login_go_to_main_win)
-        GLOBAL_CONFIG.win_qrCode.exec_()
+        GLOBAL_CONFIG.win_qrCode.exec()
 
     def buttonGroup_type_clicked(self):
         isTw = self.buttonGroup_type.checkedButton() == self.radioButton_tw
@@ -151,12 +151,12 @@ class LoginWin(QWidget, Ui_Login):
             if not login_record.status:
                 if login_record.isRecaptcha:
                     buttons = {
-                        "官网登入": QMessageBox.AcceptRole,
-                        "取消": QMessageBox.RejectRole
+                        "官网登入": QMessageBox.ButtonRole.AcceptRole,
+                        "取消": QMessageBox.ButtonRole.RejectRole
                     }
                     go_login = BoxPop.custom_question(window, "当前需完成谷歌人机验证\n要使用【官网登入】模式完成登录？",
                                                       buttons)
-                    if go_login == 0:
+                    if go_login == QMessageBox.ButtonRole.AcceptRole:
                         self.login_web_clicked()
                     return
                 BoxPop.err(window, login_record.message)
@@ -165,14 +165,14 @@ class LoginWin(QWidget, Ui_Login):
             if login_record.adv_status:
                 # 台号进阶验证 需要显示图形验证码并填写手机号
                 GLOBAL_CONFIG.win_twAdv = TwAdvWin(window, login_record)
-                GLOBAL_CONFIG.win_twAdv.exec_()
+                GLOBAL_CONFIG.win_twAdv.exec()
                 return
 
             if login_record.intermediate_login:
                 # 台号APP驗證 废弃
                 GLOBAL_CONFIG.win_intermediateLogin = IntermediateLoginWin(window, login_record)
                 GLOBAL_CONFIG.win_intermediateLogin.data_sent.connect(__task_login_result)
-                GLOBAL_CONFIG.win_intermediateLogin.exec_()
+                GLOBAL_CONFIG.win_intermediateLogin.exec()
                 return
 
             self.save_login_data_result(login_record)
@@ -205,8 +205,8 @@ class LoginWin(QWidget, Ui_Login):
 
     def login_double_input(self) -> str:
         GLOBAL_CONFIG.win_double_code_input = DoubleCodeInputWin(self)
-        dialog_result = GLOBAL_CONFIG.win_double_code_input.exec_()
-        ok = True if dialog_result == QDialog.Accepted else False
+        dialog_result = GLOBAL_CONFIG.win_double_code_input.exec()
+        ok = True if dialog_result == QDialog.DialogCode.Accepted else False
         if ok:
             code = GLOBAL_CONFIG.win_double_code_input.get_code()
             print(code)
@@ -217,18 +217,18 @@ class LoginWin(QWidget, Ui_Login):
         return ""
 
     def register_mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             url = QsClient.get_instance().get_web_url_register()
             PyQtBrowser.open_browser(url, self)
 
     def forgotPassword_mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             url = QsClient.get_instance().get_web_url_forgot_pwd()
             PyQtBrowser.open_browser(url, self)
 
     def actManager_clicked(self):
         GLOBAL_CONFIG.win_actManager = ActManagerWin(self)
-        GLOBAL_CONFIG.win_actManager.exec_()
+        GLOBAL_CONFIG.win_actManager.exec()
         self.init_account_info()
 
     def remember_stateChanged(self):

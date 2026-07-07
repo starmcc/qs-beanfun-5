@@ -3,8 +3,8 @@ import logging
 import re
 from typing import Tuple
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QDialog
 
 from src.client import RequestClient, QsClient
 from src.models.LoginRecord import LoginRecord

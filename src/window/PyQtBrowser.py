@@ -1,11 +1,12 @@
 import logging
 import os
 
-from PyQt5.QtCore import QUrl, QEventLoop, QDateTime
-from PyQt5.QtGui import QCloseEvent
-from PyQt5.QtNetwork import QNetworkCookie, QNetworkRequest, QNetworkAccessManager, QNetworkReply
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile
-from PyQt5.QtWidgets import (QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
+from PyQt6.QtCore import QUrl, QEventLoop, QDateTime
+from PyQt6.QtGui import QCloseEvent
+from PyQt6.QtNetwork import QNetworkCookie, QNetworkRequest, QNetworkAccessManager, QNetworkReply
+from PyQt6.QtWebEngineCore import QWebEngineProfile
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWidgets import (QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
                              QProgressBar)
 
 from src.client import RequestClient
@@ -82,7 +83,6 @@ class PyQtBrowser(QDialog):
                 padding: 6px 12px;
                 font-size: 14px;
                 border-radius: 4px;
-                transition: background-color 0.2s;
             }
             QPushButton:hover {
                 background-color: #4080FF;
@@ -96,7 +96,6 @@ class PyQtBrowser(QDialog):
                 border: 1px solid #E5E6EB;
                 border-radius: 4px;
                 background-color: white;
-                transition: border-color 0.2s;
             }
             QLineEdit:focus {
                 border-color: #165DFF;
@@ -177,35 +176,35 @@ class PyQtBrowser(QDialog):
         """构建URL，使用共享的网络管理器并确保资源正确清理"""
         if not url or not isinstance(url, str):
             return QUrl()
-            
+
         # 如果已经是完整URL，直接返回
         if url.startswith(("http://", "https://")):
             return QUrl(url)
-        
+
         # 创建一次性的网络管理器
         manager = QNetworkAccessManager(self)
         reply = None
         loop = None
-        
+
         try:
             # 先尝试HTTPS
             https_url = f"https://{url}"
             https_qurl = QUrl(https_url)
             request = QNetworkRequest(https_qurl)
             reply = manager.get(request)
-            
+
             # 使用事件循环等待请求完成
             loop = QEventLoop()
             reply.finished.connect(loop.quit)
-            loop.exec_()
-            
-            # 检查响应状态
-            if reply.error() == QNetworkReply.NoError:
+            loop.exec()
+
+            # 修复Qt6枚举：QNetworkReply.NoError → QNetworkReply.NetworkError.NoError
+            if reply.error() == QNetworkReply.NetworkError.NoError:
                 return https_qurl
             else:
                 # HTTPS失败，回退到HTTP
                 return QUrl(f"http://{url}")
-                
+
         except Exception as e:
             logging.error(f"URL构建失败: {str(e)}")
             # 发生异常时回退到HTTP
@@ -216,7 +215,6 @@ class PyQtBrowser(QDialog):
                 reply.deleteLater()
             if loop:
                 loop.deleteLater()
-            # 网络管理器会自动被Qt的父子关系管理清理
 
     def handle_cookies(self):
         """
@@ -244,10 +242,9 @@ class PyQtBrowser(QDialog):
                 # 3. 设置路径
                 q_cookie.setPath(cookie.path if cookie.path else '/')
 
-                # 4. 设置过期时间
+                # 4. Qt6 废弃 fromTime_t，替换为 fromSecsSinceEpoch
                 if cookie.expires:
-                    # requests 的 expires 时间戳（秒），可能为浮点数，需转 int
-                    expiration = QDateTime.fromTime_t(int(cookie.expires))
+                    expiration = QDateTime.fromSecsSinceEpoch(int(cookie.expires))
                     q_cookie.setExpirationDate(expiration)
 
                 # 5. 设置是否为 HTTPS 安全 Cookie
@@ -266,7 +263,7 @@ class PyQtBrowser(QDialog):
 
 
 def open_browser(url_path: str, parent=None):
-    # 1. 检查是否已有存活的LoginWeb实例
+    # 1. 检查是否已有存活的PyQtBrowser实例
     if PyQtBrowser._instance is not None:
         PyQtBrowser._instance.showNormal()
         PyQtBrowser._instance.raise_()
@@ -274,4 +271,4 @@ def open_browser(url_path: str, parent=None):
         return PyQtBrowser._instance
     win_browser = PyQtBrowser(parent)
     win_browser.load_url(url_path)
-    win_browser.exec_()
+    win_browser.exec()

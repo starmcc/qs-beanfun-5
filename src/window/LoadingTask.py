@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt, QTimer, QRectF
-from PyQt5.QtGui import QFont, QColor, QPainter, QPen, QPalette
-from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout,
+from PyQt6.QtCore import Qt, QTimer, QRectF
+from PyQt6.QtGui import QFont, QColor, QPainter, QPen, QPalette
+from PyQt6.QtWidgets import (QWidget, QLabel, QVBoxLayout,
                              QGraphicsDropShadowEffect, QGraphicsBlurEffect)
 
 
@@ -13,8 +13,8 @@ class LoadingMask(QWidget):
         self.setFixedSize(parent.size())
 
         # 设置窗口属性
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)  # 半透明背景
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)  # 半透明背景
         # 创建主容器，用于承载模糊效果和内容
         self.container = QWidget(self)
         self.setContentsMargins(6, 6, 6, 6)
@@ -26,13 +26,13 @@ class LoadingMask(QWidget):
 
         # 设置半透明背景色
         palette = self.container.palette()
-        palette.setColor(QPalette.Window, QColor(255, 255, 255, 180))  # 最后一个参数是透明度(0-255)
+        palette.setColor(QPalette.ColorRole.Window, QColor(255, 255, 255, 180))  # 最后一个参数是透明度(0-255)
         self.container.setPalette(palette)
         self.container.setAutoFillBackground(True)
 
         # 2. 加载动画 + 文字布局（居中显示）
         self.layout = QVBoxLayout(self.container)
-        self.layout.setAlignment(Qt.AlignCenter)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # 加载动画（使用自定义绘制的动画，不依赖GIF）
         self.anim_widget = LoadingAnimation()
@@ -41,7 +41,7 @@ class LoadingMask(QWidget):
 
         # 加载文字（简洁字体）
         self.text_label = QLabel(text)
-        self.text_label.setFont(QFont("Microsoft YaHei", 12, QFont.Medium))
+        self.text_label.setFont(QFont("Microsoft YaHei", 12, QFont.Weight.Medium))
         self.text_label.setStyleSheet("color: #333333;")
         # 确保文字不受背景模糊影响
         self.text_label.setGraphicsEffect(None)
@@ -85,17 +85,17 @@ class LoadingAnimation(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)  # 抗锯齿
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)  # 抗锯齿
 
         # 绘制背景圆环
         pen = QPen(QColor(220, 220, 220), 6)
-        pen.setCapStyle(Qt.RoundCap)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         painter.setPen(pen)
         painter.drawArc(QRectF(6, 6, 52, 52), 0, 360 * 16)
 
         # 绘制旋转的前景圆环
         pen = QPen(QColor(66, 135, 245), 6)  # 蓝色，可根据需要调整
-        pen.setCapStyle(Qt.RoundCap)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         painter.setPen(pen)
         # 绘制3/4圆的弧，随角度旋转
         painter.drawArc(QRectF(6, 6, 52, 52), self.angle * 16, 270 * 16)

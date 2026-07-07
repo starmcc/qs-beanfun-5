@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtGui import QPalette, QColor
+from PyQt6.QtWidgets import QDialog
 
 from src.client import QsClient
 from src.models.Account import Account
@@ -33,10 +33,10 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
         palette = self.label_status.palette()
         if self.account.status:
             self.label_status.setText('正常')
-            palette.setColor(QPalette.WindowText, QColor(0, 0, 255))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor(0, 0, 255))
         else:
             self.label_status.setText('禁止')
-            palette.setColor(QPalette.WindowText, QColor(255, 0, 0))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 0, 0))
         self.label_status.setPalette(palette)
         try:
             date = datetime.strptime(self.account.create_time, "%Y-%m-%d %H:%M:%S")

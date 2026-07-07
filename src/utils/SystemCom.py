@@ -6,8 +6,7 @@ from ctypes import wintypes
 from typing import Tuple
 
 import psutil
-import pyautogui
-from PyQt5.QtWidgets import QFileDialog
+from PyQt6.QtWidgets import QFileDialog
 
 from src.config import Config
 from src.config.GlobalConfig import GLOBAL_CONFIG
@@ -33,6 +32,9 @@ user32.SetForegroundWindow.restype = wintypes.BOOL
 
 user32.ClientToScreen.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.POINT)]
 user32.ClientToScreen.restype = wintypes.BOOL
+
+user32.GetClientRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+user32.GetClientRect.restype = wintypes.BOOL
 
 
 # 运行游戏的函数
@@ -142,8 +144,8 @@ def _run_game_result(win, status, msg):
 
 
 def select_game_path() -> Tuple[str, str]:
-    options = QFileDialog.Options()
-    directory = QFileDialog.getExistingDirectory(None, "选择新枫之谷游戏目录", "", options=options)
+    directory = QFileDialog.getExistingDirectory(None, "选择新枫之谷游戏目录", "",
+                                                 options=QFileDialog.Option.DontResolveSymlinks)
     errorMsg = ""
     if not directory:
         return directory, errorMsg
@@ -179,46 +181,56 @@ def auto_input_act_pwd(act, pwd) -> Tuple[int, str]:
         msg = '窗口最大化，无法自动输入!'
         logging.info(msg)
         return 2, msg
-    # 操作流程：获取窗口焦点 -> 鼠标点输入框 -> 按End -> 按退格 -> 输入 -> 按TAB -> 输入 -> 回车
     hwnd = getMapleStoryHwnd()
-    # ===================== 分辨率自适应坐标计算 =====================
-    # 基准分辨率（你原来写死坐标的分辨率）
     BASE_WIDTH = 1366
     BASE_HEIGHT = 768
-    # 基准坐标（1366x768下的输入框位置）
     BASE_INPUT_X = 555
     BASE_INPUT_Y = 310
-    # 获取游戏窗口当前 客户区 宽高（排除边框、标题栏，最精准）
     rect = wintypes.RECT()
     user32.GetClientRect(hwnd, ctypes.byref(rect))
     current_width = rect.right - rect.left
     current_height = rect.bottom - rect.top
-    print('current_width:', current_width)
-    print('current_height:', current_height)
-
-    # 按比例动态计算当前分辨率下的输入框坐标
     target_x = int(BASE_INPUT_X * (current_width / BASE_WIDTH))
     target_y = int(BASE_INPUT_Y * (current_height / BASE_HEIGHT))
-    # 前置游戏窗口
-    user32.SetForegroundWindow(hwnd)
-    pyautogui.sleep(0.3)
-    # 关闭错误提示框
-    pyautogui.press('esc')
-    pyautogui.sleep(0.1)
     point = wintypes.POINT(target_x, target_y)
     user32.ClientToScreen(hwnd, ctypes.byref(point))
-    pyautogui.doubleClick(point.x, point.y)
-    pyautogui.sleep(0.1)
-    pyautogui.press('end')
+    # 前置窗口
+    user32.SetForegroundWindow(hwnd)
+    time.sleep(0.3)
+    # ESC关闭弹窗
+    __postKey(hwnd, 0x1B)
+    time.sleep(0.1)
+    # 双击输入框
+    click_pos(point.x, point.y, double=True)
+    time.sleep(0.1)
+    # END
+    __postKey(hwnd, 0x23)
+    # 清空50位
     for _ in range(50):
-        __postKey(hwnd, 0x08)  # VK_BACK = 0x08
+        __postKey(hwnd, 0x08)
     __postChars(hwnd, act)
-    pyautogui.sleep(0.1)
-    __postKey(hwnd, 0x09)  # VK_TAB = 0x09
+    time.sleep(0.1)
+    __postKey(hwnd, 0x09)
     __postChars(hwnd, pwd)
-    pyautogui.sleep(0.1)
-    __postKey(hwnd, 0x0D)  # VK_RETURN = 0x0D
+    time.sleep(0.1)
+    __postKey(hwnd, 0x0D)
     return 0, ''
+
+
+def click_pos(screen_x: int, screen_y: int, double: bool = False):
+    import ctypes
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    # 鼠标左键按下
+    user32.SetCursorPos(screen_x, screen_y)
+    user32.mouse_event(0x0002, 0, 0, 0, 0)
+    ctypes.windll.kernel32.Sleep(50)
+    # 鼠标左键弹起
+    user32.mouse_event(0x0004, 0, 0, 0, 0)
+    if double:
+        ctypes.windll.kernel32.Sleep(50)
+        user32.mouse_event(0x0002, 0, 0, 0, 0)
+        ctypes.windll.kernel32.Sleep(50)
+        user32.mouse_event(0x0004, 0, 0, 0, 0)
 
 
 def __postKey(hwnd, w_param):

@@ -2,9 +2,9 @@ import logging
 from base64 import b64decode
 from io import BytesIO
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QPixmap, QMovie
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtGui import QPixmap, QMovie
+from PyQt6.QtWidgets import QDialog
 
 from src.client import QsQrClient
 from src.config.GlobalConfig import GLOBAL_CONFIG

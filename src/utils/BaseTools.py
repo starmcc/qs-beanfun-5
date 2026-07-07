@@ -6,7 +6,7 @@ import sys
 import webbrowser
 from typing import Tuple
 
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox
 from packaging import version
 
 from src.client import RequestClient
@@ -51,21 +51,22 @@ def check_new_version(win, quiet: bool = True):
             status_flag = False
             message = "无法获取版本信息"
         if status_flag:
+            # 修复：ButtonRole 枚举前缀
             buttons = {
-                "前往更新": QMessageBox.AcceptRole,
-                "取消": QMessageBox.RejectRole
+                "前往更新": QMessageBox.ButtonRole.AcceptRole,
+                "取消": QMessageBox.ButtonRole.RejectRole
             }
             if quiet:
                 buttons = {
-                    "前往更新": QMessageBox.AcceptRole,
-                    "不再提醒": QMessageBox.ActionRole,
-                    "取消": QMessageBox.RejectRole
+                    "前往更新": QMessageBox.ButtonRole.AcceptRole,
+                    "不再提醒": QMessageBox.ButtonRole.ActionRole,
+                    "取消": QMessageBox.ButtonRole.RejectRole
                 }
             click_result = BoxPop.custom_question(window, message, buttons)
 
-            if click_result == 0:
+            if click_result == QMessageBox.ButtonRole.AcceptRole:
                 webbrowser.open(f"{GlobalConstants.GITHUB_URL}/releases")
-            if quiet and click_result == 1:
+            if quiet and click_result == QMessageBox.ButtonRole.ActionRole:
                 Config.app_check_update(False)
         elif not quiet:
             BoxPop.info(window, message)
@@ -93,11 +94,10 @@ def __check_version() -> Tuple[bool, str]:
 
 def build_chrome():
     # 构建QtWebEngineProcess的复制品chrome.exe 适配加速器
-    spec = importlib.util.find_spec('PyQt5')
+    spec = importlib.util.find_spec('PyQt6')
     if spec and spec.submodule_search_locations:
-        pyqt5_dir = spec.submodule_search_locations[0]
-        # 构建目标文件路径
-        possible_path = os.path.join(pyqt5_dir, 'Qt5', 'bin', 'QtWebEngineProcess.exe')
+        pyqt6_dir = spec.submodule_search_locations[0]
+        possible_path = os.path.join(pyqt6_dir, 'Qt6', 'bin', 'QtWebEngineProcess.exe')
         target_path = os.path.join(os.path.dirname(possible_path), 'chrome.exe')
         if os.path.exists(possible_path) and not os.path.exists(target_path):
             # 复制文件

@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QTableWidgetItem, QMenu, QHeaderView, QDialog
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QTableWidgetItem, QMenu, QHeaderView, QDialog
 
 from src.config import Config
 from src.config.GlobalConfig import ActType
@@ -11,9 +11,10 @@ from src.views.Ui_ActManager import Ui_ActManager
 
 
 class CustomQTableWidgetItem(QTableWidgetItem):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setTextAlignment(Qt.AlignCenter)
+    def __init__(self, text=""):
+        super().__init__(text)
+        # 对齐枚举修复
+        self.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
 
 class ActEditWin(QDialog, Ui_AccountEdit):
@@ -79,15 +80,16 @@ class ActManagerWin(QDialog, Ui_ActManager):
         self.tableWidget.horizontalHeader().setSectionsMovable(False)
         # 自适应列宽
         self.tableWidget.setColumnCount(4)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        # 表头拉伸模式枚举修复
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         # 双击后应用
         self.tableWidget.doubleClicked.connect(self.tableWidget_doubleClicked)
 
         # 设置右键菜单
-        self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tableWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tableWidget.customContextMenuRequested.connect(self.show_context_menu)
 
     def showEvent(self, a0):
@@ -132,14 +134,15 @@ class ActManagerWin(QDialog, Ui_ActManager):
             edit_action = menu.addAction("编辑")
             delete_action = menu.addAction("删除")
         refresh_action = menu.addAction("刷新")
-        action = menu.exec_(self.tableWidget.mapToGlobal(position))
+        # exec_() → exec()
+        action = menu.exec(self.tableWidget.mapToGlobal(position))
 
         if action == refresh_action:
             self.accounts_refresh()
             return
         elif action == add_action:
             self.win_actEdit.init_data('', True)
-            self.win_actEdit.exec_()
+            self.win_actEdit.exec()
             self.accounts_refresh()
             return
 
@@ -154,5 +157,5 @@ class ActManagerWin(QDialog, Ui_ActManager):
             if len(select) > 0:
                 item = self.tableWidget.item(select[0].row(), 0)
                 self.win_actEdit.init_data(item.text())
-                self.win_actEdit.exec_()
+                self.win_actEdit.exec()
         self.accounts_refresh()

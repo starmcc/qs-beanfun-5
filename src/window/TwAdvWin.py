@@ -1,8 +1,8 @@
 import re
 import time
 
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtGui import QImage, QPixmap
+from PyQt6.QtWidgets import QDialog
 
 from src.client import RequestClient
 from src.models.LoginRecord import LoginRecord
@@ -75,7 +75,7 @@ class TwAdvWin(QDialog, Ui_TwAdv):
             'CodeTextBox': self.lineEdit_verifyCode.text().strip(),
             'imgbtnSubmit.x': '73',
             'imgbtnSubmit.y': '23',
-            'LBD_VCID_c_logincheck_advancecheck_samplecaptcha': self.samplecaptcha,
+            'LBD_VCID_c_logincheck_samplecaptcha': self.samplecaptcha,
         }
         rsp = RequestClient.get_instance().post(self.login_record.location, data=data)
         if rsp.status_code != 200:

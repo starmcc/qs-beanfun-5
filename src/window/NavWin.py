@@ -3,9 +3,9 @@ import typing
 import webbrowser
 from typing import Any, Dict, List, Optional
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QDialog, QGroupBox, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout, QWidget
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QDialog, QGroupBox, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout, QWidget
 
 from src.client import RequestClient
 from src.config.GlobalConfig import GlobalConstants
@@ -77,7 +77,7 @@ class NavWin(QDialog, Ui_Nav):
             data = item.get('data')
             if isinstance(data, list):
                 group = QGroupBox(title, self.container)
-                group.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+                group.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
                 group_layout = QVBoxLayout(group)
                 group_layout.setContentsMargins(8, 8, 8, 8)
                 group_layout.setSpacing(8)
@@ -95,10 +95,10 @@ class NavWin(QDialog, Ui_Nav):
                 row.setContentsMargins(0, 0, 0, 0)
                 row.setSpacing(6)
                 row.addWidget(self._create_nav_button(item))
-                row.addItem(QSpacerItem(20, 10, QSizePolicy.Expanding, QSizePolicy.Minimum))
+                row.addItem(QSpacerItem(20, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
                 self.verticalLayout_groups.addLayout(row)
 
-        self.verticalLayout_groups.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self.verticalLayout_groups.addItem(QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
     def _build_button_rows(self, nodes: List[dict], parent_layout: QVBoxLayout, max_per_row: int = 4):
         row_layout: Optional[QHBoxLayout] = None
@@ -123,7 +123,7 @@ class NavWin(QDialog, Ui_Nav):
             else:
                 if row_layout is None or count_in_row >= max_per_row:
                     if row_layout is not None:
-                        row_layout.addItem(QSpacerItem(20, 10, QSizePolicy.Expanding, QSizePolicy.Minimum))
+                        row_layout.addItem(QSpacerItem(20, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
                         parent_layout.addLayout(row_layout)
                     row_layout = QHBoxLayout()
                     row_layout.setContentsMargins(0, 0, 0, 0)
@@ -133,15 +133,15 @@ class NavWin(QDialog, Ui_Nav):
                 count_in_row += 1
 
         if row_layout is not None:
-            row_layout.addItem(QSpacerItem(20, 10, QSizePolicy.Expanding, QSizePolicy.Minimum))
+            row_layout.addItem(QSpacerItem(20, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
             parent_layout.addLayout(row_layout)
 
     def _create_nav_button(self, item: dict) -> QPushButton:
         btn = QPushButton(str(item.get('title') or ''))
         btn.setObjectName(str(item.get('name') or 'nav_item'))
         btn.setMinimumHeight(32)
-        btn.setCursor(Qt.PointingHandCursor)
-        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         btn.clicked.connect(lambda: self._on_nav_clicked(item))
         return btn
 
@@ -192,7 +192,7 @@ class NavWin(QDialog, Ui_Nav):
     @staticmethod
     def _empty_label(text: str) -> QLabel:
         label = QLabel(text)
-        label.setAlignment(Qt.AlignCenter)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label.setStyleSheet("color: #666666;")
         return label
 

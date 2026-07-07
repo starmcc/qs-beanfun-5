@@ -29,7 +29,7 @@ import sys
 import re
 import json
 
-from PyQt5.QtCore import QFile, QIODevice
+from PyQt6.QtCore import QFile, QIODevice
 
 try:
     from pkg_resources import resource_stream
@@ -72,7 +72,7 @@ def loaddict():
         return
     # 从资源文件加载
     file = QFile(":/statics/zhconv")
-    file.open(QIODevice.ReadOnly)
+    file.open(QIODevice.OpenModeFlag.ReadOnly)
     content = file.readAll().data().decode("utf-8")
     zhcdicts = json.loads(content)
     zhcdicts['SIMPONLY'] = frozenset(zhcdicts['SIMPONLY'])
@@ -444,33 +444,3 @@ def test_convert_mw(locale, update=None):
         '测试2：-{zh;zh-cn;zh-hk|博客、網誌、部落格}-')
     return convert_for_mw(s, locale, update)
 
-def main():
-    """
-    Simple stdin/stdout interface.
-    """
-    if len(sys.argv) == 2 and sys.argv[1] in Locales:
-        locale = sys.argv[1]
-        convertfunc = convert
-    elif len(sys.argv) == 3 and sys.argv[1] == '-w' and sys.argv[2] in Locales:
-        locale = sys.argv[2]
-        convertfunc = convert_for_mw
-    else:
-        thisfile = __file__ if __name__ == '__main__' else 'python -mzhconv'
-        print("usage: %s [-w] {zh-cn|zh-tw|zh-hk|zh-sg|zh-hans|zh-hant|zh} < input > output" % thisfile)
-        sys.exit(1)
-
-    loaddict()
-    ln = sys.stdin.readline()
-    while ln:
-        l = ln.rstrip('\r\n')
-        if sys.version_info[0] < 3:
-            l = unicode(l, 'utf-8')
-        res = convertfunc(l, locale)
-        if sys.version_info[0] < 3:
-            print(res.encode('utf-8'))
-        else:
-            print(res)
-        ln = sys.stdin.readline()
-
-if __name__ == '__main__':
-    main()

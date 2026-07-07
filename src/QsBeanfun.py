@@ -2,7 +2,8 @@ import logging
 import os
 import sys
 
-from PyQt5.QtWidgets import QApplication, QMessageBox
+import urllib3
+from PyQt6.QtWidgets import QApplication, QMessageBox
 
 # 确保正确加载qrc资源，防止Pycharm误删
 # noinspection PyUnresolvedReferences
@@ -34,25 +35,31 @@ class QsBeanfun(QApplication):
 # -------------------------- 主程序入口 --------------------------
 if __name__ == '__main__':
     LoggingConfig.setup_logging()
-    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
-    try:
-        chrome_path = BaseTools.build_chrome()
-        if chrome_path:
-            os.environ["QTWEBENGINEPROCESS_PATH"] = chrome_path
-        else:
-            logging.warning("未找到chrome.exe, QTWebEngine可能无法正常加载加速器")
-    except Exception as e:
-        logging.error(f"file chrome.exe build error {str(e)}")
+    # 关闭WebEngine GPU硬件加速，解决虚拟机/远程桌面GPU上下文失败
+    os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu --disable-gpu-sandbox --disable-software-rasterizer"
+    # 屏蔽WebEngine冗余错误日志
+    os.environ["QT_LOGGING_RULES"] = "qt.webengine.debug=false;qt.webengine.warning=false;qt.webengine.error=false"
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    # Qt6 自带高DPI缩放，该环境变量可注释删除
+    # os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    # try:
+    #     chrome_path = BaseTools.build_chrome()
+    #     if chrome_path:
+    #         os.environ["QTWEBENGINEPROCESS_PATH"] = chrome_path
+    #     else:
+    #         logging.warning("未找到chrome.exe, QTWebEngine可能无法正常加载加速器")
+    # except Exception as e:
+    #     logging.error(f"file chrome.exe build error {str(e)}")
 
     app = QsBeanfun(sys.argv)
 
     win_login = LoginWin()
     if BaseTools.check_cn_path(os.getcwd()):
         BoxPop.show_message_box(win_login,
-                                "目中存在汉字,无法运行",
+                                "目录中存在汉字,无法运行",
                                 f"存放程序的文件夹目录有汉字\n请删掉汉字后运行！",
-                                QMessageBox.Warning)
+                                QMessageBox.Icon.Warning)
         sys.exit(1)
     win_login.show()
     logging.info(f"启动完成")
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
