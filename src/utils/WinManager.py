@@ -75,13 +75,13 @@ class __WindowDragFilter(QObject):
 
 def __build_title_bar(window, config: TitleBarConfig):
     TITLE_BAR_HEIGHT = 32
-    SHADOW_MARGIN = 20  # 与 blurRadius 匹配，确保阴影不被裁剪
+    SHADOW_MARGIN = 6  # 阴影边距，与 PyQt5 版本一致
     window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
     window.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
     shadow_container = __create_shadow_container()
     background_container = __create_background_container()
-    __apply_shadow_effect(background_container)
+    __apply_shadow_effect(shadow_container)
     title_bar = __create_title_bar(window, config, TITLE_BAR_HEIGHT)
     content_widget = __create_content_widget(window)
 
@@ -102,22 +102,22 @@ def __build_title_bar(window, config: TitleBarConfig):
 def __create_shadow_container():
     shadow_container = QWidget()
     shadow_container.setObjectName("shadow_container")
-    shadow_container.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     shadow_container.setStyleSheet("""
         #shadow_container {
             background-color: transparent;
+            border-radius: 6px;
+            overflow: hidden !important;
         }
     """)
     return shadow_container
 
 
 def __apply_shadow_effect(target_widget):
-    """在 PySide6 中，QGraphicsDropShadowEffect 需要应用到有实际背景的 widget 上才能正确渲染。
-    同时需要确保父容器有足够的 padding 来容纳阴影的 blur radius。"""
+    """应用阴影效果到目标 widget"""
     shadow = QGraphicsDropShadowEffect(target_widget)
-    shadow.setBlurRadius(20)
-    shadow.setColor(QColor(0, 0, 0, 60))
-    shadow.setOffset(0, 4)
+    shadow.setBlurRadius(10)
+    shadow.setColor(QColor(0, 0, 0, 80))
+    shadow.setOffset(0, 2)
     target_widget.setGraphicsEffect(shadow)
 
 
