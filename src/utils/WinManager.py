@@ -5,7 +5,7 @@ from PySide6.QtCore import QEvent, Qt, QObject, QSize, Slot
 from PySide6.QtGui import QIcon, QColor, QPixmap
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QHBoxLayout, QDialog,
                                QGraphicsDropShadowEffect, QPushButton, QMenu, QCheckBox, QRadioButton, QGroupBox,
-                               QComboBox)
+                               QComboBox, QLineEdit)
 
 from src.config.GlobalConfig import GlobalConstants
 from src.config.StyleConstants import StyleConstants
@@ -14,12 +14,14 @@ from src.utils import MenuManager
 from src.zhconv import zhconv
 
 
-def set_basic_window(window):
+def set_basic_window(window, *, apply_global_style: bool | None = None):
     titleBarConfig: TitleBarConfig = TitleBarConfig()
     from src.window.PyQtBrowser import PyQtBrowser
     from src.window.LoginWeb import LoginWeb
+    from src.window.MainWin import MainWin
     from src.window.LoginWin import LoginWin
-    if isinstance(window, LoginWin):
+
+    if isinstance(window, LoginWin) or isinstance(window, MainWin):
         titleBarConfig.title = f'v {GlobalConstants.APP_VERSION}'
     else:
         titleBarConfig.title = f'{window.windowTitle()} {GlobalConstants.APP_VERSION}'
@@ -27,17 +29,49 @@ def set_basic_window(window):
     if isinstance(window, QDialog):
         if isinstance(window, PyQtBrowser) or isinstance(window, LoginWeb):
             window.setWindowFlags(
-                window.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
+                window.windowFlags()
+                & ~Qt.WindowType.WindowContextHelpButtonHint
+                | Qt.WindowType.WindowMaximizeButtonHint
+            )
         else:
             window.setWindowFlags(
-                window.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint | Qt.WindowType.MSWindowsFixedSizeDialogHint)
+                window.windowFlags()
+                & ~Qt.WindowType.WindowContextHelpButtonHint
+                | Qt.WindowType.MSWindowsFixedSizeDialogHint
+            )
+
     window.setWindowIcon(QIcon(":/images/logo"))
-    window.setStyleSheet(StyleConstants.GLOBAL_STYLE)
+
+    # apply_global_style=None 时自动判断：
+    # - 如果窗口本身已经在 .ui 里设置了 styleSheet，则保留 UI 样式；
+    # - 如果窗口没有任何 styleSheet，则套用全局样式。
+    if apply_global_style is None:
+        apply_global_style = not bool(window.styleSheet().strip())
+
+    if apply_global_style:
+        window.setStyleSheet(StyleConstants.GLOBAL_STYLE)
+    elif StyleConstants.GLOBAL_STYLE:
+        # 把全局样式作为 fallback 注入到没有独立样式的常用子控件。
+        __apply_global_style_to_unstyled_children(window)
+
     if not isinstance(window, QDialog):
         __build_title_bar(window, titleBarConfig)
+
     __translate_all_controls(window)
 
     return window
+
+def __apply_global_style_to_unstyled_children(window):
+
+    styled_widget_types = (
+        QMenu,
+        QLineEdit,
+        QPushButton,
+    )
+    for widget_type in styled_widget_types:
+        for widget in window.findChildren(widget_type):
+            if not widget.styleSheet().strip():
+                widget.setStyleSheet(StyleConstants.GLOBAL_STYLE)
 
 
 class __WindowDragFilter(QObject):

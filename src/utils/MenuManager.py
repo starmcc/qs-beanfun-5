@@ -31,8 +31,8 @@ def init_menu(self):
         ]),
         CustomMenu(name="nav", title="便捷导航", handler=lambda: open_win(self, "nav")),
         CustomMenu(name="config", title="设置", handler=lambda: open_win(self,"config")),
-        CustomMenu(name="about", title="关于作者..", handler=lambda: open_win(self, "about")),
-        CustomMenu(name="check_update", title="检测更新", handler=lambda: BaseTools.check_new_version(self, False)),
+        CustomMenu(name="check_update", title="获取新版本", handler=lambda: BaseTools.check_new_version(self, False)),
+        CustomMenu(name="about", title="关于..", handler=lambda: open_win(self, "about")),
         CustomMenu(name="out", title="退出", handler=sys.exit),
     ]
 

@@ -23,13 +23,21 @@ class Ui_Main(object):
     def setupUi(self, Main):
         if not Main.objectName():
             Main.setObjectName(u"Main")
-        Main.resize(260, 230)
-        Main.setMinimumSize(QSize(260, 230))
-        Main.setMaximumSize(QSize(260, 230))
+        Main.resize(350, 310)
+        Main.setMinimumSize(QSize(350, 310))
+        Main.setMaximumSize(QSize(350, 310))
         self.verticalLayout = QVBoxLayout(Main)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.label_logoView = QLabel(Main)
+        self.label_logoView.setObjectName(u"label_logoView")
+        self.label_logoView.setMaximumSize(QSize(16777215, 80))
+        self.label_logoView.setStyleSheet(u"padding:0px;border:0px;background:#40444F;")
+        self.label_logoView.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.verticalLayout.addWidget(self.label_logoView)
+
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -58,13 +66,13 @@ class Ui_Main(object):
         palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, brush1)
         self.label_points.setPalette(palette)
         self.label_points.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.label_points.setAlignment(Qt.AlignCenter)
+        self.label_points.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout.addWidget(self.label_points, 0, 1, 1, 1)
 
         self.label_4 = QLabel(self.widget)
         self.label_4.setObjectName(u"label_4")
-        self.label_4.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label_4.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.label_4, 5, 0, 1, 1)
 
@@ -73,41 +81,41 @@ class Ui_Main(object):
         sizePolicy.setHeightForWidth(self.comboBox_gameAct.sizePolicy().hasHeightForWidth())
         self.comboBox_gameAct.setSizePolicy(sizePolicy)
 
-        self.gridLayout.addWidget(self.comboBox_gameAct, 3, 1, 1, 1)
+        self.gridLayout.addWidget(self.comboBox_gameAct, 3, 1, 1, 3)
 
         self.lineEdit_numAct = QLineEdit(self.widget)
         self.lineEdit_numAct.setObjectName(u"lineEdit_numAct")
         sizePolicy.setHeightForWidth(self.lineEdit_numAct.sizePolicy().hasHeightForWidth())
         self.lineEdit_numAct.setSizePolicy(sizePolicy)
-        self.lineEdit_numAct.setAlignment(Qt.AlignCenter)
+        self.lineEdit_numAct.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lineEdit_numAct.setReadOnly(True)
 
-        self.gridLayout.addWidget(self.lineEdit_numAct, 5, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_numAct, 5, 1, 1, 3)
 
         self.label_status = QLabel(self.widget)
         self.label_status.setObjectName(u"label_status")
         sizePolicy.setHeightForWidth(self.label_status.sizePolicy().hasHeightForWidth())
         self.label_status.setSizePolicy(sizePolicy)
         self.label_status.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.label_status.setAlignment(Qt.AlignCenter)
+        self.label_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout.addWidget(self.label_status, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_status, 0, 3, 1, 1)
 
         self.label_2 = QLabel(self.widget)
         self.label_2.setObjectName(u"label_2")
-        self.label_2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label_2.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.label_2, 0, 0, 1, 1)
 
         self.label_5 = QLabel(self.widget)
         self.label_5.setObjectName(u"label_5")
-        self.label_5.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label_5.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.label_5, 9, 0, 1, 1)
 
         self.label = QLabel(self.widget)
         self.label.setObjectName(u"label")
-        self.label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.label, 3, 0, 1, 1)
 
@@ -115,16 +123,16 @@ class Ui_Main(object):
         self.lineEdit_dynamicPwd.setObjectName(u"lineEdit_dynamicPwd")
         sizePolicy.setHeightForWidth(self.lineEdit_dynamicPwd.sizePolicy().hasHeightForWidth())
         self.lineEdit_dynamicPwd.setSizePolicy(sizePolicy)
-        self.lineEdit_dynamicPwd.setAlignment(Qt.AlignCenter)
+        self.lineEdit_dynamicPwd.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lineEdit_dynamicPwd.setReadOnly(True)
 
-        self.gridLayout.addWidget(self.lineEdit_dynamicPwd, 9, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_dynamicPwd, 9, 1, 1, 3)
 
         self.label_3 = QLabel(self.widget)
         self.label_3.setObjectName(u"label_3")
-        self.label_3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label_3.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_3, 0, 2, 1, 1)
 
 
         self.verticalLayout_3.addWidget(self.widget)
@@ -205,6 +213,7 @@ class Ui_Main(object):
 
     def retranslateUi(self, Main):
         Main.setWindowTitle(QCoreApplication.translate("Main", u"QsBeanfun", None))
+        self.label_logoView.setText("")
         self.label_points.setText(QCoreApplication.translate("Main", u"0[0]", None))
         self.label_4.setText(QCoreApplication.translate("Main", u"\u6578\u5b57\u8d26\u53f7", None))
         self.label_status.setText(QCoreApplication.translate("Main", u"\u6b63\u5e38", None))

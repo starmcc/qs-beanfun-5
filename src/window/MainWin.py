@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Tuple
 
 from PySide6.QtCore import QEvent
-from PySide6.QtGui import QPalette, QColor
+from PySide6.QtGui import QPalette, QColor, QPixmap
 from PySide6.QtWidgets import QWidget
 
 from src.client import QsClient
@@ -48,6 +48,8 @@ class MainWin(QWidget, Ui_Main):
 
     def init_ui(self):
         self.trayIcon = TrayIcon(self)
+        # 设置图片
+        self.label_logoView.setPixmap(QPixmap(":/images/banner"))
         self.checkBox_autoInput.setChecked(Config.auto_input())
         self.pushButton_dynamicPwd.clicked.connect(self.dynamicPwd_clicked)
         self.pushButton_start.clicked.connect(self.start_clicked)

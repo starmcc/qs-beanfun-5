@@ -204,7 +204,7 @@
            <enum>Qt::NoFocus</enum>
           </property>
           <property name="text">
-           <string>请记住我</string>
+           <string>记住密码</string>
           </property>
          </widget>
         </item>

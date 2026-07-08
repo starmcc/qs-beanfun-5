@@ -181,7 +181,7 @@ class Ui_Login(object):
         self.radioButton_tw.setText(QCoreApplication.translate("Login", u"\u53f0\u6e7e", None))
         self.radioButton_hk.setText(QCoreApplication.translate("Login", u"\u9999\u6e2f", None))
         self.label.setText(QCoreApplication.translate("Login", u"\u8d26\u53f7", None))
-        self.checkBox_remember.setText(QCoreApplication.translate("Login", u"\u8bf7\u8bb0\u4f4f\u6211", None))
+        self.checkBox_remember.setText(QCoreApplication.translate("Login", u"\u8bb0\u4f4f\u5bc6\u7801", None))
         self.label_5.setText(QCoreApplication.translate("Login", u"\u5bc6\u7801", None))
         self.pushButton_actManager.setText(QCoreApplication.translate("Login", u"\u8d26\u53f7\u7ba1\u7406", None))
         self.pushButton_login.setText(QCoreApplication.translate("Login", u"\u767b\u5f55", None))

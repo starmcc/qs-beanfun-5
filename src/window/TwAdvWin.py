@@ -73,9 +73,9 @@ class TwAdvWin(QDialog, Ui_TwAdv):
             '__VIEWSTATEGENERATOR': self.viewstateGenerator,
             'txtVerify': self.lineEdit_phone.text().strip(),
             'CodeTextBox': self.lineEdit_verifyCode.text().strip(),
-            'imgbtnSubmit.x': '73',
-            'imgbtnSubmit.y': '23',
-            'LBD_VCID_c_logincheck_samplecaptcha': self.samplecaptcha,
+            'imgbtnSubmit.x': '89',
+            'imgbtnSubmit.y': '19',
+            'LBD_VCID_c_logincheck_advancecheck_samplecaptcha': self.samplecaptcha,
         }
         rsp = RequestClient.get_instance().post(self.login_record.location, data=data)
         if rsp.status_code != 200:
