@@ -4,12 +4,13 @@ import sys
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu
 
+from src.config.StyleConstants import StyleConstants
 from src.client import QsClient
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.CustomMenu import CustomMenu
 from src.utils import BoxPop, SystemCom, BaseTools
 from src.window.MainWin import MainWin
-from src.window import PyQtBrowser
+from src.components import PyQtBrowser
 
 
 def init_menu(self):
@@ -38,6 +39,7 @@ def init_menu(self):
 
     # 创建菜单
     title_menu = QMenu(self)
+    title_menu.setStyleSheet(StyleConstants.MENU_STYLE)
     # 构建主菜单
     __build_menu(self, title_menu, menu_config)
     return title_menu

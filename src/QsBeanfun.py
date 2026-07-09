@@ -3,11 +3,13 @@ import os
 import sys
 
 import urllib3
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 # 确保正确加载qrc资源，防止Pycharm误删
 # noinspection PyUnresolvedReferences
 import src.Resources_rc
+from src.config.StyleConstants import StyleConstants
 from src import LoggingConfig
 from src.utils import BaseTools, BoxPop
 from src.window.LoginWin import LoginWin
@@ -49,7 +51,9 @@ if __name__ == '__main__':
         logging.error(f"file chrome.exe build error {str(e)}")
 
     app = QsBeanfun(sys.argv)
-
+    app.styleHints().setColorScheme(Qt.ColorScheme.Light)
+    app.setStyle('Fusion')
+    app.setStyleSheet(StyleConstants.GLOBAL_STYLE)
     win_login = LoginWin()
     if BaseTools.check_cn_path(os.getcwd()):
         BoxPop.show_message_box(win_login,

@@ -30,7 +30,7 @@ class TrayIcon(QSystemTrayIcon):
 
     def create_menu(self, menus: list[dict]):
         self.menu = QMenu()
-        self.menu.setStyleSheet(StyleConstants.TRAY_MENU_STYLE)
+        self.menu.setStyleSheet(StyleConstants.MENU_STYLE)
 
         if menus:
             for menu in menus:

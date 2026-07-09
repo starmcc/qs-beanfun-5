@@ -17,7 +17,7 @@ from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_Main import Ui_Main
 from src.window import CustomToolTipWin
 from src.window.ConfigWin import ConfigWin
-from src.window.TrayIcon import TrayIcon
+from src.components.TrayIcon import TrayIcon
 
 
 class MainWin(QWidget, Ui_Main):

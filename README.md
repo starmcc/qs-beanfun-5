@@ -63,6 +63,8 @@
 ## 🔧 环境与依赖
 
 ```bash
+.venv\Scripts\activate.ps1
+
 # 确保是清华源
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 pip config set install.trusted-host pypi.tuna.tsinghua.edu.cn

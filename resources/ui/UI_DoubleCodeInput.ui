@@ -6,295 +6,184 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
-    <height>130</height>
+    <width>360</width>
+    <height>220</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>300</width>
-    <height>130</height>
+    <width>360</width>
+    <height>220</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>300</width>
-    <height>130</height>
+    <width>360</width>
+    <height>220</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>双重验证</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">
-    QDialog {
-     background-color: transparent;
-    }
-    #label_title {
-     font-size: 18px;
-     font-weight: 600;
-     color: #333333;
-    }
-    .QLineEdit {
-     font-size: 24px;
-     font-weight: 600;
-     border: 2px solid #e0e0e0;
-     border-radius: 8px;
-     color: #333333;
-     background-color: #f9f9f9;
-     max-length: 1;
-    }
-    .QLineEdit:focus {
-     border-color: #409eff;
-     background-color: #ffffff;
-     outline: none;
-    }</string>
+   <string notr="true">QDialog#DoubleCodeInput {
+    background-color: #f7f7f7;
+}
+QFrame#frame_main {
+    background-color: rgba(255, 255, 255, 0.94);
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+}
+QLabel#label_title {
+    color: #333333;
+    font-size: 14pt;
+    font-weight: 600;
+}
+QLabel#label_desc {
+    color: #7a7a7a;
+    font-size: 9pt;
+}
+QPushButton#pushButton_enter {
+    min-width: 88px;
+    background-color: #f57c00;
+    color: white;
+    border: 1px solid #f57c00;
+}
+QPushButton#pushButton_enter:hover {
+    background-color: #ff922b;
+    color: white;
+}
+QPushButton#pushButton_enter:pressed {
+    background-color: #e06f00;
+}</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout_root">
    <property name="spacing">
-    <number>2</number>
+    <number>12</number>
    </property>
    <property name="leftMargin">
-    <number>2</number>
+    <number>16</number>
    </property>
    <property name="topMargin">
-    <number>2</number>
+    <number>16</number>
    </property>
    <property name="rightMargin">
-    <number>2</number>
+    <number>16</number>
    </property>
    <property name="bottomMargin">
-    <number>2</number>
+    <number>16</number>
    </property>
    <item>
-    <widget class="QLabel" name="label_title">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <widget class="QFrame" name="frame_main">
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
      </property>
-     <property name="minimumSize">
-      <size>
-       <width>280</width>
-       <height>38</height>
-      </size>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>280</width>
-       <height>38</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>请输入6位验证数字</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_main">
+      <property name="spacing">
+       <number>12</number>
+      </property>
+      <property name="leftMargin">
+       <number>16</number>
+      </property>
+      <property name="topMargin">
+       <number>16</number>
+      </property>
+      <property name="rightMargin">
+       <number>16</number>
+      </property>
+      <property name="bottomMargin">
+       <number>16</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_title">
+        <property name="text">
+         <string>请输入验证码</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_desc">
+        <property name="text">
+         <string>请输入授权验证器中的数字验证码</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit_code">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>34</height>
+         </size>
+        </property>
+        <property name="placeholderText">
+         <string>请输入验证码</string>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_buttons">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_out">
+          <property name="minimumSize">
+           <size>
+            <width>88</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>取消</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_enter">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>90</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>确定</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLineEdit" name="lineEdit_1">
-       <property name="minimumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maxLength">
-        <number>1</number>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_2">
-       <property name="minimumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maxLength">
-        <number>1</number>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_3">
-       <property name="minimumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maxLength">
-        <number>1</number>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_4">
-       <property name="minimumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maxLength">
-        <number>1</number>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_5">
-       <property name="minimumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maxLength">
-        <number>1</number>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_6">
-       <property name="minimumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>38</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maxLength">
-        <number>1</number>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QPushButton" name="pushButton_out">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>取消</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_enter">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>38</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>确认</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
   </layout>
  </widget>

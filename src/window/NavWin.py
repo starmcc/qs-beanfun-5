@@ -12,7 +12,8 @@ from src.config.GlobalConfig import GlobalConstants
 from src.utils import WinManager
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.UI_Nav import Ui_Nav
-from src.window import PyQtBrowser, CustomToolTipWin
+from src.window import CustomToolTipWin
+from src.components import PyQtBrowser
 from src.window.QrCodeShowWin import QrCodeShowWin
 
 

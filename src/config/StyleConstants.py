@@ -1,17 +1,17 @@
 class StyleConstants:
     GLOBAL_STYLE = """
         * {
-        font-family: 'Microsoft YaHei', 'SimHei', 'Arial', sans-serif;
+            font-family: 'Microsoft YaHei', 'SimHei', 'Arial', sans-serif;
         }
 
         QLineEdit {
-        border: 1px solid #a0a0a0;
-        border-radius: 3px;
-        padding-left: 5px;
-        background-color: transparent;
-        color: black;
-        selection-background-color: #F57C00;
-        font-size: 10pt;
+            border: 1px solid #a0a0a0;
+            border-radius: 3px;
+            padding-left: 5px;
+            background-color: transparent;
+            color: black;
+            selection-background-color: #F57C00;
+            font-size: 10pt;
         }
 
         QLineEdit:hover {
@@ -26,63 +26,61 @@ class StyleConstants:
             lineedit-password-character: 9679;
         }
 
-        QMenu {
-            background-color: #ffffff;
-            border: 1px solid #dcdcdc;
-            border-radius: 4px;
-            padding: 2px 0;
-            font-size: 12px;
-        }
-
-        QMenu::item {
-            padding: 4px 20px 4px 12px;
-            margin: 1px 0;
-            color: #333333;
-        }
-
-        QMenu::item:selected {
-            background-color: #e6f2ff;
-            color: #0052cc;
-        }
-
-        QMenu::separator {
-            height: 1px;
-            background-color: #eeeeee;
-            margin: 2px 4px;
-        }
-
-        /* 新增按钮基础+移入浅蓝效果，匹配你菜单浅蓝色 #e6f2ff */
         QPushButton {
             color: #333333;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            margin: 2px 2px;
+            padding: 3px 10px;
+            min-height: 22px;
         }
         QPushButton:hover {
             background-color: #e6f2ff;
             color: #0052cc;
         }
     """
+    TITLE_BTN = """
+        QPushButton {
+            color: white;
+            border: 0;
+            border-radius: 6px;
+            background-color: transparent;
+            padding: 3px;
+        }
+        QPushButton:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        QPushButton:pressed {
+            background-color: rgba(255, 255, 255, 0.11);
+        }
+    """
 
-    TRAY_MENU_STYLE = """
+    MENU_STYLE = """
         QMenu {
-            background-color: #2D3748;
-            border: 1px solid #4A5568;
-            border-radius: 8px;
-            padding: 6px;
-            color: #E2E8F0;
-            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 4px 0;
+            /* 轻微阴影，脱离桌面层级，更立体 */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        QMenu::item {
+            padding: 6px 22px 6px 14px;
+            margin: 0 4px;
+            border-radius: 4px;
+            color: #2c333a;
             font-size: 12px;
         }
-        QMenu::item {
-            padding: 8px 16px;
-            border-radius: 4px;
-            margin: 2px;
-        }
+        
         QMenu::item:selected {
-            background-color: #4299e1;
-            color: white;
+            background-color: #eff7ff;
+            color: #1967d2;
         }
+        
         QMenu::separator {
             height: 1px;
-            background-color: #4A5568;
+            background-color: #f0f0f0;
             margin: 4px 8px;
         }
     """

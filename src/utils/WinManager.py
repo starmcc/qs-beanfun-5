@@ -1,77 +1,74 @@
 import locale
 import logging
 
-from PySide6.QtCore import QEvent, Qt, QObject, QSize, Slot
+from PySide6.QtCore import QEvent, Qt, QObject
 from PySide6.QtGui import QIcon, QColor, QPixmap
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QHBoxLayout, QDialog,
                                QGraphicsDropShadowEffect, QPushButton, QMenu, QCheckBox, QRadioButton, QGroupBox,
-                               QComboBox, QLineEdit)
+                               QComboBox, QMessageBox)
 
+from src.components.TitleButton import TitleButton
 from src.config.GlobalConfig import GlobalConstants
-from src.config.StyleConstants import StyleConstants
 from src.config.TitleBarConfig import TitleBarConfig
 from src.utils import MenuManager
 from src.zhconv import zhconv
 
 
-def set_basic_window(window, *, apply_global_style: bool | None = None):
-    titleBarConfig: TitleBarConfig = TitleBarConfig()
-    from src.window.PyQtBrowser import PyQtBrowser
-    from src.window.LoginWeb import LoginWeb
+def set_basic_window(window):
+    if getattr(window, '_custom_title_bar_initialized', False):
+        __translate_all_controls(window)
+        return window
+
+    titleBarConfig = __create_title_bar_config(window)
+    __apply_native_window_flags(window)
+    window.setWindowIcon(QIcon(":/images/logo"))
+
+    if not __is_browser_window(window):
+        __build_title_bar(window, titleBarConfig)
+        window._custom_title_bar_initialized = True
+
+    __translate_all_controls(window)
+    return window
+
+
+
+def __create_title_bar_config(window) -> TitleBarConfig:
     from src.window.MainWin import MainWin
     from src.window.LoginWin import LoginWin
 
-    if isinstance(window, LoginWin) or isinstance(window, MainWin):
-        titleBarConfig.title = f'v {GlobalConstants.APP_VERSION}'
-    else:
-        titleBarConfig.title = f'{window.windowTitle()} {GlobalConstants.APP_VERSION}'
+    is_primary_window = isinstance(window, (LoginWin, MainWin))
+    title = f'v {GlobalConstants.APP_VERSION}' if is_primary_window else window.windowTitle()
+    return TitleBarConfig(
+        title=title,
+        min_btn=is_primary_window,
+        max_btn=False,
+        close_btn=True
+    )
+
+
+
+def __is_browser_window(window) -> bool:
+    from src.components.PyQtBrowser import PyQtBrowser
+    from src.components.LoginWeb import LoginWeb
+    from src.components.RecaptchaWeb import RecaptchaWindow
+
+    return isinstance(window, (PyQtBrowser, LoginWeb, RecaptchaWindow))
+
+
+
+def __apply_native_window_flags(window):
+    base_flags = window.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint
+
+    if isinstance(window, QMessageBox):
+        window.setWindowFlags(base_flags)
+        return
+
+    if __is_browser_window(window):
+        window.setWindowFlags(base_flags)
+        return
 
     if isinstance(window, QDialog):
-        if isinstance(window, PyQtBrowser) or isinstance(window, LoginWeb):
-            window.setWindowFlags(
-                window.windowFlags()
-                & ~Qt.WindowType.WindowContextHelpButtonHint
-                | Qt.WindowType.WindowMaximizeButtonHint
-            )
-        else:
-            window.setWindowFlags(
-                window.windowFlags()
-                & ~Qt.WindowType.WindowContextHelpButtonHint
-                | Qt.WindowType.MSWindowsFixedSizeDialogHint
-            )
-
-    window.setWindowIcon(QIcon(":/images/logo"))
-
-    # apply_global_style=None 时自动判断：
-    # - 如果窗口本身已经在 .ui 里设置了 styleSheet，则保留 UI 样式；
-    # - 如果窗口没有任何 styleSheet，则套用全局样式。
-    if apply_global_style is None:
-        apply_global_style = not bool(window.styleSheet().strip())
-
-    if apply_global_style:
-        window.setStyleSheet(StyleConstants.GLOBAL_STYLE)
-    elif StyleConstants.GLOBAL_STYLE:
-        # 把全局样式作为 fallback 注入到没有独立样式的常用子控件。
-        __apply_global_style_to_unstyled_children(window)
-
-    if not isinstance(window, QDialog):
-        __build_title_bar(window, titleBarConfig)
-
-    __translate_all_controls(window)
-
-    return window
-
-def __apply_global_style_to_unstyled_children(window):
-
-    styled_widget_types = (
-        QMenu,
-        QLineEdit,
-        QPushButton,
-    )
-    for widget_type in styled_widget_types:
-        for widget in window.findChildren(widget_type):
-            if not widget.styleSheet().strip():
-                widget.setStyleSheet(StyleConstants.GLOBAL_STYLE)
+        window.setWindowFlags(base_flags | Qt.WindowType.MSWindowsFixedSizeDialogHint)
 
 
 class __WindowDragFilter(QObject):
@@ -108,9 +105,15 @@ class __WindowDragFilter(QObject):
 
 
 def __build_title_bar(window, config: TitleBarConfig):
-    TITLE_BAR_HEIGHT = 32
-    SHADOW_MARGIN = 6  # 阴影边距，与 PyQt5 版本一致
-    window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+    TITLE_BAR_HEIGHT = 36
+    SHADOW_MARGIN = 6
+    new_flags = (window.windowFlags()
+                 & ~Qt.WindowType.WindowTitleHint
+                 & ~Qt.WindowType.WindowSystemMenuHint
+                 & ~Qt.WindowType.WindowMinMaxButtonsHint
+                 & ~Qt.WindowType.WindowCloseButtonHint)
+    new_flags |= Qt.WindowType.FramelessWindowHint
+    window.setWindowFlags(new_flags)
     window.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
     shadow_container = __create_shadow_container()
@@ -123,13 +126,10 @@ def __build_title_bar(window, config: TitleBarConfig):
     __setup_shadow_layout(shadow_container, background_container, SHADOW_MARGIN)
     __setup_window_layout(window, shadow_container)
 
-    original_size = window.size()
-    window.resize(
-        original_size.width() + SHADOW_MARGIN * 2,
-        original_size.height() + SHADOW_MARGIN * 2 + TITLE_BAR_HEIGHT
-    )
+    __resize_window_for_custom_title_bar(window, TITLE_BAR_HEIGHT, SHADOW_MARGIN)
 
     drag_filter = __WindowDragFilter(window)
+    window._title_bar_drag_filter = drag_filter
     window.installEventFilter(drag_filter)
 
 
@@ -178,20 +178,24 @@ def __create_title_bar(window, config, height):
         }
     """)
     title_layout = QHBoxLayout(title_bar)
-    title_layout.setContentsMargins(2, 0, 2, 0)
-    title_layout.setSpacing(5)
+    title_layout.setContentsMargins(6, 0, 6, 0)
+    title_layout.setSpacing(4)
+    title_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
     label_icon = __create_icon(window)
     title_layout.addWidget(label_icon)
 
-    menu_btn = TitleButton(":/images/menu", window)
-    title_layout.addWidget(menu_btn)
-    title_menu = MenuManager.init_menu(window)
-    menu_btn.set_menu(title_menu)
+    if config.min_btn:
+        menu_btn = TitleButton(":/images/menu", window)
+        title_layout.addWidget(menu_btn)
+        title_menu = MenuManager.init_menu(window)
+        menu_btn.set_menu(title_menu)
 
     title_label = QLabel(config.title)
-    title_label.setStyleSheet("color: white;")
-    title_layout.addWidget(title_label)
+    title_label.setFixedHeight(height)
+    title_label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+    title_label.setStyleSheet("color: white; padding-bottom: 1px;")
+    title_layout.addWidget(title_label, 0, Qt.AlignmentFlag.AlignVCenter)
 
     title_layout.addItem(QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
@@ -200,8 +204,9 @@ def __create_title_bar(window, config, height):
 
         def handle_minimize():
             window.showMinimized()
-            window.hide()
-            window.trayIcon.showMsg("登录器已最小化到托盘", "QsBeanfun")
+            if hasattr(window, 'trayIcon'):
+                window.hide()
+                window.trayIcon.showMsg("登录器已最小化到托盘", "QsBeanfun")
 
         min_btn.clicked.connect(handle_minimize)
         title_layout.addWidget(min_btn)
@@ -234,17 +239,19 @@ def __create_title_bar(window, config, height):
 
 def __create_icon(window):
     icon_label = QLabel(window)
+    icon_label.setFixedSize(20, 20)
+    icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     pixmap = QPixmap(":/images/logo")
     if not pixmap.isNull():
         scaled_pixmap = pixmap.scaled(
-            20, 20,
+            18, 18,
             Qt.AspectRatioMode.KeepAspectRatio,
             Qt.TransformationMode.SmoothTransformation
         )
         icon_label.setPixmap(scaled_pixmap)
     icon_label.setStyleSheet("""
         QLabel {
-            margin-left: 6px;
+            margin-left: 2px;
             border: none;
             border-radius: 6px;
             background-color: transparent;
@@ -269,6 +276,20 @@ def __create_content_widget(window):
         content_widget.setLayout(original_layout)
         content_widget.layout().setContentsMargins(0, 0, 0, 0)
     return content_widget
+
+
+
+def __resize_window_for_custom_title_bar(window, title_bar_height, shadow_margin):
+    if window.testAttribute(Qt.WidgetAttribute.WA_Resized):
+        original_size = window.size()
+    else:
+        size_hint = window.sizeHint()
+        original_size = size_hint if size_hint.isValid() else window.size()
+
+    window.resize(
+        original_size.width() + shadow_margin * 2,
+        original_size.height() + shadow_margin * 2 + title_bar_height
+    )
 
 
 def __setup_background_layout(background_container, title_bar, content_widget):
@@ -324,59 +345,3 @@ def __is_windows_simplified_chinese():
     except Exception as e:
         logging.error(f"获取系统语言时出现异常: {str(e)}")
         return False
-
-
-class TitleButton(QPushButton):
-    def __init__(self, icon_path, parent=None):
-        super().__init__(parent)
-        self.icon_path = icon_path
-        self.init_ui()
-
-    def init_ui(self):
-        self.setText("")
-        self.setFixedSize(24, 24)
-        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setMouseTracking(True)
-        self.load_icon()
-        self.setStyleSheet("""
-            QPushButton {
-                color: white;
-                border-radius: 6px;
-                background-color: transparent;
-                padding: 3px;
-            }
-            QPushButton:hover {
-                background-color: rgba(255, 255, 255, 0.08);
-            }
-            QPushButton:pressed {
-                background-color: rgba(255, 255, 255, 0.11);
-            }
-        """)
-
-    def load_icon(self):
-        pixmap = QPixmap(self.icon_path)
-        if pixmap.isNull():
-            logging.error(f"警告：无法加载图标 {self.icon_path}")
-            self.setText("?")
-            return
-        scaled_pixmap = pixmap.scaled(
-            20, 20,
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation
-        )
-        self.setIcon(QIcon(scaled_pixmap))
-        self.setIconSize(QSize(20, 20))
-
-    def set_menu(self, menu: QMenu):
-        self.menu = menu
-        self.menu.aboutToHide.connect(self.reset_state)
-        self.clicked.connect(self.show_menu)
-
-    def show_menu(self):
-        if self.menu:
-            self.menu.exec(self.mapToGlobal(self.rect().bottomLeft()))
-
-    @Slot()
-    def reset_state(self):
-        self.update()

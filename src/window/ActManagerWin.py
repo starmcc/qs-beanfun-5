@@ -134,7 +134,6 @@ class ActManagerWin(QDialog, Ui_ActManager):
             edit_action = menu.addAction("编辑")
             delete_action = menu.addAction("删除")
         refresh_action = menu.addAction("刷新")
-        # exec_() → exec()
         action = menu.exec(self.tableWidget.mapToGlobal(position))
 
         if action == refresh_action:

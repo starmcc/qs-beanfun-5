@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QProgressBar, QPushButton
 
 from src.config.GlobalConfig import GLOBAL_CONFIG, ActType
 from src.utils import WinManager, BoxPop
-from src.window.BaseWebEngine import BaseWebEngineView
+from src.components.BaseWebEngine import BaseWebEngineView
 
 
 class LoginWeb(QDialog):

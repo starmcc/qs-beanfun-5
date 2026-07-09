@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from PySide6.QtCore import pyqtSignal
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import QDialog
 
@@ -12,7 +12,7 @@ from src.views.Ui_AccountInfo import Ui_AccountInfo
 
 
 class AccountInfoWin(QDialog, Ui_AccountInfo):
-    notice_refresh = pyqtSignal()
+    notice_refresh = Signal()
 
     def __init__(self, parent=None, account: Account = None):
         super().__init__(parent)

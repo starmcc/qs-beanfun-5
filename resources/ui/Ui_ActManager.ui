@@ -6,43 +6,158 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>300</height>
+    <width>760</width>
+    <height>420</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>760</width>
+    <height>420</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>账号管理 - 双击可选择对应账号应用</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog#ActManager {
+    background-color: #f7f7f7;
+}
+QFrame#frame_main {
+    background-color: rgba(255, 255, 255, 0.94);
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+}
+QLabel#label_title {
+    color: #333333;
+    font-size: 14pt;
+    font-weight: 600;
+}
+QLabel#label_subtitle {
+    color: #7a7a7a;
+    font-size: 9pt;
+}
+QTableWidget {
+    background-color: white;
+    alternate-background-color: #fafafa;
+    border: 1px solid #e3e3e3;
+    border-radius: 6px;
+    gridline-color: #efefef;
+    selection-background-color: #e6f2ff;
+    selection-color: #0052cc;
+}
+QHeaderView::section {
+    background-color: #f5f7fa;
+    color: #555555;
+    border: none;
+    border-bottom: 1px solid #e3e3e3;
+    padding: 8px;
+    font-weight: 600;
+}
+QTableWidget::item {
+    padding: 6px;
+}
+QTableWidget::item:selected {
+    background-color: #e6f2ff;
+    color: #0052cc;
+}</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
-    <number>0</number>
+    <number>12</number>
    </property>
    <property name="leftMargin">
-    <number>3</number>
+    <number>16</number>
    </property>
    <property name="topMargin">
-    <number>3</number>
+    <number>16</number>
    </property>
    <property name="rightMargin">
-    <number>3</number>
+    <number>16</number>
    </property>
    <property name="bottomMargin">
-    <number>3</number>
+    <number>16</number>
    </property>
    <item>
-    <widget class="QTableWidget" name="tableWidget">
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+    <widget class="QFrame" name="frame_main">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
      </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
      </property>
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
-     </property>
-     <attribute name="horizontalHeaderMinimumSectionSize">
-      <number>100</number>
-     </attribute>
+     <layout class="QVBoxLayout" name="verticalLayout_mainCard">
+      <property name="spacing">
+       <number>12</number>
+      </property>
+      <property name="leftMargin">
+       <number>16</number>
+      </property>
+      <property name="topMargin">
+       <number>14</number>
+      </property>
+      <property name="rightMargin">
+       <number>16</number>
+      </property>
+      <property name="bottomMargin">
+       <number>16</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_header">
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_title">
+          <property name="text">
+           <string>本地账号管理</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_subtitle">
+          <property name="text">
+           <string>双击行可快速应用账号，右键可新增、编辑、删除或刷新</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="tableWidget">
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="showGrid">
+         <bool>false</bool>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+        <property name="verticalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+        <property name="horizontalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+        <attribute name="horizontalHeaderMinimumSectionSize">
+         <number>100</number>
+        </attribute>
+        <attribute name="horizontalHeaderStretchLastSection">
+         <bool>true</bool>
+        </attribute>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

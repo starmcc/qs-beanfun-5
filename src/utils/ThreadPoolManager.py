@@ -7,7 +7,7 @@ from typing import Callable, Optional, Any, Dict
 from PySide6.QtCore import QObject, Signal, QTimer, Qt
 from PySide6.QtWidgets import QWidget
 
-from src.window.LoadingTask import LoadingMask
+from src.components.LoadingTask import LoadingMask
 
 
 class ThreadPoolManager(QObject):

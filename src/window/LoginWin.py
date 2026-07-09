@@ -3,7 +3,7 @@ import time
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap, QIcon, QAction
-from PySide6.QtWidgets import QWidget, QButtonGroup, QDialog, QMessageBox
+from PySide6.QtWidgets import QWidget, QButtonGroup, QDialog
 
 from src.client import QsClient
 from src.config import Config
@@ -11,14 +11,15 @@ from src.config.GlobalConfig import *
 from src.utils import BoxPop, WinManager, BaseTools
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_Login import Ui_Login
-from src.window import PyQtBrowser, LoginWeb, CustomToolTipWin
+from src.window import CustomToolTipWin
 from src.window.ActManagerWin import ActManagerWin
 from src.window.DoubleCodeInputWin import DoubleCodeInputWin
 from src.window.IntermediateLoginWin import IntermediateLoginWin
 from src.window.MainWin import MainWin
 from src.window.QrCodeLoginWin import QrCodeLoginWin
-from src.window.TrayIcon import TrayIcon
+from src.components.TrayIcon import TrayIcon
 from src.window.TwAdvWin import TwAdvWin
+from src.components import RecaptchaWeb, LoginWeb, PyQtBrowser
 
 
 class LoginWin(QWidget, Ui_Login):
@@ -112,6 +113,7 @@ class LoginWin(QWidget, Ui_Login):
     def login_web_clicked(self):
         LoginWeb.open_login_page(QsClient.get_instance().get_login_index(), self)
 
+
     def login_clicked(self):
 
         def __task_login(act, pwd):
@@ -150,15 +152,33 @@ class LoginWin(QWidget, Ui_Login):
 
             if not login_record.status:
                 if login_record.isRecaptcha:
-                    buttons = {
-                        "官网登入": QMessageBox.ButtonRole.AcceptRole,
-                        "取消": QMessageBox.ButtonRole.RejectRole
-                    }
-                    go_login = BoxPop.custom_question(window, "当前需完成谷歌人机验证\n要使用【官网登入】模式完成登录？",
-                                                      buttons)
-                    if go_login == QMessageBox.ButtonRole.AcceptRole:
-                        self.login_web_clicked()
+                    # 获取 check token
+                    check_token = RecaptchaWeb.get_recaptcha_token_sync(window, "check")
+                    if check_token is None:
+                        # 用户取消或超时，询问是否使用官网登入
+                        if BoxPop.question(window, "驗證取消或超時，是否使用官網登入？"):
+                            self.login_web_clicked()
+                        return
+
+                    # 获取 login token
+                    login_token = RecaptchaWeb.get_recaptcha_token_sync(window, "login")
+                    if login_token is None:
+                        if BoxPop.question(window, "驗證取消或超時，是否使用官網登入？"):
+                            self.login_web_clicked()
+                        return
+
+                    # 使用两个 token 重试登录
+                    def retry_login():
+                        return QsClient.get_instance().login(
+                            window.lineEdit_account.text(),
+                            window.lineEdit_password.text(),
+                            check_token=check_token,
+                            login_token=login_token
+                        )
+
+                    get_thread_pool().submit_task(retry_login, __task_login_result, window, True)
                     return
+
                 BoxPop.err(window, login_record.message)
                 return
 

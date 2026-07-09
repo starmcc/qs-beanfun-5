@@ -15,7 +15,9 @@ class QsClient:
         pass
 
     @abstractmethod
-    def login(self, act: str, pwd: str) -> LoginRecord:
+    def login(self, act: str, pwd: str,
+              check_token=None,
+              login_token=None) -> LoginRecord:
         pass
 
     @abstractmethod

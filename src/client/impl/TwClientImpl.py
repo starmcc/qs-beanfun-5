@@ -19,129 +19,142 @@ class TwClientImpl(QsClient):
     def get_login_index(self) -> str:
         return "https://tw.beanfun.com/beanfun_block/bflogin/default.aspx?service=999999_T0"
 
-    def login(self, act: str, pwd: str) -> LoginRecord:
+    def login(self, act: str, pwd: str,
+              check_token=None,
+              login_token=None) -> LoginRecord:
         RequestClient.get_instance().client.cookies.clear()
         login_record = LoginRecord(status=False, message='')
 
+        # 1. 获取SessionKey
         ok, session_key = self.get_session_key()
-
         if not ok:
             login_record.message = session_key
             return login_record
         login_record.skey = session_key
-        params = {
-            'pSKey': login_record.skey
-        }
+
+        # 2. 获取Index页面和__RequestVerificationToken
+        params = {'pSKey': session_key}
         rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/Index', params=params)
         if rsp.status_code != 200:
-            login_record.message = session_key
+            login_record.message = f"获取Index失败，状态码：{rsp.status_code}"
             return login_record
-        result = re.search(r'<input name="__RequestVerificationToken".*?value="([^"]+?)"', rsp.text)
-        # 取出 token
-        login_record.requestVerificationToken = result.group(1)
-        if not login_record.requestVerificationToken:
-            login_record.message = 'requestVerificationToken获取失败[1]'
+        token_match = re.search(r'<input name="__RequestVerificationToken".*?value="([^"]+?)"', rsp.text)
+        if not token_match:
+            login_record.message = '获取__RequestVerificationToken失败'
             return login_record
+        form_token = token_match.group(1)
+        login_record.requestVerificationToken = form_token
 
-        rsp = RequestClient.get_instance().get('https://login.beanfun.com/Login/InitLogin')
-        if rsp.status_code != 200:
-            login_record.message = f"HTTP请求失败，状态码：{rsp.status_code}"
-            return login_record
         headers = {
             'content-type': 'application/json; charset=utf-8',
-            'referer': f'https://login.beanfun.com/Login/Index?pSKey={login_record.skey}',
-            'RequestVerificationToken': login_record.requestVerificationToken,
+            'referer': f'https://login.beanfun.com/Login/Index?pSKey={session_key}',
+            'RequestVerificationToken': form_token,
         }
-        jsonEntry = TwResponseJson.from_response(rsp)
-        if jsonEntry.ResultData.get("IsRecaptcha"):
-            # 如果需要谷歌验证，则返回 我不是機器人
-            login_record.isRecaptcha = True
-            return login_record
 
-        url = 'https://login.beanfun.com/Login/CheckAccountType'
-        json = {'Account': act}
-        rsp = RequestClient.get_instance().post(url, json=json, headers=headers)
+        # 3. CheckAccountType（带check_token）
+        check_url = 'https://login.beanfun.com/Login/CheckAccountType'
+        params = {'Account': act}
+        if check_token:
+            params['Captcha'] = check_token
+        rsp = RequestClient.get_instance().post(check_url, json=params, headers=headers)
         if rsp.status_code != 200:
-            login_record.message = f"HTTP请求失败，状态码：{rsp.status_code}"
+            login_record.message = f"CheckAccountType请求失败，状态码：{rsp.status_code}"
             return login_record
-        jsonEntry = TwResponseJson.from_response(rsp)
-        if jsonEntry.ResultCode != 1:
-            if "我不是機器人" in jsonEntry.ResultMessage:
-                login_record.isRecaptcha = True
-            return login_record
-        else:
-            if jsonEntry.ResultData.get('IsGamaPass'):
-                login_record.message = '请使用GamePass进行登入,登陆器使用【官网登入】或扫码登录！'
-                return login_record
+        check_entry = TwResponseJson.from_response(rsp)
 
-        url = "https://login.beanfun.com/Login/AccountLogin"
-        json = {
+        # 处理需要reCAPTCHA的情况
+        if check_entry.ResultCode != 1:
+            if check_entry.ResultData.get('IsRecaptcha', False) and not check_token:
+                login_record.isRecaptcha = True
+                return login_record
+            login_record.message = check_entry.ResultMessage or 'CheckAccountType失败'
+            return login_record
+
+        # 检查GamaPass（仍然保留）
+        if check_entry.ResultData.get('IsGamaPass'):
+            login_record.message = '请使用GamePass进行登入，登陆器使用【官网登入】或扫码登录！'
+            return login_record
+
+        # 4. AccountLogin（带login_token或服务器回传的captcha）
+        login_url = 'https://login.beanfun.com/Login/AccountLogin'
+        login_json = {
             'Account': act,
             'Pasw': pwd,
             'IsMobile': False,
         }
-        rsp = RequestClient.get_instance().post(url, headers=headers, json=json)
-        jsonEntry = TwResponseJson.from_response(rsp)
-        if jsonEntry.ResultCode == 0:
-            login_record.message = jsonEntry.ResultMessage
+        captcha = login_token or check_entry.ResultData.get('Captcha', '')
+        if captcha:
+            login_json['Captcha'] = captcha
+
+        rsp = RequestClient.get_instance().post(login_url, headers=headers, json=login_json)
+        if rsp.status_code != 200:
+            login_record.message = f"AccountLogin请求失败，状态码：{rsp.status_code}"
             return login_record
-        elif jsonEntry.ResultCode == 2:
-            if jsonEntry.ResultMessage == "AccountLock":
-                login_record.message = '您的帳號已被鎖定,可聯繫客服人員了解原因'
+        login_entry = TwResponseJson.from_response(rsp)
+
+        # 处理返回结果
+        if login_entry.ResultCode == 1:
+            if login_entry.Result == 1:
+                # 需要进阶验证（无URL）
+                login_record.status = True
+                login_record.adv_status = True
+                login_record.location = None
+                return login_record
+            # ResultCode=1且Result≠1表示登录成功，继续SendLogin
+        elif login_entry.ResultCode == 2:
+            if login_entry.ResultMessage == "AccountLock":
+                login_record.message = '您的帳號已被鎖定，可聯繫客服人員了解原因'
                 return login_record
             else:
-                if jsonEntry.Result == 2:
-                    login_record.message = '請先進行遊戲點數補繳後才能解除鎖定'
-                    return login_record
-                else:
-                    # ====================== adv验证 ======================
-                    login_record.status = True
-                    login_record.adv_status = True
-                    # 这里获取的是服务端返回的验证地址
-                    login_record.location = jsonEntry.ResultMessage
-                    return login_record
-                    # ====================== adv验证End ======================
+                # 进阶验证URL
+                login_record.status = True
+                login_record.adv_status = True
+                login_record.location = login_entry.ResultMessage
+                return login_record
+        else:
+            # 其他错误，包括需要reCAPTCHA
+            if login_entry.ResultData.get('IsRecaptcha', False) and not login_token:
+                login_record.isRecaptcha = True
+                return login_record
+            login_record.message = login_entry.ResultMessage or 'AccountLogin失败'
+            return login_record
 
-        url = "https://login.beanfun.com/Login/SendLogin"
+        # 5. SendLogin 获取表单
+        send_url = 'https://login.beanfun.com/Login/SendLogin'
+        headers_send = {'Referer': f'https://login.beanfun.com/Login/Index?pSKey={session_key}'}
+        rsp = RequestClient.get_instance().get(send_url, headers=headers_send)
+        if rsp.status_code != 200:
+            login_record.message = f"SendLogin请求失败，状态码：{rsp.status_code}"
+            return login_record
 
-        headers = {
-            'Referer': f'https://login.beanfun.com/Login/Index?pSKey={session_key}'
-        }
-        rsp = RequestClient.get_instance().get(url, headers=headers)
-        login_record.content = rsp.text
-
-        return self.login_return_token(login_record)
-
-    def login_return_token(self, login_record: LoginRecord) -> LoginRecord:
+        # 解析表单（和原逻辑相同，但更健壮）
         payload = {}
-        input_tags = re.findall(r'<input[^>]+>', login_record.content, re.IGNORECASE)
+        input_tags = re.findall(r'<input[^>]+>', rsp.text, re.IGNORECASE)
         for tag in input_tags:
-            tag_str = tag
-            # 匹配 name value 属性
-            name_match = re.search(r'name\s*=\s*[\'\"]([^\'\"]+)[\'\"]', tag_str, re.IGNORECASE)
-            val_match = re.search(r'value\s*=\s*[\'\"]([^\'\"]*)[\'\"]', tag_str, re.IGNORECASE)
-            if name_match and val_match and "type=\"submit\"" not in tag_str.lower():
-                name = name_match.group(1)
-                value = val_match.group(1)
-                payload[name] = value
+            name_match = re.search(r'name\s*=\s*[\'"]([^\'"]+)[\'"]', tag, re.IGNORECASE)
+            val_match = re.search(r'value\s*=\s*[\'"]([^\'"]*)[\'"]', tag, re.IGNORECASE)
+            if name_match and val_match and "type=\"submit\"" not in tag.lower():
+                payload[name_match.group(1)] = val_match.group(1)
 
-        if len(payload) == 0:
-            login_record.message = '登录失败'
+        if not payload:
+            login_record.message = 'SendLogin表单解析失败'
             return login_record
-        headers = {
-            'Referer': 'https://login.beanfun.com/'
-        }
-        rsp = RequestClient.get_instance().post("https://tw.beanfun.com/beanfun_block/bflogin/return.aspx",
-                                                data=payload, headers=headers, allow_redirects=False)
 
-        set_cookie_header = rsp.headers.get("Set-Cookie", "")
-        match = re.search(r"bfWebToken=([^;]+)", set_cookie_header)
-        login_record.bfWebToken = match.group(1) if match else None
-        if login_record.bfWebToken is None or login_record.bfWebToken == '':
-            login_record.message = '登入失败,请检查网络环境[3]'
+        # 6. POST return.aspx 提取bfWebToken
+        return_headers = {'Referer': 'https://login.beanfun.com/'}
+        rsp = RequestClient.get_instance().post(
+            "https://tw.beanfun.com/beanfun_block/bflogin/return.aspx",
+            data=payload, headers=return_headers, allow_redirects=False
+        )
+        set_cookie = rsp.headers.get("Set-Cookie", "")
+        bf_token_match = re.search(r"bfWebToken=([^;]+)", set_cookie)
+        if not bf_token_match:
+            login_record.message = '获取bfWebToken失败'
             return login_record
+
+        login_record.bfWebToken = bf_token_match.group(1)
         login_record.status = True
-        login_record.message = '登录成功!'
+        login_record.message = '登录成功！'
         return login_record
 
     def get_account_list(self, bf_web_token: str) -> ActInfoResult:

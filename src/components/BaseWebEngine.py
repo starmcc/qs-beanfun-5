@@ -120,43 +120,7 @@ STEALTH_JS = r"""
         });
     };
 
-    // ── 10. 伪造 WebGL 指纹 ──
-    const getParameterProxies = {
-        [WebGLRenderingContext.prototype.VENDOR]: 'Google Inc. (Intel)',
-        [WebGLRenderingContext.prototype.RENDERER]:
-            'ANGLE (Intel, Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11)',
-    };
-    const origGetParameter = WebGLRenderingContext.prototype.getParameter;
-    WebGLRenderingContext.prototype.getParameter = function(p) {
-        return getParameterProxies[p] || origGetParameter.call(this, p);
-    };
-    if (typeof WebGL2RenderingContext !== 'undefined') {
-        const gp2 = {
-            [WebGL2RenderingContext.prototype.VENDOR]: 'Google Inc. (Intel)',
-            [WebGL2RenderingContext.prototype.RENDERER]:
-                'ANGLE (Intel, Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11)'
-        };
-        const origGP2 = WebGL2RenderingContext.prototype.getParameter;
-        WebGL2RenderingContext.prototype.getParameter = function(p) {
-            return gp2[p] || origGP2.call(this, p);
-        };
-    }
-
-    // ── 11. Canvas 指纹噪声 ──
-    const origToDataURL = HTMLCanvasElement.prototype.toDataURL;
-    HTMLCanvasElement.prototype.toDataURL = function() {
-        const ctx = this.getContext('2d');
-        if (ctx && this.width > 0 && this.height > 0) {
-            const imageData = ctx.getImageData(0, 0, this.width, this.height);
-            for (let i = 0; i < imageData.data.length; i += 4) {
-                imageData.data[i] ^= (i % 3 === 0 ? 1 : 0);
-            }
-            ctx.putImageData(imageData, 0, 0);
-        }
-        return origToDataURL.apply(this, arguments);
-    };
-
-    // ── 12. 伪造 performance.memory ──
+    // ── 10. 伪造 performance.memory ──
     if (performance.memory === undefined) {
         Object.defineProperty(performance, 'memory', {
             get: () => ({
@@ -167,7 +131,7 @@ STEALTH_JS = r"""
         });
     }
 
-    // ── 13. 伪造 connection ──
+    // ── 11. 伪造 connection ──
     if (navigator.connection === undefined) {
         Object.defineProperty(navigator, 'connection', {
             get: () => ({
@@ -179,36 +143,10 @@ STEALTH_JS = r"""
         });
     }
 
-    // ── 14. 隐藏 headless 特征 ──
+    // ── 12. 隐藏 headless 特征 ──
     Object.defineProperty(document, 'hidden', { get: () => false });
     Object.defineProperty(document, 'visibilityState', { get: () => 'visible' });
 
-    // ── 15. reCAPTCHA 语言强制 zh-TW ──
-    function setRecaptchaLang() {
-        const iframe = document.querySelector('iframe[src*="recaptcha"]');
-        if (!iframe) return;
-        try {
-            const url = new URL(iframe.src);
-            if (url.searchParams.get('hl') !== 'zh-TW') {
-                url.searchParams.set('hl', 'zh-TW');
-                iframe.src = url.toString();
-            }
-        } catch(e) {}
-    }
-    setTimeout(setRecaptchaLang, 800);
-    setTimeout(setRecaptchaLang, 2000);
-    new MutationObserver(setRecaptchaLang).observe(document.body || document.documentElement,
-        { childList: true, subtree: true });
-
-    // ── 16. 拦截 window.open 以便外部感知 ──
-    const _origOpen = window.open;
-    window.open = function(url, target, features) {
-        console.log('[Stealth] window.open intercepted:', url, target);
-        // 仍然调用原始 open，但通过 console 日志让外部可追踪
-        return _origOpen.call(window, url, target, features);
-    };
-
-    console.log('[Stealth] All anti-detection patches applied');
 })();
 """
 
@@ -275,7 +213,23 @@ class BaseWebEngineView(QWebEngineView):
         self.page().loadFinished.connect(self._on_load_finished)
         self.urlChanged.connect(self._on_url_changed)
         self.titleChanged.connect(self._on_title_changed)
+        # ── 新增域名注入缓存
+        self._injected_domains = set()  # 存储已完整注入Stealth的域名
+        self._stealth_injected_urls = set()
 
+    def get_main_domain(self, url_str: str) -> str:
+        """提取主域名（去掉www、子域名，只保留根域名）"""
+        url = QUrl(url_str)
+        host = url.host()
+        if not host:
+            return ""
+        parts = host.split(".")
+        # 简单适配 com.tw / com.hk / com.jp 等海外域名
+        if len(parts) >= 2 and parts[-1] in ("tw", "hk", "jp", "com", "net", "org"):
+            if parts[-2] == "com" and len(parts) > 2:
+                return ".".join(parts[-3:])
+            return ".".join(parts[-2:])
+        return host
     # ═══════════════════════════════════════════════════════════════
     # Cookie 管理
     # ═══════════════════════════════════════════════════════════════
@@ -333,18 +287,22 @@ class BaseWebEngineView(QWebEngineView):
     # ═══════════════════════════════════════════════════════════════
 
     def _on_load_finished(self, ok):
-        """页面加载完成时注入反检测 JS。每次跳转后的新页面都会重新注入。"""
         if not ok:
             return
-        current_url = self.url().toString()
-        # 跳过空白页和 about: 页面
-        if not current_url or current_url == "about:blank" or current_url.startswith("about:"):
+        current_url_str = self.url().toString()
+        if not current_url_str or current_url_str == "about:blank" or current_url_str.startswith("about:"):
             return
-        # 每个新 URL 都注入（不再使用全局 _stealth_injected 标志）
-        if current_url not in self._stealth_injected_urls:
-            self._stealth_injected_urls.add(current_url)
+
+        domain = self.get_main_domain(current_url_str)
+        if not domain:
+            return
+
+        # 分支1：全新域名 → 完整注入全套Stealth
+        if domain not in self._injected_domains:
+            self._injected_domains.add(domain)
+            self._stealth_injected_urls.add(current_url_str)
             self.page().runJavaScript(STEALTH_JS)
-            logging.debug(f"[BaseWebEngine] 反检测 JS 已注入: {current_url[:80]}")
+            logging.debug(f"[BaseWebEngine] 新域名 {domain}，完整注入Stealth")
 
     # ═══════════════════════════════════════════════════════════════
     # URL 变化追踪 & 导航历史

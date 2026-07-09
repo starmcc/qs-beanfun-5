@@ -3,7 +3,7 @@ from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QProgressBar
 
 from src.utils import WinManager
-from src.window.BaseWebEngine import BaseWebEngineView
+from src.components.BaseWebEngine import BaseWebEngineView
 
 
 class PyQtBrowser(QDialog):
@@ -115,9 +115,13 @@ def open_browser(url_path: str, parent=None):
     if PyQtBrowser._instance is not None:
         PyQtBrowser._instance.showNormal()
         PyQtBrowser._instance.raise_()
+        PyQtBrowser._instance.activateWindow()
         PyQtBrowser._instance.load_url(url_path)
         return PyQtBrowser._instance
     win = PyQtBrowser(parent)
+    win.setAttribute(win.WidgetAttribute.WA_DeleteOnClose, True)
     win.load_url(url_path)
-    win.exec()
+    win.show()
+    win.raise_()
+    win.activateWindow()
     return win
