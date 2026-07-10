@@ -1,5 +1,5 @@
 from PySide6.QtCore import QUrl
-from PySide6.QtGui import QCloseEvent
+from PySide6.QtGui import QCloseEvent, Qt
 from PySide6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QProgressBar
 
 from src.utils import WinManager
@@ -9,16 +9,13 @@ from src.components.BaseWebEngine import BaseWebEngineView
 class PyQtBrowser(QDialog):
     """通用内置浏览器窗口（单例）。使用 BaseWebEngineView，每次打开都是全新会话。"""
 
-    _instance = None
 
     def __init__(self, parent=None):
-        if PyQtBrowser._instance is not None:
-            raise Exception("PyQtBrowser 窗口只能打开一个")
         super().__init__(parent)
-        PyQtBrowser._instance = self
         self._setup_window()
         self._init_ui()
         self._connect_signals()
+
 
     def _setup_window(self):
         WinManager.set_basic_window(self)
@@ -27,6 +24,7 @@ class PyQtBrowser(QDialog):
 
     def _init_ui(self):
         self.web_view = BaseWebEngineView(self)
+        self.web_view.sync_cookies_from_requests()
         self.url_bar = QLineEdit()
         self.go_btn = QPushButton("进入")
         self.back_btn = QPushButton("←")
@@ -106,20 +104,12 @@ class PyQtBrowser(QDialog):
             self.web_view.stop()
             self.web_view.load(QUrl("about:blank"))
             self.web_view.deleteLater()
-        PyQtBrowser._instance = None
         event.accept()
 
 
 def open_browser(url_path: str, parent=None):
-    """打开通用浏览器窗口（单例复用）"""
-    if PyQtBrowser._instance is not None:
-        PyQtBrowser._instance.showNormal()
-        PyQtBrowser._instance.raise_()
-        PyQtBrowser._instance.activateWindow()
-        PyQtBrowser._instance.load_url(url_path)
-        return PyQtBrowser._instance
     win = PyQtBrowser(parent)
-    win.setAttribute(win.WidgetAttribute.WA_DeleteOnClose, True)
+    win.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
     win.load_url(url_path)
     win.show()
     win.raise_()
