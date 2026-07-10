@@ -6,14 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>360</width>
-    <height>286</height>
+    <width>400</width>
+    <height>380</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>360</width>
-    <height>286</height>
+    <width>400</width>
+    <height>380</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>400</width>
+    <height>380</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -37,12 +49,12 @@ QLabel#label_headerDesc {
     color: #7a7a7a;
     font-size: 9pt;
 }
-QLabel[class="infoKey"] {
+QLabel[class=&quot;infoKey&quot;] {
     color: #6a6a6a;
     font-size: 10pt;
     font-weight: 500;
 }
-QLabel[class="infoValue"] {
+QLabel[class=&quot;infoValue&quot;] {
     color: #2f2f2f;
     font-size: 10pt;
     padding: 2px 0;
@@ -79,28 +91,13 @@ QPushButton#pushButton_edit:pressed {
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>12</number>
-   </property>
-   <property name="leftMargin">
-    <number>16</number>
-   </property>
-   <property name="topMargin">
-    <number>16</number>
-   </property>
-   <property name="rightMargin">
-    <number>16</number>
-   </property>
-   <property name="bottomMargin">
-    <number>16</number>
-   </property>
    <item>
     <widget class="QFrame" name="frame_infoCard">
      <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+      <enum>QFrame::Shape::StyledPanel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+      <enum>QFrame::Shadow::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_infoCard">
       <property name="spacing">
@@ -138,7 +135,7 @@ QPushButton#pushButton_edit:pressed {
           <item>
            <widget class="QLabel" name="label_headerDesc">
             <property name="text">
-             <string>以下内容可复制查看，名称可直接编辑</string>
+             <string>以下内容可复制查看，名称可编辑</string>
             </property>
            </widget>
           </item>
@@ -147,7 +144,7 @@ QPushButton#pushButton_edit:pressed {
         <item>
          <spacer name="horizontalSpacer_header">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -173,10 +170,7 @@ QPushButton#pushButton_edit:pressed {
        </layout>
       </item>
       <item>
-       <layout class="QGridLayout" name="gridLayout">
-        <property name="horizontalSpacing">
-         <number>10</number>
-        </property>
+       <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
         <property name="verticalSpacing">
          <number>10</number>
         </property>
@@ -192,7 +186,7 @@ QPushButton#pushButton_edit:pressed {
            <string>账号</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
           </property>
           <property name="class" stdset="0">
            <string>infoKey</string>
@@ -208,7 +202,7 @@ QPushButton#pushButton_edit:pressed {
            <string/>
           </property>
           <property name="textInteractionFlags">
-           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+           <set>Qt::TextInteractionFlag::LinksAccessibleByMouse|Qt::TextInteractionFlag::TextSelectableByMouse</set>
           </property>
           <property name="class" stdset="0">
            <string>infoValue</string>
@@ -227,7 +221,7 @@ QPushButton#pushButton_edit:pressed {
            <string>编号</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
           </property>
           <property name="class" stdset="0">
            <string>infoKey</string>
@@ -243,7 +237,7 @@ QPushButton#pushButton_edit:pressed {
            <string/>
           </property>
           <property name="textInteractionFlags">
-           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+           <set>Qt::TextInteractionFlag::LinksAccessibleByMouse|Qt::TextInteractionFlag::TextSelectableByMouse</set>
           </property>
           <property name="class" stdset="0">
            <string>infoValue</string>
@@ -262,7 +256,7 @@ QPushButton#pushButton_edit:pressed {
            <string>名称</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
           </property>
           <property name="class" stdset="0">
            <string>infoKey</string>
@@ -278,7 +272,7 @@ QPushButton#pushButton_edit:pressed {
            <string/>
           </property>
           <property name="textInteractionFlags">
-           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+           <set>Qt::TextInteractionFlag::LinksAccessibleByMouse|Qt::TextInteractionFlag::TextSelectableByMouse</set>
           </property>
           <property name="class" stdset="0">
            <string>infoValue</string>
@@ -297,7 +291,7 @@ QPushButton#pushButton_edit:pressed {
            <string>状态</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
           </property>
           <property name="class" stdset="0">
            <string>infoKey</string>
@@ -313,7 +307,7 @@ QPushButton#pushButton_edit:pressed {
            <string/>
           </property>
           <property name="textInteractionFlags">
-           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+           <set>Qt::TextInteractionFlag::LinksAccessibleByMouse|Qt::TextInteractionFlag::TextSelectableByMouse</set>
           </property>
           <property name="class" stdset="0">
            <string>infoValue</string>
@@ -328,10 +322,10 @@ QPushButton#pushButton_edit:pressed {
    <item>
     <widget class="QFrame" name="frame_statCard">
      <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+      <enum>QFrame::Shape::StyledPanel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+      <enum>QFrame::Shadow::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_statCard">
       <property name="spacing">
@@ -355,7 +349,7 @@ QPushButton#pushButton_edit:pressed {
          <string>您的账号已建立了</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
@@ -365,7 +359,7 @@ QPushButton#pushButton_edit:pressed {
          <string>0</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
@@ -375,7 +369,7 @@ QPushButton#pushButton_edit:pressed {
          <string>天</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
@@ -385,7 +379,7 @@ QPushButton#pushButton_edit:pressed {
          <string/>
         </property>
         <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>

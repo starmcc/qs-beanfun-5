@@ -23,8 +23,14 @@ class Ui_AccountInfo(object):
     def setupUi(self, AccountInfo):
         if not AccountInfo.objectName():
             AccountInfo.setObjectName(u"AccountInfo")
-        AccountInfo.resize(360, 286)
-        AccountInfo.setMinimumSize(QSize(360, 286))
+        AccountInfo.resize(400, 380)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(AccountInfo.sizePolicy().hasHeightForWidth())
+        AccountInfo.setSizePolicy(sizePolicy)
+        AccountInfo.setMinimumSize(QSize(400, 380))
+        AccountInfo.setMaximumSize(QSize(400, 380))
         AccountInfo.setStyleSheet(u"QDialog#AccountInfo {\n"
 "    background-color: #f7f7f7;\n"
 "}\n"
@@ -84,13 +90,11 @@ class Ui_AccountInfo(object):
 "    background-color: #e06f00;\n"
 "}")
         self.verticalLayout = QVBoxLayout(AccountInfo)
-        self.verticalLayout.setSpacing(12)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(16, 16, 16, 16)
         self.frame_infoCard = QFrame(AccountInfo)
         self.frame_infoCard.setObjectName(u"frame_infoCard")
-        self.frame_infoCard.setFrameShape(QFrame.StyledPanel)
-        self.frame_infoCard.setFrameShadow(QFrame.Raised)
+        self.frame_infoCard.setFrameShape(QFrame.Shape.StyledPanel)
+        self.frame_infoCard.setFrameShadow(QFrame.Shadow.Raised)
         self.verticalLayout_infoCard = QVBoxLayout(self.frame_infoCard)
         self.verticalLayout_infoCard.setSpacing(12)
         self.verticalLayout_infoCard.setObjectName(u"verticalLayout_infoCard")
@@ -129,64 +133,64 @@ class Ui_AccountInfo(object):
 
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setHorizontalSpacing(10)
         self.gridLayout.setVerticalSpacing(10)
         self.label = QLabel(self.frame_infoCard)
         self.label.setObjectName(u"label")
         self.label.setMinimumSize(QSize(54, 0))
-        self.label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
 
         self.label_account = QLabel(self.frame_infoCard)
         self.label_account.setObjectName(u"label_account")
         self.label_account.setCursor(QCursor(Qt.CursorShape.IBeamCursor))
-        self.label_account.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextSelectableByMouse)
+        self.label_account.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
 
         self.gridLayout.addWidget(self.label_account, 0, 1, 1, 1)
 
         self.label_2 = QLabel(self.frame_infoCard)
         self.label_2.setObjectName(u"label_2")
         self.label_2.setMinimumSize(QSize(54, 0))
-        self.label_2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label_2.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
 
         self.label_number = QLabel(self.frame_infoCard)
         self.label_number.setObjectName(u"label_number")
         self.label_number.setCursor(QCursor(Qt.CursorShape.IBeamCursor))
-        self.label_number.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextSelectableByMouse)
+        self.label_number.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
 
         self.gridLayout.addWidget(self.label_number, 1, 1, 1, 1)
 
         self.label_5 = QLabel(self.frame_infoCard)
         self.label_5.setObjectName(u"label_5")
         self.label_5.setMinimumSize(QSize(54, 0))
-        self.label_5.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label_5.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.label_5, 2, 0, 1, 1)
 
         self.label_name = QLabel(self.frame_infoCard)
         self.label_name.setObjectName(u"label_name")
         self.label_name.setCursor(QCursor(Qt.CursorShape.IBeamCursor))
-        self.label_name.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextSelectableByMouse)
+        self.label_name.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
 
         self.gridLayout.addWidget(self.label_name, 2, 1, 1, 1)
 
         self.label_7 = QLabel(self.frame_infoCard)
         self.label_7.setObjectName(u"label_7")
         self.label_7.setMinimumSize(QSize(54, 0))
-        self.label_7.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label_7.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.label_7, 3, 0, 1, 1)
 
         self.label_status = QLabel(self.frame_infoCard)
         self.label_status.setObjectName(u"label_status")
         self.label_status.setCursor(QCursor(Qt.CursorShape.IBeamCursor))
-        self.label_status.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextSelectableByMouse)
+        self.label_status.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
 
         self.gridLayout.addWidget(self.label_status, 3, 1, 1, 1)
 
+        self.gridLayout.setColumnStretch(1, 1)
 
         self.verticalLayout_infoCard.addLayout(self.gridLayout)
 
@@ -195,33 +199,33 @@ class Ui_AccountInfo(object):
 
         self.frame_statCard = QFrame(AccountInfo)
         self.frame_statCard.setObjectName(u"frame_statCard")
-        self.frame_statCard.setFrameShape(QFrame.StyledPanel)
-        self.frame_statCard.setFrameShadow(QFrame.Raised)
+        self.frame_statCard.setFrameShape(QFrame.Shape.StyledPanel)
+        self.frame_statCard.setFrameShadow(QFrame.Shadow.Raised)
         self.verticalLayout_statCard = QVBoxLayout(self.frame_statCard)
         self.verticalLayout_statCard.setSpacing(4)
         self.verticalLayout_statCard.setObjectName(u"verticalLayout_statCard")
         self.verticalLayout_statCard.setContentsMargins(16, 16, 16, 16)
         self.label_3 = QLabel(self.frame_statCard)
         self.label_3.setObjectName(u"label_3")
-        self.label_3.setAlignment(Qt.AlignCenter)
+        self.label_3.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.verticalLayout_statCard.addWidget(self.label_3)
 
         self.label_day = QLabel(self.frame_statCard)
         self.label_day.setObjectName(u"label_day")
-        self.label_day.setAlignment(Qt.AlignCenter)
+        self.label_day.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.verticalLayout_statCard.addWidget(self.label_day)
 
         self.label_6 = QLabel(self.frame_statCard)
         self.label_6.setObjectName(u"label_6")
-        self.label_6.setAlignment(Qt.AlignCenter)
+        self.label_6.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.verticalLayout_statCard.addWidget(self.label_6)
 
         self.label_createTme = QLabel(self.frame_statCard)
         self.label_createTme.setObjectName(u"label_createTme")
-        self.label_createTme.setAlignment(Qt.AlignCenter)
+        self.label_createTme.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.verticalLayout_statCard.addWidget(self.label_createTme)
 
@@ -237,7 +241,7 @@ class Ui_AccountInfo(object):
     def retranslateUi(self, AccountInfo):
         AccountInfo.setWindowTitle(QCoreApplication.translate("AccountInfo", u"\u8d26\u53f7\u8be6\u60c5", None))
         self.label_headerTitle.setText(QCoreApplication.translate("AccountInfo", u"\u6e38\u620f\u8d26\u53f7\u4fe1\u606f", None))
-        self.label_headerDesc.setText(QCoreApplication.translate("AccountInfo", u"\u4ee5\u4e0b\u5185\u5bb9\u53ef\u590d\u5236\u67e5\u770b\uff0c\u540d\u79f0\u53ef\u76f4\u63a5\u7f16\u8f91", None))
+        self.label_headerDesc.setText(QCoreApplication.translate("AccountInfo", u"\u4ee5\u4e0b\u5185\u5bb9\u53ef\u590d\u5236\u67e5\u770b\uff0c\u540d\u79f0\u53ef\u7f16\u8f91", None))
         self.pushButton_edit.setText(QCoreApplication.translate("AccountInfo", u"\u7f16\u8f91\u540d\u79f0", None))
         self.label.setText(QCoreApplication.translate("AccountInfo", u"\u8d26\u53f7", None))
         self.label.setProperty(u"class", QCoreApplication.translate("AccountInfo", u"infoKey", None))
