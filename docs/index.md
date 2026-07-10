@@ -12,9 +12,6 @@ hero:
       text: 官方Github下载
       link: https://github.com/starmcc/qs-beanfun-5/releases
     - theme: alt
-      text: 123网盘下载(提取码:tnxm)
-      link: https://www.123865.com/s/oiJSVv-6wrg3
-    - theme: alt
       text: 百度网盘下载(提取码:tnxm)
       link: https://pan.baidu.com/s/1SKwgiYoy7fDJCqDpFtZAjQ
 features:
