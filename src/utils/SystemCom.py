@@ -10,7 +10,7 @@ import psutil
 from PySide6.QtWidgets import QFileDialog
 
 from src.config import Config
-from src.config.GlobalConfig import GLOBAL_CONFIG
+from src.config.GlobalConfig import GLOBAL_CONFIG, ActType
 from src.plugins import PluginTools
 from src.plugins.LocaleRemulator import LocaleRemulator
 from src.utils import BaseTools, SchedulerManager, BoxPop
@@ -49,11 +49,14 @@ def run_game_classic(window, act: str = None, pwd: str = None):
         game_dir = Path(directory_path)
         exe_path = game_dir / "Maplestory_Classic.exe"
         # 列表参数
+        service = "2373"
+        if GLOBAL_CONFIG.now_login_type == ActType.TW.value:
+            service = "2372"
         cmd_args = [
             str(exe_path),
             str(act),
             str(pwd),
-            "2373",
+            service,
             "944"
         ]
         subprocess.Popen(
