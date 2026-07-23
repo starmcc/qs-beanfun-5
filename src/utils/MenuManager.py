@@ -38,7 +38,7 @@ def init_menu(self):
         ]),
         CustomMenu(name="classic", title="经典版", children=[
             CustomMenu(name="classic_download_ngm", title="下载Nexon Game Manager插件", handler=lambda: classic_download_ngm(self)),
-            CustomMenu(name="classic_install", title="安装经典版", handler=lambda: classic_install(self)),
+            CustomMenu(name="classic_install", title="安装枫之谷经典版", handler=lambda: classic_install(self)),
         ]),
         CustomMenu(name="nav", title="便捷导航", handler=lambda: open_win(self, "nav")),
         CustomMenu(name="config", title="设置", handler=lambda: open_win(self,"config")),
