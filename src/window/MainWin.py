@@ -23,6 +23,8 @@ from src.components.TrayIcon import TrayIcon
 class MainWin(QWidget, Ui_Main):
     trayIcon: TrayIcon
     nowAccount: Account = Account()
+    # 怀旧服数据
+    classic_result = {}
     task_id: str
 
     def __init__(self, parent=None):
@@ -53,6 +55,7 @@ class MainWin(QWidget, Ui_Main):
         self.checkBox_autoInput.setChecked(Config.auto_input())
         self.pushButton_dynamicPwd.clicked.connect(self.dynamicPwd_clicked)
         self.pushButton_start.clicked.connect(self.start_clicked)
+        self.pushButton_classic.clicked.connect(self.classic_clicked)
         self.pushButton_config.clicked.connect(self.config_clicked)
         self.pushButton_createAct.clicked.connect(self.createAct_clicked)
         self.pushButton_loginOut.clicked.connect(self.user_loginOut_triggerd)
@@ -154,6 +157,26 @@ class MainWin(QWidget, Ui_Main):
                 BoxPop.err(win, f'启动游戏出现了问题:\n {str(e)}')
 
         get_thread_pool().submit_task(__task, __result, self, True, win=self)
+
+    def classic_clicked(self):
+        def __task(win):
+            win.get_classic_login_data()
+            return True
+
+        def __result(win, status, e):
+            if e or not status:
+                BoxPop.err(win, "获取登录数据失败")
+                return
+            try:
+                SystemCom.run_game_classic(self, win.classic_result['UserObjectID'], win.classic_result['UserSessionToken'])
+            except Exception as e:
+                logging.error(f"发生错误:\n{str(e)}")
+                BoxPop.err(win, f'启动经典版游戏出现了问题:\n {str(e)}')
+
+        get_thread_pool().submit_task(__task, __result, self, True, win=self)
+
+    def get_classic_login_data(self):
+        self.classic_result = QsClient.get_instance().get_classic_data(GLOBAL_CONFIG.bf_web_token)
 
     def get_dynamic_password(self):
         pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)

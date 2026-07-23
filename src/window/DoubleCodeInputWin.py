@@ -1,4 +1,5 @@
-from PySide6.QtCore import QEvent, Qt
+from PySide6.QtCore import QEvent, Qt, QRegularExpression
+from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
 from src.utils import WinManager
@@ -19,6 +20,9 @@ class DoubleCodeInputWin(QDialog, Ui_DoubleCodeInput):
         self.lineEdit_code.textChanged.connect(self._on_text_change)
         self.lineEdit_code.installEventFilter(self)
         self.lineEdit_code.setFocus()
+        validator = QRegularExpressionValidator(QRegularExpression("[0-9]{0,6}"))
+        self.lineEdit_code.setValidator(validator)
+        self.lineEdit_code.setMaxLength(6)
 
     def eventFilter(self, obj, event):
         if obj is self.lineEdit_code and event.type() == QEvent.Type.KeyPress:
@@ -35,6 +39,8 @@ class DoubleCodeInputWin(QDialog, Ui_DoubleCodeInput):
     def _on_text_change(self, text):
         self.input_code = text.strip()
         self.pushButton_enter.setEnabled(bool(self.input_code))
+        if len(self.input_code) == 6:
+            self.accept()
 
     def get_code(self):
         return self.input_code

@@ -187,6 +187,14 @@ class Ui_Main(object):
 
         self.horizontalLayout.addWidget(self.pushButton_start)
 
+        self.pushButton_classic = QPushButton(Main)
+        self.pushButton_classic.setObjectName(u"pushButton_classic")
+        sizePolicy1.setHeightForWidth(self.pushButton_classic.sizePolicy().hasHeightForWidth())
+        self.pushButton_classic.setSizePolicy(sizePolicy1)
+        self.pushButton_classic.setMinimumSize(QSize(0, 36))
+
+        self.horizontalLayout.addWidget(self.pushButton_classic)
+
         self.pushButton_dynamicPwd = QPushButton(Main)
         self.pushButton_dynamicPwd.setObjectName(u"pushButton_dynamicPwd")
         sizePolicy1.setHeightForWidth(self.pushButton_dynamicPwd.sizePolicy().hasHeightForWidth())
@@ -220,12 +228,13 @@ class Ui_Main(object):
         self.label_2.setText(QCoreApplication.translate("Main", u"\u4e50\u8c46", None))
         self.label_5.setText(QCoreApplication.translate("Main", u"\u52a8\u6001\u5bc6\u4ee4", None))
         self.label.setText(QCoreApplication.translate("Main", u"\u6e38\u620f\u8d26\u53f7", None))
-        self.label_3.setText(QCoreApplication.translate("Main", u"\u8d26\u53f7\u72c0\u614b", None))
+        self.label_3.setText(QCoreApplication.translate("Main", u"\u8d26\u53f7\u72b6\u6001", None))
         self.pushButton_config.setText(QCoreApplication.translate("Main", u"\u8bbe\u7f6e", None))
         self.pushButton_loginOut.setText(QCoreApplication.translate("Main", u"\u767b\u51fa", None))
         self.pushButton_createAct.setText(QCoreApplication.translate("Main", u"\u65b0\u5efa\u8d26\u53f7", None))
         self.checkBox_autoInput.setText(QCoreApplication.translate("Main", u"\u81ea\u52a8\u586b\u5165", None))
         self.pushButton_start.setText(QCoreApplication.translate("Main", u"\u542f\u52a8\u6e38\u620f", None))
+        self.pushButton_classic.setText(QCoreApplication.translate("Main", u"\u8fdb\u5165\u7ecf\u5178\u7248", None))
         self.pushButton_dynamicPwd.setText(QCoreApplication.translate("Main", u"\u83b7\u53d6\u5bc6\u4ee4", None))
     # retranslateUi
 

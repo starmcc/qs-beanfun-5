@@ -1,3 +1,5 @@
+import json
+import logging
 import re
 from abc import abstractmethod
 from typing import Tuple
@@ -99,6 +101,51 @@ class QsClient:
     @abstractmethod
     def get_game_points(self, bf_web_token: str) -> int:
         pass
+
+    def get_classic_data(self, bf_web_token: str) -> dict:
+        """获取经典版(怀旧服)登录数据，返回包含 UserObjectID 和 UserSessionToken 的字典"""
+        # 第一步：GET 获取 OTT
+        url = 'https://galaxy.games.gamania.com/webapi/view/login/mstc?redirect_url=https://maplestoryclassic.beanfun.com/Main?af_click_id='
+        rsp = RequestClient.get_instance().get(url)
+        if rsp.status_code != 200:
+            logging.error(f'获取经典版OTT失败，状态码: {rsp.status_code}')
+            return None
+        pat1 = r'var ott = "([^"]+)"'
+        match_obj = re.search(pat1, rsp.text)
+        if not match_obj:
+            logging.error('获取经典版OTT失败，未匹配到ott值')
+            return None
+        ott_value = match_obj.group(1)
+        logging.info(f'提取到OTT: {ott_value}')
+
+        # 第二步：POST 获取登录结果
+        params = {
+            "ott": ott_value,
+            "fromSelf": True
+        }
+        url = f'https://galaxy.games.gamania.com/webapi/view/login/result/mstc/ghk?WebToken={bf_web_token}'
+        rsp = RequestClient.get_instance().post(url, params=params)
+        if rsp.status_code != 200:
+            logging.error(f'获取经典版数据失败，状态码: {rsp.status_code}')
+            return None
+        try:
+            j = json.loads(rsp.text)
+        except ValueError as e:
+            logging.error(f'获取经典版数据JSON解析失败: {str(e)}')
+            return None
+        status = j.get('Status', {})
+        if status.get('Code') != 0:
+            logging.error(f'获取经典版数据失败，Status.Code: {status.get("Code")}')
+            return None
+        results = j.get('Results', {})
+        if not results:
+            logging.error('获取经典版数据失败，Results为空')
+            return None
+        logging.info(f'获取经典版数据成功，UserObjectID: {results.get("UserObjectID")}')
+        return {
+            'UserObjectID': results.get('UserObjectID'),
+            'UserSessionToken': results.get('UserSessionToken'),
+        }
 
     def regex_login_request_params(self, text: str) -> Tuple[str, str, str]:
         data_list = re.findall(r'id="__VIEWSTATE"\svalue="(.*?)"\s/>', text)

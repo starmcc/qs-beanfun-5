@@ -3,6 +3,7 @@ import logging
 import subprocess
 import time
 from ctypes import wintypes
+from pathlib import Path
 from typing import Tuple
 
 import psutil
@@ -35,6 +36,35 @@ user32.ClientToScreen.restype = wintypes.BOOL
 
 user32.GetClientRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
 user32.GetClientRect.restype = wintypes.BOOL
+
+
+# 运行经典版游戏的函数
+def run_game_classic(window, act: str = None, pwd: str = None):
+    try:
+        directory_path = Config.game_classic_path()
+        if not directory_path:
+            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 1, '请设置游戏目录')
+            return
+
+        game_dir = Path(directory_path)
+        exe_path = game_dir / "Maplestory_Classic.exe"
+        # 列表参数
+        cmd_args = [
+            str(exe_path),
+            str(act),
+            str(pwd),
+            "2373",
+            "944"
+        ]
+        subprocess.Popen(
+            cmd_args,
+            cwd=str(game_dir),
+            shell=False
+        )
+    except Exception as e:
+        import traceback
+        err_msg = f"异常：{str(e)}\n堆栈：{traceback.format_exc()}"
+        GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, -999, err_msg)
 
 
 # 运行游戏的函数
@@ -152,6 +182,18 @@ def select_game_path() -> Tuple[str, str]:
     if BaseTools.check_cn_path(directory):
         errorMsg = "目录中存在中文,游戏目录不建议使用中文汉字,可能会发生无法预估的错误!"
     Config.game_path(directory)
+    return directory, errorMsg
+
+
+def select_game_classic_path() -> Tuple[str, str]:
+    directory = QFileDialog.getExistingDirectory(None, "选择新枫之谷经典版游戏目录", "",
+                                                 options=QFileDialog.Option.DontResolveSymlinks)
+    errorMsg = ""
+    if not directory:
+        return directory, errorMsg
+    if BaseTools.check_cn_path(directory):
+        errorMsg = "目录中存在中文,游戏目录不建议使用中文汉字,可能会发生无法预估的错误!"
+    Config.game_classic_path(directory)
     return directory, errorMsg
 
 
