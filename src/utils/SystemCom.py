@@ -308,3 +308,34 @@ def __kill_process(pro_name: str) -> str:
             return result.stderr.decode('gbk')
     except Exception as e:
         return f'发生错误:\n{str(e)}'
+
+
+def find_ngm_path() -> str:
+    """查找NGM安装路径，返回NGM64.exe的完整路径，未找到返回None"""
+    import winreg
+    # 常见注册表路径
+    reg_paths = [
+        (winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Nexon\NGM'),
+        (winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\Nexon\NGM'),
+    ]
+    for hkey, sub_key in reg_paths:
+        try:
+            with winreg.OpenKey(hkey, sub_key) as key:
+                install_path, _ = winreg.QueryValueEx(key, 'InstallPath')
+                ngm_exe = Path(install_path) / 'NGM64.exe'
+                if ngm_exe.exists():
+                    return str(ngm_exe)
+        except (FileNotFoundError, OSError):
+            continue
+
+    # 注册表未找到，尝试常见默认路径
+    default_paths = [
+        Path(r'C:\ProgramData\Nexon\NGM\NGM64.exe'),
+        Path(r'C:\Program Files (x86)\Nexon\NGM\NGM64.exe'),
+        Path(r'C:\Program Files\Nexon\NGM\NGM64.exe'),
+    ]
+    for ngm_exe in default_paths:
+        if ngm_exe.exists():
+            return str(ngm_exe)
+
+    return None
