@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QWidget
 
 from src.client import QsClient
 from src.config import Config
-from src.config.GlobalConfig import GLOBAL_CONFIG
+from src.config.GlobalConfig import GLOBAL_CONFIG, ActType
 from src.models.Account import Account
 from src.models.ActInfoResult import ActInfoResult
 from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager, WinManager
@@ -70,6 +70,12 @@ class MainWin(QWidget, Ui_Main):
                                     "如显示封禁请立刻联系官方客服解除!\n菜单 -> 用户中心 -> 客服中心 -> 联系客服 -> 填写信息并等待客服邮件回复\n建议勿使用外挂/辅助/宏/VPN等软件\n官方一经查实永久封禁,误封可解除")
         CustomToolTipWin.build_tips(self, self.checkBox_autoInput,
                                     f"勾选后点击{self.pushButton_dynamicPwd.text()}将自动聚焦《新枫之谷》\n并自动在游戏中输入数字账号和动态密令")
+        # 经典版按钮：台湾 GamaPass 登录 或 香港登录 时显示
+        is_classic_visible = (
+            (GLOBAL_CONFIG.now_login_type == ActType.TW.value and GLOBAL_CONFIG.is_gamapass_login)
+            or GLOBAL_CONFIG.now_login_type == ActType.HK.value
+        )
+        self.pushButton_classic.setVisible(is_classic_visible)
         self.pushButton_loginOut.setFocus()
 
     def eventFilter(self, obj, event):

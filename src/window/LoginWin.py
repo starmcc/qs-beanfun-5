@@ -44,8 +44,11 @@ class LoginWin(QWidget, Ui_Login):
         self.pushButton_login.clicked.connect(self.login_clicked)
         self.pushButton_actManager.clicked.connect(self.actManager_clicked)
         self.pushButton_web.clicked.connect(self.login_web_clicked)
+        self.pushButton_gamapass.clicked.connect(self.gamaPass_clicked)
         CustomToolTipWin.build_tips(self, self.pushButton_web,
-                                    "谷歌人机验证/邮箱验证/门号验证/疑难杂症等..\n请使用【官网登入】解决问题\n点击打开内置浏览器进行原生态登入操作")
+                                    "谷歌人机验证/邮箱验证/门号验证/疑难杂症等..\n点击打开内置浏览器进行原生态登入操作")
+        CustomToolTipWin.build_tips(self, self.pushButton_gamapass,
+                                    "使用【GamaPass】进行台湾账号登录\n适用于已绑定【GamaPass】的账号\n游玩【经典版】必须使用【GamaPass】登入")
         self.label_register.mousePressEvent = self.register_mousePressEvent
         self.label_forgotPassword.mousePressEvent = self.forgotPassword_mousePressEvent
         self.lineEdit_account.returnPressed.connect(self.lineEdit_password.setFocus)
@@ -95,6 +98,7 @@ class LoginWin(QWidget, Ui_Login):
     def buttonGroup_type_clicked(self):
         isTw = self.buttonGroup_type.checkedButton() == self.radioButton_tw
         self.label_qrCode.setVisible(isTw)
+        self.pushButton_gamapass.setVisible(isTw)
         if isTw:
             GLOBAL_CONFIG.now_login_type = ActType.TW.value
         else:
@@ -222,6 +226,10 @@ class LoginWin(QWidget, Ui_Login):
         Config.account_changes(entry, insert)
 
         self.login_go_to_main_event.emit()
+
+    def gamaPass_clicked(self):
+        login_url = QsClient.get_instance().get_login_index()
+        LoginWeb.open_login_page(login_url, self, is_gamapass=True)
 
     def login_double_input(self) -> str:
         GLOBAL_CONFIG.win_double_code_input = DoubleCodeInputWin(self)

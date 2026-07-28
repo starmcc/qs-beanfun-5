@@ -155,7 +155,7 @@ class Ui_Main(object):
 
         self.pushButton_createAct = QPushButton(Main)
         self.pushButton_createAct.setObjectName(u"pushButton_createAct")
-        self.pushButton_createAct.setMaximumSize(QSize(64, 16777215))
+        self.pushButton_createAct.setMaximumSize(QSize(80, 16777215))
 
         self.horizontalLayout_2.addWidget(self.pushButton_createAct)
 

@@ -12,7 +12,7 @@ class ActType(Enum):
 
 class GlobalConstants:
     """全局常量集中管理"""
-    APP_VERSION = "5.7.0"
+    APP_VERSION = "5.7.1"
     GITHUB_URL = "https://github.com/starmcc/qs-beanfun-5"
     GITHUB_API_URL = "https://api.github.com/repos/starmcc/qs-beanfun-5"
     NAV_API_URL = "https://gitee.com/starmcc/qs-beanfun-nav/raw/master/config.json"
@@ -44,11 +44,14 @@ class _GlobalConfig:
         self.win_intermediateLogin = None
         self.win_qrCode = None
         self.win_double_code_input = None
+        self.win_gamapass = None
 
         # 任务队列
         self.custom_queue = TaskQueue()
 
         self.now_login_type: str = ""
+        # 标记是否使用 GamaPass 登录（仅台湾）
+        self.is_gamapass_login: bool = False
 
         self._initialized = True  # 标记初始化完成
 

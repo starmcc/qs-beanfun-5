@@ -72,7 +72,7 @@ class TwClientImpl(QsClient):
 
         # 检查GamaPass（仍然保留）
         if check_entry.ResultData.get('IsGamaPass'):
-            login_record.message = '请使用GamePass进行登入，登陆器使用【官网登入】或扫码登录！'
+            login_record.message = '请使用GamaPass进行登入，登陆器使用【GamaPass】或扫码登录！'
             return login_record
 
         # 4. AccountLogin（带login_token或服务器回传的captcha）

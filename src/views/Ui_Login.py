@@ -149,6 +149,14 @@ class Ui_Login(object):
 
         self.horizontalLayout.addWidget(self.pushButton_login)
 
+        self.pushButton_gamapass = QPushButton(Login)
+        self.pushButton_gamapass.setObjectName(u"pushButton_gamapass")
+        sizePolicy.setHeightForWidth(self.pushButton_gamapass.sizePolicy().hasHeightForWidth())
+        self.pushButton_gamapass.setSizePolicy(sizePolicy)
+        self.pushButton_gamapass.setVisible(False)
+
+        self.horizontalLayout.addWidget(self.pushButton_gamapass)
+
         self.pushButton_web = QPushButton(Login)
         self.pushButton_web.setObjectName(u"pushButton_web")
         sizePolicy.setHeightForWidth(self.pushButton_web.sizePolicy().hasHeightForWidth())
@@ -185,6 +193,7 @@ class Ui_Login(object):
         self.label_5.setText(QCoreApplication.translate("Login", u"\u5bc6\u7801", None))
         self.pushButton_actManager.setText(QCoreApplication.translate("Login", u"\u8d26\u53f7\u7ba1\u7406", None))
         self.pushButton_login.setText(QCoreApplication.translate("Login", u"\u767b\u5f55", None))
+        self.pushButton_gamapass.setText(QCoreApplication.translate("Login", u"GamaPass", None))
         self.pushButton_web.setText(QCoreApplication.translate("Login", u"\u5b98\u7f51\u767b\u5165", None))
     # retranslateUi
 

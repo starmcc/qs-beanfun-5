@@ -41,6 +41,6 @@ class Ui_QrCodeLogin(object):
     # setupUi
 
     def retranslateUi(self, QrCodeLogin):
-        QrCodeLogin.setWindowTitle(QCoreApplication.translate("QrCodeLogin", u"QrCode", None))
+        QrCodeLogin.setWindowTitle(QCoreApplication.translate("QrCodeLogin", u"\u4e8c\u7ef4\u7801\u767b\u5165", None))
     # retranslateUi
 

@@ -51,14 +51,12 @@ def custom_question(self, msg, buttons: dict[str, QMessageBox.ButtonRole]) -> QM
 
 def input_dialog(parent, title: str, label: str) -> Tuple[str, bool]:
     dialog = QInputDialog(parent)
-    # 修复窗口枚举
     dialog.setWindowFlags(
         dialog.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint | Qt.WindowType.MSWindowsFixedSizeDialogHint)
     dialog.setInputMode(QInputDialog.InputMode.TextInput)
     dialog.setWindowTitle(title)
     dialog.setLabelText(label)
     dialog.exec()
-    # dialog.result() 返回 DialogCode 枚举，直接判断是否Accepted
     return dialog.textValue(), dialog.result() == QDialog.DialogCode.Accepted
 
 

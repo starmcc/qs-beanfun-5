@@ -258,7 +258,7 @@
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
        <property name="spacing">
         <number>0</number>
        </property>
@@ -272,6 +272,22 @@
          </property>
          <property name="text">
           <string>登录</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_gamapass">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>GamaPass</string>
+         </property>
+         <property name="visible">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
