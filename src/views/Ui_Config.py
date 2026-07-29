@@ -23,14 +23,14 @@ class Ui_Config(object):
     def setupUi(self, Config):
         if not Config.objectName():
             Config.setObjectName(u"Config")
-        Config.resize(350, 310)
+        Config.resize(350, 260)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Config.sizePolicy().hasHeightForWidth())
         Config.setSizePolicy(sizePolicy)
-        Config.setMinimumSize(QSize(350, 310))
-        Config.setMaximumSize(QSize(350, 310))
+        Config.setMinimumSize(QSize(350, 260))
+        Config.setMaximumSize(QSize(350, 260))
         Config.setStyleSheet(u"QDialog#Config {\n"
 "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,\n"
 "                                stop:0 #f7faff,\n"
@@ -124,37 +124,6 @@ class Ui_Config(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
-        self.label_classicPathHint = QLabel(self.groupBox_gamePath)
-        self.label_classicPathHint.setObjectName(u"label_classicPathHint")
-        self.label_classicPathHint.setStyleSheet(u"color: #5f6f86; font: 8.5pt \"Microsoft YaHei UI\";")
-        self.label_classicPathHint.setWordWrap(True)
-
-        self.verticalLayout_2.addWidget(self.label_classicPathHint)
-
-        self.horizontalLayout_classic = QHBoxLayout()
-        self.horizontalLayout_classic.setSpacing(8)
-        self.horizontalLayout_classic.setObjectName(u"horizontalLayout_classic")
-        self.horizontalLayout_classic.setContentsMargins(0, 0, 0, 0)
-        self.lineEdit_classicPath = QLineEdit(self.groupBox_gamePath)
-        self.lineEdit_classicPath.setObjectName(u"lineEdit_classicPath")
-        self.lineEdit_classicPath.setMinimumSize(QSize(0, 32))
-        self.lineEdit_classicPath.setReadOnly(True)
-
-        self.horizontalLayout_classic.addWidget(self.lineEdit_classicPath)
-
-        self.pushButton_classicPath = QPushButton(self.groupBox_gamePath)
-        self.pushButton_classicPath.setObjectName(u"pushButton_classicPath")
-        self.pushButton_classicPath.setMinimumSize(QSize(84, 32))
-        self.pushButton_classicPath.setMaximumSize(QSize(108, 16777215))
-        self.pushButton_classicPath.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-
-        self.horizontalLayout_classic.addWidget(self.pushButton_classicPath)
-
-        self.horizontalLayout_classic.setStretch(0, 5)
-        self.horizontalLayout_classic.setStretch(1, 2)
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_classic)
-
 
         self.verticalLayout.addWidget(self.groupBox_gamePath)
 
@@ -177,8 +146,5 @@ class Ui_Config(object):
         self.label_gamePathHint.setText(QCoreApplication.translate("Config", u"\u8bf7\u9009\u62e9\u65b0\u67ab\u4e4b\u8c37\u6e38\u620f\u5b89\u88c5\u76ee\u5f55", None))
         self.lineEdit_gamePath.setPlaceholderText(QCoreApplication.translate("Config", u"\u5c1a\u672a\u9009\u62e9\u6e38\u620f\u76ee\u5f55", None))
         self.pushButton_gamePath.setText(QCoreApplication.translate("Config", u"\u6d4f\u89c8\u76ee\u5f55", None))
-        self.label_classicPathHint.setText(QCoreApplication.translate("Config", u"\u8bf7\u9009\u62e9\u65b0\u67ab\u4e4b\u8c37\u7ecf\u5178\u7248\u6e38\u620f\u5b89\u88c5\u76ee\u5f55", None))
-        self.lineEdit_classicPath.setPlaceholderText(QCoreApplication.translate("Config", u"\u5c1a\u672a\u9009\u62e9\u7ecf\u5178\u7248\u6e38\u620f\u76ee\u5f55", None))
-        self.pushButton_classicPath.setText(QCoreApplication.translate("Config", u"\u6d4f\u89c8\u76ee\u5f55", None))
     # retranslateUi
 

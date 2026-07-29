@@ -97,15 +97,6 @@ def game_path(value: str = None):
     __save_config(key, value)
     return None
 
-def game_classic_path(value: str = None):
-    key = 'game_classic_path'
-    if value is None:
-        # 读取
-        return __get_config(key, '')
-    __save_config(key, value)
-    return None
-
-
 def auto_input(value: bool = None):
     key = 'auto_input'
     if value is None:

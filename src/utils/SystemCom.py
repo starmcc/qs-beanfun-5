@@ -41,27 +41,31 @@ user32.GetClientRect.restype = wintypes.BOOL
 # 运行经典版游戏的函数
 def run_game_classic(window, act: str = None, pwd: str = None):
     try:
-        directory_path = Config.game_classic_path()
-        if not directory_path:
-            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 1, '请设置游戏目录')
+        if not act or not pwd:
+            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 1, '登录凭证已过期，请重新登录后再试')
             return
 
-        game_dir = Path(directory_path)
-        exe_path = game_dir / "Maplestory_Classic.exe"
-        # 列表参数
         service = "2373"
         if GLOBAL_CONFIG.now_login_type == ActType.TW.value:
             service = "2372"
-        cmd_args = [
-            str(exe_path),
-            str(act),
-            str(pwd),
-            service,
-            "944"
-        ]
+
+        # 构建 ngm://launch/ 协议 URL
+        timestamp = int(time.time() * 1000)
+        ngm_url = (
+            f"ngm://launch/ -mode:launch -game:'2982@2141' "
+            f"-passarg:'{act} {pwd} {service} 944' "
+            f"-position:'GameWeb|https://maplestoryclassic.beanfun.com/Main?af_click_id=' "
+            f"-architectureplatform:'none' "
+            f"-timestamp:{timestamp}"
+        )
+
+        ngm_exe = find_ngm_path()
+        if not ngm_exe:
+            GLOBAL_CONFIG.custom_queue.addTask(_run_game_result, window, 4, '未找到NGM，请确认已安装Nexon Game Manager')
+            return
+
         subprocess.Popen(
-            cmd_args,
-            cwd=str(game_dir),
+            [ngm_exe, ngm_url],
             shell=False
         )
     except Exception as e:
@@ -152,6 +156,8 @@ def _run_game_result(win, status, msg):
     # 0 = 游戏正在运行,不执行
     # 1  = 设置游戏目录
     # 2 = 自动阻止更新成功
+    # 3 = 登录凭证已过期，请重新登录后再试
+    # 4 = 未找到NGM，请确认已安装Nexon Game Manager
     if status == 1:
         if not BoxPop.question(win, msg):
             return
@@ -185,18 +191,6 @@ def select_game_path() -> Tuple[str, str]:
     if BaseTools.check_cn_path(directory):
         errorMsg = "目录中存在中文,游戏目录不建议使用中文汉字,可能会发生无法预估的错误!"
     Config.game_path(directory)
-    return directory, errorMsg
-
-
-def select_game_classic_path() -> Tuple[str, str]:
-    directory = QFileDialog.getExistingDirectory(None, "选择新枫之谷经典版游戏目录", "",
-                                                 options=QFileDialog.Option.DontResolveSymlinks)
-    errorMsg = ""
-    if not directory:
-        return directory, errorMsg
-    if BaseTools.check_cn_path(directory):
-        errorMsg = "目录中存在中文,游戏目录不建议使用中文汉字,可能会发生无法预估的错误!"
-    Config.game_classic_path(directory)
     return directory, errorMsg
 
 

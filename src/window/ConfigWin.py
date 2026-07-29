@@ -25,15 +25,12 @@ class ConfigWin(QDialog, Ui_Config):
         CustomToolTipWin.build_tips(self, self.checkBox_closeStartWindow, "《新枫之谷》启动后,会打开默认启动页\n建议勾选自动关闭该启动页\n该启动页无任何作用,加快游戏启动速度")
         self.pushButton_gamePath.clicked.connect(self.gamePath_clicked)
         CustomToolTipWin.build_tips(self, self.pushButton_gamePath, "选择游戏目录\n请选择英文目录")
-        self.pushButton_classicPath.clicked.connect(self.classicPath_clicked)
-        CustomToolTipWin.build_tips(self, self.pushButton_classicPath, "选择经典版游戏目录\n请选择英文目录")
     def read_config(self):
         self.checkBox_passInput.setChecked(Config.pass_input())
         self.checkBox_stopUpdate.setChecked(Config.stop_update())
         self.checkBox_closeStartWindow.setChecked(Config.close_start_window())
         self.checkBox_appCheckUpdate.setChecked(Config.app_check_update())
         self.lineEdit_gamePath.setText(Config.game_path())
-        self.lineEdit_classicPath.setText(Config.game_classic_path())
 
     def passInput_statusChanged(self):
         Config.pass_input(self.checkBox_passInput.isChecked())
@@ -55,12 +52,3 @@ class ConfigWin(QDialog, Ui_Config):
             BoxPop.warn(self, err)
             return
         self.lineEdit_gamePath.setText(Config.game_path())
-
-    def classicPath_clicked(self):
-        directory, err = SystemCom.select_game_classic_path()
-        if not directory:
-            return
-        if err:
-            BoxPop.warn(self, err)
-            return
-        self.lineEdit_classicPath.setText(Config.game_classic_path())
