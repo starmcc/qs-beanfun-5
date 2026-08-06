@@ -141,10 +141,26 @@ class QsClient:
         if not results:
             logging.error('获取经典版数据失败，Results为空')
             return None
-        logging.info(f'获取经典版数据成功，UserObjectID: {results.get("UserObjectID")}')
+        logging.info(f'获取经典版数据成功，UserID: {results.get("UserID")}')
+
+        ott_value = results.get("Ott")
+        url = f'https://maplestoryclassic.beanfun.com/api/Login/GetOneTimeWebInfo'
+        data = json.dumps({"OTT": ott_value})
+        rsp = RequestClient.get_instance().post(url, data=data, headers={'Content-Type': 'application/json'})
+        if rsp.status_code != 200:
+            logging.error(f'获取经典版数据失败，状态码: {rsp.status_code}')
+            return None
+
+        try:
+            j = json.loads(rsp.text)
+        except ValueError as e:
+            logging.error(f'获取经典版数据JSON解析失败: {str(e)}')
+            return None
+        results = j.get('data', {})
+
         return {
-            'UserObjectID': results.get('UserObjectID'),
-            'UserSessionToken': results.get('UserSessionToken'),
+            'userObjectID': results.get('userObjectID'),
+            'userSessionToken': results.get('userSessionToken'),
         }
 
     def regex_login_request_params(self, text: str) -> Tuple[str, str, str]:

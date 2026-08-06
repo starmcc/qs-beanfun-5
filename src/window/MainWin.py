@@ -174,7 +174,7 @@ class MainWin(QWidget, Ui_Main):
                 BoxPop.err(win, "获取登录数据失败")
                 return
             try:
-                SystemCom.run_game_classic(self, win.classic_result['UserObjectID'], win.classic_result['UserSessionToken'])
+                SystemCom.run_game_classic(self, win.classic_result['userObjectID'], win.classic_result['userSessionToken'])
             except Exception as e:
                 logging.error(f"发生错误:\n{str(e)}")
                 BoxPop.err(win, f'启动经典版游戏出现了问题:\n {str(e)}')
