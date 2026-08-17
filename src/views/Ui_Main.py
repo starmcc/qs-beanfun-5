@@ -23,9 +23,9 @@ class Ui_Main(object):
     def setupUi(self, Main):
         if not Main.objectName():
             Main.setObjectName(u"Main")
-        Main.resize(350, 310)
-        Main.setMinimumSize(QSize(350, 310))
-        Main.setMaximumSize(QSize(350, 310))
+        Main.resize(350, 330)
+        Main.setMinimumSize(QSize(350, 330))
+        Main.setMaximumSize(QSize(350, 330))
         self.verticalLayout = QVBoxLayout(Main)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -137,6 +137,12 @@ class Ui_Main(object):
 
         self.verticalLayout_3.addWidget(self.widget)
 
+        self.label_accountLimit = QLabel(Main)
+        self.label_accountLimit.setObjectName(u"label_accountLimit")
+        self.label_accountLimit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.verticalLayout_3.addWidget(self.label_accountLimit)
+
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setSpacing(0)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -229,6 +235,7 @@ class Ui_Main(object):
         self.label_5.setText(QCoreApplication.translate("Main", u"\u52a8\u6001\u5bc6\u4ee4", None))
         self.label.setText(QCoreApplication.translate("Main", u"\u6e38\u620f\u8d26\u53f7", None))
         self.label_3.setText(QCoreApplication.translate("Main", u"\u8d26\u53f7\u72b6\u6001", None))
+        self.label_accountLimit.setText(QCoreApplication.translate("Main", u"\u6700\u5927\u8d26\u53f7\u521b\u5efa\u6570\u91cf\uff1a-", None))
         self.pushButton_config.setText(QCoreApplication.translate("Main", u"\u8bbe\u7f6e", None))
         self.pushButton_loginOut.setText(QCoreApplication.translate("Main", u"\u767b\u51fa", None))
         self.pushButton_createAct.setText(QCoreApplication.translate("Main", u"\u65b0\u5efa\u8d26\u53f7", None))

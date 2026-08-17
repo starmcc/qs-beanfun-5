@@ -2,6 +2,7 @@ import base64
 import hashlib
 import logging
 import os
+import re
 import subprocess
 
 from Crypto.Cipher import DES, AES
@@ -124,66 +125,122 @@ def encrypt_aes(text: str) -> str:
         return ''
 
 
-# GGM DecryptParam 替换表（硬编码）
+# GGM DecryptParam 替换表（硬编码）共 8 个表。
 _GGM_TABLES = [
     "bac987d65e432f10",
     "3bc4d5e6f2a79108",
     "cdbeaf9012456378",
     "4e6fb81a3c5d7092",
+    "bdef1246789ac530",
+    "5f82cb4093e71d6a",
+    "df1468ace0357b92",
+    "b50c61a4f93e82d7",
 ]
 
 
 def decrypt_ggm_param(data: str) -> str:
     """
-    GGM WebStart DecryptParam 解密算法。
+    GGM WebStart DecryptParam 解密算法
 
     用于解密 game_start_step2.aspx 返回的 m_objData.data，
     得到形如 "LaunchTicket=...&&&&ServiceCode=...&&&&..." 的明文。
 
     算法：
-    1. 取 data[0] 作为十六进制整数 n。
-    2. 使用 n % 4 选择替换表。
+    1. 取 data[0] 作为十六进制整数 selector。
+    2. 依次尝试替换表（优先 selector % 4、selector % 8，再遍历全部 8 个表）。
     3. 每个字符转成它在替换表中的索引（十六进制），得到 normalized hex。
-    4. 从 normalized hex 的 n + 1 位移取出 8 个字符作为 DES key。
+    4. 从 normalized hex 的 selector + 1 位移取出 8 个字符作为 DES key。
     5. 剩余内容转成 bytes，使用 DES-ECB（Padding=None）解密。
-    6. UTF-8 解码并移除尾端 \\0。
+    6. 若解密结果包含 "LaunchTicket=" 则视为成功并返回明文；
+       否则尝试下一个表（选错表会得到噪声，无法解出 LaunchTicket）。
     """
     if not data:
         return ""
+
     try:
-        n = int(data[0], 16)
-        table = _GGM_TABLES[n % 4]
+        selector = int(data[0], 16)
+    except ValueError:
+        logging.error("GGM DecryptParam 解密失败: 首字符不是合法的十六进制")
+        return ""
 
-        normalized = "".join(format(table.index(c), "x") for c in data[1:])
+    body = data[1:]
 
-        key_offset = n + 1
+    # 优先尝试最可能的表，再遍历全部表（去重）
+    order = [selector % 4, selector % len(_GGM_TABLES)]
+    order.extend(range(len(_GGM_TABLES)))
+    tried = []
+    for index in order:
+        if index in tried:
+            continue
+        tried.append(index)
+
+        table = _GGM_TABLES[index]
+        try:
+            normalized = "".join(format(table.index(c), "x") for c in body)
+        except ValueError:
+            # 字符不在该表中，跳过
+            continue
+
+        key_offset = selector + 1
+        if key_offset + 8 > len(normalized):
+            continue
         key = normalized[key_offset:key_offset + 8].encode("ascii")
 
         cipher_hex = normalized[:key_offset] + normalized[key_offset + 8:]
 
-        des = DES.new(key, DES.MODE_ECB)
-        plaintext = des.decrypt(bytes.fromhex(cipher_hex))
-        return plaintext.rstrip(b"\x00").decode("utf-8")
-    except Exception as e:
-        logging.error(f"GGM DecryptParam 解密失败: {str(e)}")
+        try:
+            des = DES.new(key, DES.MODE_ECB)
+            plaintext = des.decrypt(bytes.fromhex(cipher_hex))
+            plaintext_str = plaintext.rstrip(b"\x00").decode("utf-8")
+        except Exception:
+            continue
+
+        # 只有解出 LaunchTicket 字段才说明选对了表
+        if "LaunchTicket=" in plaintext_str:
+            logging.debug(f"GGM DecryptParam 使用替换表 index={index} 解密成功")
+            return plaintext_str
+
+    logging.error("GGM DecryptParam 解密失败: 所有替换表均未解出 LaunchTicket")
+    return ""
+
+
+def decrypt_ggm_strings(hex_ciphertext: str, key_ascii: str) -> str:
+    """DES ECB 解密。
+
+    使用 8 字节 ASCII key 对 hex 编码的密文进行 DES ECB 无填充解密，
+    去除尾端 null 字节后返回 ASCII 字符串。
+
+    :param hex_ciphertext: hex 编码的密文，例如 ``"4A1B..."``
+    :param key_ascii: 8 字节 ASCII key，例如 ``"TESTKEY1"``
+    :return: 解密后的 ASCII 字符串；key 长度不为 8、hex 非法或密文长度
+             不是 8 的倍数时返回空字符串 ``""``
+    """
+    if not key_ascii or len(key_ascii) != 8:
+        logging.warning("decrypt_ggm_strings: key 长度必须为 8 字节")
         return ""
 
-
-def decrypt_otp_data(data: str) -> str:
-    """
-    解密 get_webstart_otp_v2.ashx 返回的 data 字段，得到动态密码明文。
-
-    响应 data 格式：前 8 个字符是 DES key，剩余是密文 hex。
-    使用 DES-ECB（Padding=None）解密，去除尾端 \\0。
-    """
-    if not data or len(data) < 8:
-        return ""
     try:
-        key = data[:8].encode("ascii")
-        cipher_hex = data[8:]
+        key = key_ascii.encode("ascii")
+        ciphertext = bytes.fromhex(hex_ciphertext)
+    except (UnicodeEncodeError, ValueError) as e:
+        logging.error(f"decrypt_ggm_strings: key 或 hex 密文非法: {str(e)}")
+        return ""
+
+    if len(ciphertext) % 8 != 0:
+        logging.warning("decrypt_ggm_strings: 密文长度不是 8 的倍数")
+        return ""
+
+    try:
         des = DES.new(key, DES.MODE_ECB)
-        plaintext = des.decrypt(bytes.fromhex(cipher_hex))
-        return plaintext.rstrip(b"\x00").decode("utf-8")
+        plaintext = des.decrypt(ciphertext)
     except Exception as e:
-        logging.error(f"OTP data 解密失败: {str(e)}")
+        logging.error(f"decrypt_ggm_strings: DES 解密失败: {str(e)}")
+        return ""
+
+    # 去除 null 字节并转为 ASCII 字符串
+    trimmed = plaintext.split(b"\x00", 1)[0]
+    try:
+        return trimmed.decode("ascii")
+    except UnicodeDecodeError as e:
+        logging.error(f"decrypt_ggm_strings: 解密结果非 ASCII: {str(e)}")
         return ""

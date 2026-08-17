@@ -124,30 +124,35 @@ class HkClientImpl(QsClient):
 
     def get_account_list(self, bf_web_token: str) -> ActInfoResult:
         actResult = ActInfoResult()
-        url = "https://bfweb.hk.beanfun.com/beanfun_block/auth.aspx"
-        params = {
+        # 1. 先访问 auth.aspx 获取 cookie 副作用
+        auth_url = "https://bfweb.hk.beanfun.com/beanfun_block/auth.aspx"
+        auth_params = {
             'channel': 'game_zone',
             'page_and_query': 'game_start.aspx?service_code_and_region=610074_T9',
             'web_token': bf_web_token,
+        }
+        RequestClient.get_instance().get(auth_url, params=auth_params)
+
+        # 2. 访问账号列表页面 game_server_account_list.aspx
+        now = datetime.datetime.now()
+        str_date_time = f"{now.year}{now.month}{now.day}{now.hour}{now.minute}{now.second}{now.minute}"
+        url = "https://bfweb.hk.beanfun.com/beanfun_block/game_zone/game_server_account_list.aspx"
+        params = {
+            'sc': '610074',
+            'sr': 'T9',
+            'dt': str_date_time,
         }
         rsp = RequestClient.get_instance().get(url, params=params)
         text = html.unescape(rsp.text)
 
         if rsp.status_code != 200:
             return actResult
+
+        # 解析账号数量上限提示
+        self.__parse_account_limit_notice(actResult, text)
+
         data_list = re.findall(r'onclick="([^"]*)"><div id="(\w+)" sn="(\d+)" name="([^"]+)"', text)
         if not data_list:
-            # 进阶认证校验
-            data_list = re.findall(
-                r'<div\sid="divServiceAccountAmountLimitNotice"\sclass="InnerContent">(.*)</div>', text)
-            certStr = data_list[0] if data_list else None
-            if certStr.find("進階認證") >= 0:
-                # 没有做进阶认证
-                actResult.cert_status = False
-            if re.search(r'<div\sid="divServiceInstruction">請先創立新帳戶</div>', text):
-                # 新账号，没有账号
-                actResult.new_user = True
-
             # 检查是否已经做了进阶认证
             actResult.auth_cert = re.search(r'm_strMabiStatus\s=\s"0"', text)
 
@@ -162,6 +167,26 @@ class HkClientImpl(QsClient):
             account.create_time = self.__get_act_create_time(account.sn)
             actResult.accounts.append(account)
         return actResult
+
+    def __parse_account_limit_notice(self, actResult: ActInfoResult, text: str):
+        """
+        解析账号数量上限提示
+        - 提示包含「進階認證」→ 需要进阶认证，cert_status = False
+        - 提示包含数字 → 提取为最大可创建账号数量 account_limit
+        """
+        notice_list = re.findall(
+            r'<div\sid="divServiceAccountAmountLimitNotice"\sclass="InnerContent">(.*?)</div>', text)
+        if not notice_list:
+            return
+        notice = notice_list[0]
+        if "進階認證" in notice:
+            # 没有做进阶认证
+            actResult.cert_status = False
+            return
+        # 提取数字上限（如「此遊戲最多允許新增帳號數:2」→ 2）
+        num_match = re.search(r'\d+', notice)
+        if num_match:
+            actResult.account_limit = int(num_match.group(0))
 
     def __get_act_create_time(self, sn: str):
         url = "https://bfweb.hk.beanfun.com/beanfun_block/game_zone/game_start_step2.aspx"

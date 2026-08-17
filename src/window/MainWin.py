@@ -201,12 +201,15 @@ class MainWin(QWidget, Ui_Main):
             win.children_accounts = actInfoResult.accounts
             win.auth_cert = actInfoResult.auth_cert
             win.comboBox_gameAct.clear()
-            win.pushButton_createAct.setVisible(actInfoResult.new_user)
-            win.pushButton_dynamicPwd.setEnabled(not actInfoResult.new_user)
+            # 更新最大账号创建数量显示
+            win.__update_account_limit_label(actInfoResult)
+            # 根据最大可创建账号数量决定是否显示添加账号按钮
+            win.pushButton_createAct.setVisible(win.__can_create_account(actInfoResult))
+            win.pushButton_dynamicPwd.setEnabled(len(win.children_accounts) > 0)
             win.lineEdit_numAct.setText('')
             win.lineEdit_dynamicPwd.setText('')
-            if actInfoResult.new_user is True or len(win.children_accounts) == 0:
-                # 新账号
+            if len(win.children_accounts) == 0:
+                # 没有账号
                 if not win.auth_cert:
                     BoxPop.info(win, '此账号尚未完成电话进阶认证\n请前往会员中心完成后重新登录！')
                     # 不允许创建账号和查看账号详情
@@ -219,6 +222,30 @@ class MainWin(QWidget, Ui_Main):
             win.refresh_account_info(0)
 
         get_thread_pool().submit_task(__task, __result, self, True)
+
+    def __update_account_limit_label(self, actInfoResult: ActInfoResult):
+        """
+        更新「最大账号创建数量」标签文本。
+        - account_limit 为 None → 显示「-」（未知/未限制）
+        - 否则显示具体数字
+        """
+        if actInfoResult.account_limit is not None:
+            self.label_accountLimit.setText(f"最大账号创建数量：{actInfoResult.account_limit}")
+        else:
+            self.label_accountLimit.setText("最大账号创建数量：-")
+
+    def __can_create_account(self, actInfoResult: ActInfoResult) -> bool:
+        """
+        判断是否显示添加账号按钮。
+        - 未完成进阶认证（auth_cert=False）→ 不显示
+        - 有账号数量上限（account_limit）且当前账号数 >= 上限 → 不显示
+        - 其余情况（含无账号、未限制）→ 显示
+        """
+        if not actInfoResult.auth_cert:
+            return False
+        if actInfoResult.account_limit is not None:
+            return len(actInfoResult.accounts) < actInfoResult.account_limit
+        return True
 
     def refresh_account_info(self, index):
         """

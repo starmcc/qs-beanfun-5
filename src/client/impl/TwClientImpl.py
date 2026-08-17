@@ -162,30 +162,35 @@ class TwClientImpl(QsClient):
 
     def get_account_list(self, bf_web_token: str) -> ActInfoResult:
         actResult = ActInfoResult()
-        url = "https://tw.beanfun.com/beanfun_block/auth.aspx"
-        params = {
+        # 1. 先访问 auth.aspx 获取 cookie 副作用
+        auth_url = "https://tw.beanfun.com/beanfun_block/auth.aspx"
+        auth_params = {
             'channel': 'game_zone',
             'page_and_query': 'game_start.aspx?service_code_and_region=610074_T9',
             'web_token': bf_web_token,
+        }
+        RequestClient.get_instance().get(auth_url, params=auth_params)
+
+        # 2. 访问账号列表页面 game_server_account_list.aspx
+        now = datetime.datetime.now()
+        str_date_time = f"{now.year}{now.month}{now.day}{now.hour}{now.minute}{now.second}{now.minute}"
+        url = "https://tw.beanfun.com/beanfun_block/game_zone/game_server_account_list.aspx"
+        params = {
+            'sc': '610074',
+            'sr': 'T9',
+            'dt': str_date_time,
         }
         rsp = RequestClient.get_instance().get(url, params=params)
         text = html.unescape(rsp.text)
 
         if rsp.status_code != 200:
             return actResult
+
+        # 解析账号数量上限提示（divServiceAccountAmountLimitNotice）
+        self.__parse_account_limit_notice(actResult, text)
+
         data_list = re.findall(r'onclick="([^"]*)"><div id="(\w+)" sn="(\d+)" name="([^"]+)"', text)
         if not data_list:
-            # 进阶认证校验
-            data_list = re.findall(
-                r'<div\sid="divServiceAccountAmountLimitNotice"\sclass="InnerContent">(.*)</div>', text)
-            certStr = data_list[0] if data_list else None
-            if certStr.find("進階認證") >= 0:
-                # 没有做进阶认证
-                actResult.cert_status = False
-            if re.search(r'<div\sid="divServiceInstruction">請先創立新帳戶</div>', text):
-                # 新账号，没有账号
-                actResult.new_user = True
-
             # 检查是否已经做了进阶认证
             actResult.auth_cert = re.search(r'm_strMabiStatus\s=\s"0"', text)
 
@@ -200,6 +205,27 @@ class TwClientImpl(QsClient):
             account.create_time = self.__get_act_create_time(account.sn)
             actResult.accounts.append(account)
         return actResult
+
+    def __parse_account_limit_notice(self, actResult: ActInfoResult, text: str):
+        """
+        解析账号数量上限提示（divServiceAccountAmountLimitNotice）。
+        参考原版 Beanfun / maplelink 的实现：
+        - 提示包含「進階認證」→ 需要进阶认证，cert_status = False
+        - 提示包含数字 → 提取为最大可创建账号数量 account_limit
+        """
+        notice_list = re.findall(
+            r'<div\sid="divServiceAccountAmountLimitNotice"\sclass="InnerContent">(.*?)</div>', text)
+        if not notice_list:
+            return
+        notice = notice_list[0]
+        if "進階認證" in notice:
+            # 没有做进阶认证
+            actResult.cert_status = False
+            return
+        # 提取数字上限（如「此遊戲最多允許新增帳號數:2」→ 2）
+        num_match = re.search(r'\d+', notice)
+        if num_match:
+            actResult.account_limit = int(num_match.group(0))
 
     def __get_act_create_time(self, sn: str):
         url = "https://tw.beanfun.com/beanfun_block/game_zone/game_start_step2.aspx"
@@ -241,45 +267,6 @@ class TwClientImpl(QsClient):
         }
         rsp = RequestClient.get_instance().post(url, data=data)
         return self.result_json_handler(rsp, '修改')
-
-    @staticmethod
-    def __get_ggm_hash() -> str:
-        """
-        动态计算 GGMWebStart.dll 的 SHA-256（小写 hex）。
-
-        Hash 是 GGM 客户端运行时读取自身 GGMWebStart.dll 计算的 SHA-256，
-        会随 GGM 版本变化，因此从已安装的 GGM 目录动态读取计算。
-        若未安装 GGM，则回退到 1.5.0.2 版本的固定值。
-        """
-        # 常见 GGM 安装路径
-        candidate_dirs = [
-            r'C:\Program Files\gamania Games\gamania Games Manager',
-            r'C:\Program Files (x86)\gamania Games\gamania Games Manager',
-        ]
-        # 尝试从注册表 gamaniagames 协议读取安装路径
-        try:
-            import winreg
-            with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, r'gamaniagames\DefaultIcon') as key:
-                icon_path, _ = winreg.QueryValueEx(key, None)
-                # icon_path 形如 "C:\...\GGMWebStart.exe,0"
-                exe_path = icon_path.split(',')[0].strip('"')
-                ggm_dir = os.path.dirname(exe_path)
-                if ggm_dir and ggm_dir not in candidate_dirs:
-                    candidate_dirs.insert(0, ggm_dir)
-        except Exception:
-            pass
-
-        for ggm_dir in candidate_dirs:
-            dll_path = os.path.join(ggm_dir, 'GGMWebStart.dll')
-            if os.path.isfile(dll_path):
-                try:
-                    with open(dll_path, 'rb') as fp:
-                        return hashlib.sha256(fp.read()).hexdigest()
-                except Exception as e:
-                    logging.error(f"计算 GGMWebStart.dll SHA-256 失败: {str(e)}")
-
-        # 回退到 1.5.0.2 版本的固定 Hash
-        return 'dfd568a69d87abcd8f4a93d1a4481ebb57712d1d28ab0b6fc018fcf140101e06'
 
     def get_dynamic_password(self, account: Account, bf_web_token: str):
         if account is None or account.id is None or account.id.strip() == "":
@@ -340,8 +327,8 @@ class TwClientImpl(QsClient):
             'SN': polling_key,
             'LaunchTicket': launch_ticket,
             'CV': '1.5.0.2',
-            # GGMWebStart.dll 的 SHA-256（小写 hex），动态计算以适配不同 GGM 版本
-            'Hash': self.__get_ggm_hash(),
+            # GGMWebStart.dll 的 SHA-256（小写 hex），1.5.0.2 版本的固定 Hash
+            'Hash': "dfd568a69d87abcd8f4a93d1a4481ebb57712d1d28ab0b6fc018fcf140101e06",
             'arch': 'x64',
         }
         headers = {'Content-Type': 'application/json; charset=utf-8'}
@@ -355,10 +342,23 @@ class TwClientImpl(QsClient):
             resp_json = json.loads(rsp.text)
         except Exception:
             return None
+
+        # 校验 result 字段，非 1 表示请求被拒绝
+        if resp_json.get('result') != 1:
+            logging.error(f"TW: v2 OTP 请求被拒绝: result={resp_json.get('result')}, "
+                          f"message={resp_json.get('message')}")
+            return None
+
         otp_data = resp_json.get('data')
         if not otp_data:
             return None
-        return De2Utils.decrypt_otp_data(otp_data)
+
+        # 前 8 字符是 DES key，剩余是 hex 密文
+        if len(otp_data) < 8:
+            logging.error("TW: OTP data 长度不足，无法提取 DES key")
+            return None
+
+        return De2Utils.decrypt_ggm_strings(otp_data[8:], otp_data[:8])
 
     def get_web_url_member_center(self, bf_web_token: str) -> str:
         return 'https://tw.beanfun.com/TW/auth.aspx?channel=member&page_and_query=index_new.aspx&web_token=' + bf_web_token
