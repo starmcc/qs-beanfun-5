@@ -122,3 +122,68 @@ def encrypt_aes(text: str) -> str:
     except Exception as e:
         logging.error(f"AES加密失败: {str(e)}")
         return ''
+
+
+# GGM DecryptParam 替换表（硬编码）
+_GGM_TABLES = [
+    "bac987d65e432f10",
+    "3bc4d5e6f2a79108",
+    "cdbeaf9012456378",
+    "4e6fb81a3c5d7092",
+]
+
+
+def decrypt_ggm_param(data: str) -> str:
+    """
+    GGM WebStart DecryptParam 解密算法。
+
+    用于解密 game_start_step2.aspx 返回的 m_objData.data，
+    得到形如 "LaunchTicket=...&&&&ServiceCode=...&&&&..." 的明文。
+
+    算法：
+    1. 取 data[0] 作为十六进制整数 n。
+    2. 使用 n % 4 选择替换表。
+    3. 每个字符转成它在替换表中的索引（十六进制），得到 normalized hex。
+    4. 从 normalized hex 的 n + 1 位移取出 8 个字符作为 DES key。
+    5. 剩余内容转成 bytes，使用 DES-ECB（Padding=None）解密。
+    6. UTF-8 解码并移除尾端 \\0。
+    """
+    if not data:
+        return ""
+    try:
+        n = int(data[0], 16)
+        table = _GGM_TABLES[n % 4]
+
+        normalized = "".join(format(table.index(c), "x") for c in data[1:])
+
+        key_offset = n + 1
+        key = normalized[key_offset:key_offset + 8].encode("ascii")
+
+        cipher_hex = normalized[:key_offset] + normalized[key_offset + 8:]
+
+        des = DES.new(key, DES.MODE_ECB)
+        plaintext = des.decrypt(bytes.fromhex(cipher_hex))
+        return plaintext.rstrip(b"\x00").decode("utf-8")
+    except Exception as e:
+        logging.error(f"GGM DecryptParam 解密失败: {str(e)}")
+        return ""
+
+
+def decrypt_otp_data(data: str) -> str:
+    """
+    解密 get_webstart_otp_v2.ashx 返回的 data 字段，得到动态密码明文。
+
+    响应 data 格式：前 8 个字符是 DES key，剩余是密文 hex。
+    使用 DES-ECB（Padding=None）解密，去除尾端 \\0。
+    """
+    if not data or len(data) < 8:
+        return ""
+    try:
+        key = data[:8].encode("ascii")
+        cipher_hex = data[8:]
+        des = DES.new(key, DES.MODE_ECB)
+        plaintext = des.decrypt(bytes.fromhex(cipher_hex))
+        return plaintext.rstrip(b"\x00").decode("utf-8")
+    except Exception as e:
+        logging.error(f"OTP data 解密失败: {str(e)}")
+        return ""

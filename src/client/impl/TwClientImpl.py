@@ -1,6 +1,9 @@
 import datetime
+import hashlib
 import html
+import json
 import logging
+import os
 import re
 import time
 from typing import Tuple
@@ -239,9 +242,50 @@ class TwClientImpl(QsClient):
         rsp = RequestClient.get_instance().post(url, data=data)
         return self.result_json_handler(rsp, '修改')
 
+    @staticmethod
+    def __get_ggm_hash() -> str:
+        """
+        动态计算 GGMWebStart.dll 的 SHA-256（小写 hex）。
+
+        Hash 是 GGM 客户端运行时读取自身 GGMWebStart.dll 计算的 SHA-256，
+        会随 GGM 版本变化，因此从已安装的 GGM 目录动态读取计算。
+        若未安装 GGM，则回退到 1.5.0.2 版本的固定值。
+        """
+        # 常见 GGM 安装路径
+        candidate_dirs = [
+            r'C:\Program Files\gamania Games\gamania Games Manager',
+            r'C:\Program Files (x86)\gamania Games\gamania Games Manager',
+        ]
+        # 尝试从注册表 gamaniagames 协议读取安装路径
+        try:
+            import winreg
+            with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, r'gamaniagames\DefaultIcon') as key:
+                icon_path, _ = winreg.QueryValueEx(key, None)
+                # icon_path 形如 "C:\...\GGMWebStart.exe,0"
+                exe_path = icon_path.split(',')[0].strip('"')
+                ggm_dir = os.path.dirname(exe_path)
+                if ggm_dir and ggm_dir not in candidate_dirs:
+                    candidate_dirs.insert(0, ggm_dir)
+        except Exception:
+            pass
+
+        for ggm_dir in candidate_dirs:
+            dll_path = os.path.join(ggm_dir, 'GGMWebStart.dll')
+            if os.path.isfile(dll_path):
+                try:
+                    with open(dll_path, 'rb') as fp:
+                        return hashlib.sha256(fp.read()).hexdigest()
+                except Exception as e:
+                    logging.error(f"计算 GGMWebStart.dll SHA-256 失败: {str(e)}")
+
+        # 回退到 1.5.0.2 版本的固定 Hash
+        return 'dfd568a69d87abcd8f4a93d1a4481ebb57712d1d28ab0b6fc018fcf140101e06'
+
     def get_dynamic_password(self, account: Account, bf_web_token: str):
         if account is None or account.id is None or account.id.strip() == "":
             return None
+
+        # 1. 获取 game_start_step2.aspx，解析 m_objData（sn / data）与账号信息
         url = "https://tw.beanfun.com/beanfun_block/game_zone/game_start_step2.aspx"
         params = {
             'service_code': '610074',
@@ -250,23 +294,23 @@ class TwClientImpl(QsClient):
             'dt': f"{datetime.date.today().year}{datetime.date.today().month}{datetime.date.today().day}{datetime.datetime.now().hour}{datetime.datetime.now().minute}{datetime.datetime.now().second}{datetime.datetime.now().minute}"
         }
         rsp = RequestClient.get_instance().get(url, params=params)
-
         if rsp.status_code != 200:
             return None
-        dataList = re.findall('GetResultByLongPolling&key=(.*?)"', rsp.text)
-        pollingKey = dataList[0] if dataList else None
+
+        # 提取 m_objData 中的 sn（即 pollingKey）
+        data_list = re.findall(r'"sn"\s*:\s*"([^"]+)"', rsp.text)
+        polling_key = data_list[0] if data_list else None
+
+        # 提取 m_objData 中的 data（加密启动数据）
+        data_list = re.findall(r'"data"\s*:\s*"([^"]+)"', rsp.text)
+        m_obj_data = data_list[0] if data_list else None
+
+        # 提取账号创建时间
         if not account.create_time:
-            dataList = re.findall(r'ServiceAccountCreateTime:\s"([^"]+)"', rsp.text)
-            account.create_time = dataList[0] if dataList else None
+            data_list = re.findall(r'ServiceAccountCreateTime:\s"([^"]+)"', rsp.text)
+            account.create_time = data_list[0] if data_list else None
 
-        url = "https://tw.newlogin.beanfun.com/generic_handlers/get_cookies.ashx"
-        rsp = RequestClient.get_instance().get(url)
-        if rsp.status_code != 200:
-            return None
-
-        dataList = re.findall(r"var\sm_strSecretCode\s=\s'(.*)'", rsp.text)
-        secret = dataList[0] if dataList else None
-
+        # 2. 记录服务启动
         url = "https://tw.beanfun.com/beanfun_block/generic_handlers/record_service_start.ashx"
         data = {
             'service_code': '610074',
@@ -275,27 +319,46 @@ class TwClientImpl(QsClient):
             'sotp': account.sn,
             'service_account_display_name': account.name,
             'service_account_create_time': account.create_time,
+            'd1kwcwrajahoxa55zwgbiars': m_obj_data,
         }
         rsp = RequestClient.get_instance().post(url, data=data)
         if rsp.status_code != 200:
             return None
 
-        url = "https://tw.beanfun.com/beanfun_block/generic_handlers/get_webstart_otp.ashx"
-        params = {
-            'sn': pollingKey,
-            'WebToken': bf_web_token,
-            'SecretCode': secret,
-            'ppppp': 'F9B45415B9321DB9635028EFDBDDB44B4012B05F95865CB8909B2C851CFE1EE11CB784F32E4347AB7001A763100D90768D8A4E30BCC3E80C',
-            'ServiceCode': '610074',
-            'ServiceRegion': 'T9',
-            'ServiceAccount': account.id,
-            'CreateTime': account.create_time,
-            'd': time.time() * 1000
+        # 3. 解密 m_objData.data，得到 LaunchTicket
+        #    明文结构：LaunchTicket=...&&&&ServiceCode=...&&&&ServiceRegion=...&&&&...
+        decrypted = De2Utils.decrypt_ggm_param(m_obj_data)
+        launch_ticket = ''
+        if decrypted:
+            ticket_match = re.search(r'LaunchTicket=([^&]+)', decrypted)
+            if ticket_match:
+                launch_ticket = ticket_match.group(1)
+
+        # 4. 获取动态密码（新接口 get_webstart_otp_v2.ashx，POST JSON）
+        url = "https://tw.beanfun.com/beanfun_block/generic_handlers/get_webstart_otp_v2.ashx"
+        json_data = {
+            'SN': polling_key,
+            'LaunchTicket': launch_ticket,
+            'CV': '1.5.0.2',
+            # GGMWebStart.dll 的 SHA-256（小写 hex），动态计算以适配不同 GGM 版本
+            'Hash': self.__get_ggm_hash(),
+            'arch': 'x64',
         }
-        rsp = RequestClient.get_instance().get(url, params=params)
+        headers = {'Content-Type': 'application/json; charset=utf-8'}
+        rsp = RequestClient.get_instance().post(url, json=json_data, headers=headers)
         if rsp.status_code != 200:
             return None
-        return De2Utils.decrypt_des_no_pkcs_hex(rsp.text)
+
+        # 5. 解密响应 data，得到动态密码明文
+        #    响应格式：{"result":1,"data":"<8字符key><密文hex>","message":null}
+        try:
+            resp_json = json.loads(rsp.text)
+        except Exception:
+            return None
+        otp_data = resp_json.get('data')
+        if not otp_data:
+            return None
+        return De2Utils.decrypt_otp_data(otp_data)
 
     def get_web_url_member_center(self, bf_web_token: str) -> str:
         return 'https://tw.beanfun.com/TW/auth.aspx?channel=member&page_and_query=index_new.aspx&web_token=' + bf_web_token
