@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>350</width>
-    <height>260</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,13 +19,13 @@
   <property name="minimumSize">
    <size>
     <width>350</width>
-    <height>260</height>
+    <height>300</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>350</width>
-    <height>260</height>
+    <height>300</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -120,6 +120,13 @@ QGroupBox::title {
        <widget class="QCheckBox" name="checkBox_appCheckUpdate">
         <property name="text">
          <string>工具自动检查更新</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QCheckBox" name="checkBox_ggmFirst">
+        <property name="text">
+         <string>优先使用GGM获取密令</string>
         </property>
        </widget>
       </item>

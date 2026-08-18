@@ -333,3 +333,242 @@ def find_ngm_path() -> str:
             return str(ngm_exe)
 
     return None
+
+
+# ============================= GGM 启动 =============================
+
+# GGM 新枫之谷路径注册表键（GGM 通过该键读取游戏启动路径）
+GGM_MAPLESTORY_REG_PATH = r'SOFTWARE\GAMANIA\MapleStory'
+GGM_MAPLESTORY_REG_VALUE = 'Path'
+
+# 命名管道名（与 ggm_interceptor.py 保持一致）
+GGM_PIPE_NAME = r'\\.\pipe\qsbeanfun_ggm'
+
+
+def find_ggm_webstart_path() -> str:
+    """扫描注册表查找 GGM（Gamania Games Manager）的安装路径。
+
+    返回 GGMWebStart.exe 的完整路径；未安装则返回 None。
+    """
+    import winreg
+    # GGM 常见注册表位置（含 32/64 位视图）
+    reg_paths = [
+        (winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\GAMANIA\gamania Games Manager'),
+        (winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\GAMANIA\gamania Games Manager'),
+        (winreg.HKEY_CURRENT_USER, r'SOFTWARE\GAMANIA\gamania Games Manager'),
+    ]
+    for hkey, sub_key in reg_paths:
+        try:
+            with winreg.OpenKey(hkey, sub_key) as key:
+                # 尝试多种可能的键名
+                for value_name in ('InstallPath', 'Path', 'InstallDir', 'InstallLocation'):
+                    try:
+                        install_path, _ = winreg.QueryValueEx(key, value_name)
+                    except (FileNotFoundError, OSError):
+                        continue
+                    if not install_path:
+                        continue
+                    ggm_exe = Path(install_path) / 'GGMWebStart.exe'
+                    if ggm_exe.exists():
+                        return str(ggm_exe)
+        except (FileNotFoundError, OSError):
+            continue
+
+    # 注册表未找到，尝试常见默认路径
+    default_paths = [
+        Path(r'C:\Program Files\gamania Games\gamania Games Manager\GGMWebStart.exe'),
+        Path(r'C:\Program Files (x86)\gamania Games\gamania Games Manager\GGMWebStart.exe'),
+    ]
+    for ggm_exe in default_paths:
+        if ggm_exe.exists():
+            return str(ggm_exe)
+
+    return None
+
+
+def is_ggm_installed() -> bool:
+    """判断本地是否已安装 GGM。"""
+    return find_ggm_webstart_path() is not None
+
+
+def set_ggm_maplestory_path(exe_path: str) -> bool:
+    """将 GGM 的新枫之谷路径（注册表 MapleStory\\Path）改为指定 exe 路径。
+
+    GGM 会把该值当作完整可执行文件路径直接启动，因此这里指向主程序
+    exe 本身，GGM 启动游戏时会调用主程序并传入含动态密码的启动参数。
+
+    :param exe_path: 要写入的 exe 完整路径
+    :return: 是否写入成功
+    """
+    import winreg
+    if not exe_path:
+        return False
+    try:
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER, GGM_MAPLESTORY_REG_PATH) as key:
+            winreg.SetValueEx(key, GGM_MAPLESTORY_REG_VALUE, 0, winreg.REG_SZ, exe_path)
+        return True
+    except OSError as e:
+        logging.error(f'写入 GGM 新枫之谷路径失败: {str(e)}')
+        return False
+
+
+def _start_ggm_pipe_server(timeout: float = 10.0):
+    """启动命名管道服务器，等待拦截器连接并回传动态密码。
+
+    使用 Windows 原生命名管道（ctypes 调用 kernel32），在后台线程中
+    创建管道、等待拦截器连接、读取动态密码。
+
+    返回 (result_holder, thread)，其中 result_holder 是单元素列表，
+    用于存放接收到的动态密码（或 None）。
+
+    :param timeout: 等待拦截器连接的超时时间（秒）
+    """
+    import ctypes
+    import threading
+    from ctypes import wintypes
+
+    kernel32 = ctypes.windll.kernel32
+
+    PIPE_ACCESS_DUPLEX = 0x00000003
+    PIPE_TYPE_MESSAGE = 0x00000004
+    PIPE_READMODE_MESSAGE = 0x00000002
+    PIPE_WAIT = 0x00000000
+    INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+
+    result_holder = [None]
+
+    def _serve():
+        # 创建命名管道
+        kernel32.CreateNamedPipeW.restype = wintypes.HANDLE
+        kernel32.CreateNamedPipeW.argtypes = [
+            wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, wintypes.DWORD,
+            wintypes.DWORD, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID,
+        ]
+        h_pipe = kernel32.CreateNamedPipeW(
+            GGM_PIPE_NAME,
+            PIPE_ACCESS_DUPLEX,
+            PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+            1,  # 最多 1 个实例
+            4096,  # 输出缓冲区
+            4096,  # 输入缓冲区
+            0,  # 默认超时
+            None,
+        )
+        if h_pipe == INVALID_HANDLE_VALUE:
+            logging.error('创建命名管道失败')
+            return
+
+        try:
+            # 等待拦截器连接
+            kernel32.ConnectNamedPipe.argtypes = [wintypes.HANDLE, wintypes.LPVOID]
+            kernel32.ConnectNamedPipe.restype = wintypes.BOOL
+            connected = kernel32.ConnectNamedPipe(h_pipe, None)
+            if not connected:
+                # 可能已连接（ERROR_PIPE_CONNECTED = 535）
+                err = ctypes.get_last_error()
+                if err != 535:
+                    logging.error(f'等待命名管道连接失败: {err}')
+                    return
+
+            # 读取数据
+            buf = ctypes.create_string_buffer(4096)
+            bytes_read = wintypes.DWORD(0)
+            kernel32.ReadFile.argtypes = [
+                wintypes.HANDLE, wintypes.LPVOID, wintypes.DWORD,
+                ctypes.POINTER(wintypes.DWORD), wintypes.LPVOID,
+            ]
+            kernel32.ReadFile.restype = wintypes.BOOL
+            ok = kernel32.ReadFile(h_pipe, buf, 4096, ctypes.byref(bytes_read), None)
+            if ok and bytes_read.value > 0:
+                text = buf.raw[:bytes_read.value].decode('utf-8', errors='ignore')
+                # 格式：账号\n密码
+                parts = text.split('\n', 1)
+                if len(parts) == 2:
+                    result_holder[0] = parts[1].strip()
+        finally:
+            kernel32.CloseHandle(h_pipe)
+
+    thread = threading.Thread(target=_serve, daemon=True)
+    thread.start()
+    return result_holder, thread
+
+
+def _extract_ggm_interceptor() -> str:
+    """从 qrc 资源中提取 ggm_interceptor.exe 到本地目录，返回其完整路径。
+
+    拦截器 exe 打包在主程序的 qrc 资源中（:/plugins/ggm_interceptor.exe），
+    运行时提取到程序目录下的 plugins 目录，供 GGM 调用。
+
+    :return: 拦截器 exe 的完整路径；提取失败返回空字符串
+    """
+    import os
+    from PySide6.QtCore import QFile, QIODevice
+
+    target_dir = BaseTools.build_path('plugins')
+    os.makedirs(target_dir, exist_ok=True)
+    target_path = os.path.join(target_dir, 'ggm_interceptor.exe')
+
+    # 已存在则直接返回
+    if os.path.exists(target_path):
+        return target_path
+
+    qrc_path = ':/plugins/ggm_interceptor.exe'
+    try:
+        qfile = QFile(qrc_path)
+        if not qfile.exists() or not qfile.open(QIODevice.OpenModeFlag.ReadOnly):
+            logging.error(f'无法读取 qrc 资源: {qrc_path}')
+            return ''
+        file_data = qfile.readAll()
+        qfile.close()
+        with open(target_path, 'wb') as f:
+            f.write(file_data.data() if hasattr(file_data, 'data') else bytes(file_data))
+        return target_path
+    except Exception as e:
+        logging.error(f'提取 ggm_interceptor.exe 失败: {str(e)}')
+        return ''
+
+
+def launch_game_via_ggm(sn: str, data: str, timeout: float = 10.0):
+    """使用 GGM 启动游戏，并通过命名管道获取动态密码。
+
+    通过 GGMWebStart.exe 携带 gamaniagames:// 协议参数启动，
+    由 GGM 负责解密。注册表 MapleStory\\Path 已指向拦截器exe,
+    GGM 启动游戏时会调用拦截器，拦截器解析动态密码并通过命名管道
+    回传，本函数阻塞等待并返回动态密码。
+
+    :param sn: pollingKey（对应启动参数中的 SN）
+    :param data: 加密启动数据（对应启动参数中的 Data）
+    :param timeout: 等待拦截器回传的超时时间（秒）
+    :return: 动态密码字符串；失败或超时返回 None
+    """
+    ggm_exe = find_ggm_webstart_path()
+    if not ggm_exe:
+        logging.error('未找到 GGM，无法通过 GGM 解密')
+        return None
+
+    # 从 qrc 资源提取拦截器 exe，并将注册表 MapleStory\\Path 指向它
+    interceptor_exe = _extract_ggm_interceptor()
+    if not interceptor_exe:
+        logging.error('提取 GGM 拦截器 exe 失败')
+        return None
+    set_ggm_maplestory_path(interceptor_exe)
+
+    # 先启动命名管道服务器，等待拦截器回传动态密码
+    result_holder, server_thread = _start_ggm_pipe_server(timeout)
+
+    # 构建 GGM 启动参数
+    ggm_url = (
+        f'gamaniagames://Region=TW;Production&&&&'
+        f'SN={sn}&&&&'
+        f'Cmd=06006&&&&'
+        f'Data={data}'
+    )
+    try:
+        subprocess.Popen([ggm_exe, ggm_url], shell=False)
+    except Exception as e:
+        logging.error(f'GGM 启动失败: {str(e)}')
+        return None
+
+    # 阻塞等待拦截器回传动态密码
+    server_thread.join(timeout)
+    return result_holder[0]

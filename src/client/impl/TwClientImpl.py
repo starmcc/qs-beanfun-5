@@ -1,13 +1,14 @@
 import datetime
-import hashlib
 import html
 import json
 import logging
-import os
 import re
 import time
 from typing import Tuple
 
+import config.Config
+from config import Config
+from config.GlobalConfig import GLOBAL_CONFIG
 from src.client import RequestClient
 from src.client.QsClient import QsClient
 from src.models.Account import Account
@@ -15,6 +16,7 @@ from src.models.ActInfoResult import ActInfoResult
 from src.models.LoginRecord import LoginRecord
 from src.models.TwResponseJson import TwResponseJson
 from src.utils import De2Utils
+from utils import SystemCom
 
 
 class TwClientImpl(QsClient):
@@ -312,6 +314,19 @@ class TwClientImpl(QsClient):
         if rsp.status_code != 200:
             return None
 
+        # 分支：当配置开启「优先使用 GGM 获取密令」且本地已安装 GGM 时，
+        # 使用 GGM 进行解密，跳过后续第 3/4/5 步。
+        # 判断方式：通过注册表扫描 GGM 安装路径，存在则视为已安装。
+        # GGM 会读取注册表 MapleStory\\Path 指向的拦截器 exe，启动时把动态密码
+        # 通过命令行参数传给拦截器，拦截器再通过命名管道回传给本程序。
+        if Config.ggm_first():
+            dynamic_pwd = SystemCom.launch_game_via_ggm(polling_key, m_obj_data)
+            if dynamic_pwd:
+                logging.info('已通过 GGM 解密，并获取到动态密码')
+                return dynamic_pwd
+            logging.warning('GGM 启动或获取动态密码失败')
+            return None
+
         # 3. 解密 m_objData.data，得到 LaunchTicket
         #    明文结构：LaunchTicket=...&&&&ServiceCode=...&&&&ServiceRegion=...&&&&...
         decrypted = De2Utils.decrypt_ggm_param(m_obj_data)
@@ -326,9 +341,8 @@ class TwClientImpl(QsClient):
         json_data = {
             'SN': polling_key,
             'LaunchTicket': launch_ticket,
-            'CV': '1.5.0.2',
-            # GGMWebStart.dll 的 SHA-256（小写 hex），1.5.0.2 版本的固定 Hash
-            'Hash': "dfd568a69d87abcd8f4a93d1a4481ebb57712d1d28ab0b6fc018fcf140101e06",
+            'CV': GLOBAL_CONFIG.ggm['cv'],
+            'Hash': GLOBAL_CONFIG.ggm['dll_hash'],
             'arch': 'x64',
         }
         headers = {'Content-Type': 'application/json; charset=utf-8'}

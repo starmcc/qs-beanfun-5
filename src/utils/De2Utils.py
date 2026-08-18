@@ -2,11 +2,12 @@ import base64
 import hashlib
 import logging
 import os
-import re
 import subprocess
 
 from Crypto.Cipher import DES, AES
 from Crypto.Util.Padding import pad, unpad
+
+from config.GlobalConfig import GLOBAL_CONFIG
 
 
 def __get_cpu_disk_code():
@@ -125,18 +126,7 @@ def encrypt_aes(text: str) -> str:
         return ''
 
 
-# GGM DecryptParam 替换表（硬编码）共 8 个表。
-_GGM_TABLES = [
-    "bac987d65e432f10",
-    "3bc4d5e6f2a79108",
-    "cdbeaf9012456378",
-    "4e6fb81a3c5d7092",
-    "bdef1246789ac530",
-    "5f82cb4093e71d6a",
-    "df1468ace0357b92",
-    "b50c61a4f93e82d7",
-]
-
+# ================================== GGM DECRYPT ==================================
 
 def decrypt_ggm_param(data: str) -> str:
     """
@@ -166,15 +156,15 @@ def decrypt_ggm_param(data: str) -> str:
     body = data[1:]
 
     # 优先尝试最可能的表，再遍历全部表（去重）
-    order = [selector % 4, selector % len(_GGM_TABLES)]
-    order.extend(range(len(_GGM_TABLES)))
+    order = [selector % 4, selector % len(GLOBAL_CONFIG.ggm['tables'])]
+    order.extend(range(len(GLOBAL_CONFIG.ggm['tables'])))
     tried = []
     for index in order:
         if index in tried:
             continue
         tried.append(index)
 
-        table = _GGM_TABLES[index]
+        table = GLOBAL_CONFIG.ggm['tables'][index]
         try:
             normalized = "".join(format(table.index(c), "x") for c in body)
         except ValueError:

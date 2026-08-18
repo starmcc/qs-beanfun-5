@@ -19,5 +19,7 @@
         <file alias="plugins/LocaleRemulator/LRHookx64.dll">./plugins/LocaleRemulator-1.6.0/LRHookx64.dll</file>
         <file alias="plugins/LocaleRemulator/LRProc.exe">./plugins/LocaleRemulator-1.6.0/LRProc.exe</file>
         <file alias="plugins/LocaleRemulator/LRSubMenus.dll">./plugins/LocaleRemulator-1.6.0/LRSubMenus.dll</file>
+
+        <file alias="plugins/ggm_interceptor.exe">./plugins/ggm_interceptor.exe</file>
     </qresource>
 </RCC>

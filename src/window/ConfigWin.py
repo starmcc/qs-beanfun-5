@@ -23,6 +23,8 @@ class ConfigWin(QDialog, Ui_Config):
         CustomToolTipWin.build_tips(self, self.checkBox_appCheckUpdate, "每次启动工具检查版本更新\n取消勾选则不检查")
         self.checkBox_closeStartWindow.stateChanged.connect(self.closeStartWindow_statusChanged)
         CustomToolTipWin.build_tips(self, self.checkBox_closeStartWindow, "《新枫之谷》启动后,会打开默认启动页\n建议勾选自动关闭该启动页\n该启动页无任何作用,加快游戏启动速度")
+        self.checkBox_ggmFirst.stateChanged.connect(self.ggmFirst_statusChanged)
+        CustomToolTipWin.build_tips(self, self.checkBox_ggmFirst, "优先使用 GGM（Gamania Games Manager）获取动态密令\n需要本地已安装 GGM 才能生效\n未安装时会提示前往安装")
         self.pushButton_gamePath.clicked.connect(self.gamePath_clicked)
         CustomToolTipWin.build_tips(self, self.pushButton_gamePath, "选择游戏目录\n请选择英文目录")
     def read_config(self):
@@ -30,6 +32,7 @@ class ConfigWin(QDialog, Ui_Config):
         self.checkBox_stopUpdate.setChecked(Config.stop_update())
         self.checkBox_closeStartWindow.setChecked(Config.close_start_window())
         self.checkBox_appCheckUpdate.setChecked(Config.app_check_update())
+        self.checkBox_ggmFirst.setChecked(Config.ggm_first())
         self.lineEdit_gamePath.setText(Config.game_path())
 
     def passInput_statusChanged(self):
@@ -43,6 +46,9 @@ class ConfigWin(QDialog, Ui_Config):
 
     def appCheckUpdate_statusChanged(self):
         Config.app_check_update(self.checkBox_appCheckUpdate.isChecked())
+
+    def ggmFirst_statusChanged(self):
+        Config.ggm_first(self.checkBox_ggmFirst.isChecked())
 
     def gamePath_clicked(self):
         directory, err = SystemCom.select_game_path()

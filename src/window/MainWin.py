@@ -1,5 +1,6 @@
 import logging
 import math
+import webbrowser
 from decimal import Decimal
 from typing import Tuple
 
@@ -185,7 +186,16 @@ class MainWin(QWidget, Ui_Main):
         self.classic_result = QsClient.get_instance().get_classic_data(GLOBAL_CONFIG.bf_web_token)
 
     def get_dynamic_password(self):
-        pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)
+        if Config.ggm_first() and not SystemCom.is_ggm_installed():
+            msg = ('未检测到 GGM（Gamania Games Manager）安装\n'
+                   '是否前往官网下载安装？')
+            if BoxPop.question(None, msg):
+                webbrowser.open('https://tw.beanfun.com/ggm/index.aspx')
+            self.nowAccount.dynamic_pwd = None
+            self.lineEdit_dynamicPwd.setText(None)
+            return
+
+        pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token,  Config.ggm_first())
         pwd = pwd if pwd else None
         self.nowAccount.dynamic_pwd = pwd
         self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(pwd))

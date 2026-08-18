@@ -97,6 +97,15 @@ def game_path(value: str = None):
     __save_config(key, value)
     return None
 
+
+def ggm_first(value: bool = None):
+    key = 'ggm_first'
+    if value is None:
+        # 读取
+        return __get_config(key, False)
+    __save_config(key, value)
+    return None
+
 def auto_input(value: bool = None):
     key = 'auto_input'
     if value is None:
