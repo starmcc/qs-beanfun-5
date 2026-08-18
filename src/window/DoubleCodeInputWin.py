@@ -1,4 +1,4 @@
-from PySide6.QtCore import QEvent, Qt, QRegularExpression
+from PySide6.QtCore import QEvent, Qt, QRegularExpression, QTimer
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
@@ -40,7 +40,9 @@ class DoubleCodeInputWin(QDialog, Ui_DoubleCodeInput):
         self.input_code = text.strip()
         self.pushButton_enter.setEnabled(bool(self.input_code))
         if len(self.input_code) == 6:
-            self.accept()
+            # 延迟到事件循环空闲时再关闭对话框，避免在 textChanged 信号
+            # 处理过程中销毁对话框导致闪退
+            QTimer.singleShot(0, self.accept)
 
     def get_code(self):
         return self.input_code
