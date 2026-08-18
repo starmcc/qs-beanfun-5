@@ -124,13 +124,19 @@ class MainWin(QWidget, Ui_Main):
 
     def dynamicPwd_clicked(self):
         def __task(win):
+            if self._need_ggm_check():
+                return 'ggm_missing'
             win.get_dynamic_password()
-            if not win.nowAccount.dynamic_pwd:
-                return False
-            return True
+            return bool(win.nowAccount.dynamic_pwd)
 
         def __result(win, status, e):
-            if e or not status:
+            if e:
+                BoxPop.err(win, "获取动态密令失败")
+                return
+            if status == 'ggm_missing':
+                self._ggm_missing()
+                return
+            if not status:
                 BoxPop.err(win, "获取动态密令失败")
                 return
             try:
@@ -147,6 +153,8 @@ class MainWin(QWidget, Ui_Main):
 
     def start_clicked(self):
         def __task(win):
+            if self._need_ggm_check():
+                return 'ggm_missing'
             if Config.pass_input():
                 win.get_dynamic_password()
                 if not win.nowAccount.dynamic_pwd:
@@ -154,7 +162,13 @@ class MainWin(QWidget, Ui_Main):
             return True
 
         def __result(win, status, e):
-            if e or not status:
+            if e:
+                BoxPop.err(win, "获取动态密令失败")
+                return
+            if status == 'ggm_missing':
+                self._ggm_missing()
+                return
+            if not status:
                 BoxPop.err(win, "获取动态密令失败")
                 return
             try:
@@ -164,6 +178,19 @@ class MainWin(QWidget, Ui_Main):
                 BoxPop.err(win, f'启动游戏出现了问题:\n {str(e)}')
 
         get_thread_pool().submit_task(__task, __result, self, True, win=self)
+
+    def _need_ggm_check(self) -> bool:
+        """判断是否需要检测 GGM 是否安装（纯逻辑，可在工作线程调用）。"""
+        return Config.ggm_first() and not SystemCom.is_ggm_installed()
+
+    def _ggm_missing(self):
+        """GGM 未安装时，在主线程弹窗询问是否前往官网下载。"""
+        msg = ('未检测到 GGM（Gamania Games Manager）安装\n'
+               '是否前往官网下载安装？')
+        if BoxPop.question(self, msg):
+            webbrowser.open('https://tw.beanfun.com/ggm/index.aspx')
+        self.nowAccount.dynamic_pwd = None
+        self.lineEdit_dynamicPwd.setText(None)
 
     def classic_clicked(self):
         def __task(win):
@@ -186,15 +213,6 @@ class MainWin(QWidget, Ui_Main):
         self.classic_result = QsClient.get_instance().get_classic_data(GLOBAL_CONFIG.bf_web_token)
 
     def get_dynamic_password(self):
-        if Config.ggm_first() and not SystemCom.is_ggm_installed():
-            msg = ('未检测到 GGM（Gamania Games Manager）安装\n'
-                   '是否前往官网下载安装？')
-            if BoxPop.question(None, msg):
-                webbrowser.open('https://tw.beanfun.com/ggm/index.aspx')
-            self.nowAccount.dynamic_pwd = None
-            self.lineEdit_dynamicPwd.setText(None)
-            return
-
         pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)
         pwd = pwd if pwd else None
         self.nowAccount.dynamic_pwd = pwd
