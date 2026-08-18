@@ -195,7 +195,7 @@ class MainWin(QWidget, Ui_Main):
             self.lineEdit_dynamicPwd.setText(None)
             return
 
-        pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token,  Config.ggm_first())
+        pwd = QsClient.get_instance().get_dynamic_password(self.nowAccount, GLOBAL_CONFIG.bf_web_token)
         pwd = pwd if pwd else None
         self.nowAccount.dynamic_pwd = pwd
         self.lineEdit_dynamicPwd.setText(BaseTools.hidden_str(pwd))

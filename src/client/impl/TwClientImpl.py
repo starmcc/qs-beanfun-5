@@ -6,11 +6,10 @@ import re
 import time
 from typing import Tuple
 
-import config.Config
-from config import Config
-from config.GlobalConfig import GLOBAL_CONFIG
 from src.client import RequestClient
 from src.client.QsClient import QsClient
+from src.config import Config
+from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.Account import Account
 from src.models.ActInfoResult import ActInfoResult
 from src.models.LoginRecord import LoginRecord
