@@ -2,7 +2,7 @@
 from enum import Enum
 
 from src.utils.TaskQueue import TaskQueue
-from utils.GgmTableGenerate import decrypt_ggm_tables
+from src.utils.GgmTableGenerate import decrypt_ggm_tables
 
 
 class ActType(Enum):

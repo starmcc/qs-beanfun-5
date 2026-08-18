@@ -16,7 +16,7 @@ from src.models.ActInfoResult import ActInfoResult
 from src.models.LoginRecord import LoginRecord
 from src.models.TwResponseJson import TwResponseJson
 from src.utils import De2Utils
-from utils import SystemCom
+from src.utils import SystemCom
 
 
 class TwClientImpl(QsClient):

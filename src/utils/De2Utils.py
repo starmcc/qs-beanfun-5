@@ -7,7 +7,7 @@ import subprocess
 from Crypto.Cipher import DES, AES
 from Crypto.Util.Padding import pad, unpad
 
-from config.GlobalConfig import GLOBAL_CONFIG
+from src.config.GlobalConfig import GLOBAL_CONFIG
 
 
 def __get_cpu_disk_code():
