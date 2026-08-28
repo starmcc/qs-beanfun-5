@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QTableWidgetItem, QMenu, QHeaderView, QDialog
 from src.config import Config
 from src.config.GlobalConfig import ActType
 from src.utils import BoxPop, WinManager
+from src.config.I18n import I18N
 from src.views.Ui_AccountEdit import Ui_AccountEdit
 from src.views.Ui_ActManager import Ui_ActManager
 
@@ -73,6 +74,7 @@ class ActManagerWin(QDialog, Ui_ActManager):
         self.setupUi(self)
         WinManager.set_basic_window(self)
         self.init_ui()
+        I18N.language_changed.connect(lambda _language: self.accounts_refresh())
         self.win_actEdit = ActEditWin(self)
 
     def init_ui(self):
@@ -106,7 +108,7 @@ class ActManagerWin(QDialog, Ui_ActManager):
         acts = Config.accounts()
         self.tableWidget.clear()
         self.tableWidget.setRowCount(len(acts))
-        column_name = ('账号', '账号地区', '备注', '最后登录时间')
+        column_name = tuple(WinManager.translate(text) for text in ('账号', '账号地区', '备注', '最后登录时间'))
         self.tableWidget.setHorizontalHeaderLabels(column_name)
 
         for index, act in enumerate(acts):
@@ -116,7 +118,7 @@ class ActManagerWin(QDialog, Ui_ActManager):
                 login_type = '台湾'
             else:
                 login_type = '香港'
-            self.tableWidget.setItem(index, 1, CustomQTableWidgetItem(login_type))
+            self.tableWidget.setItem(index, 1, CustomQTableWidgetItem(WinManager.translate(login_type)))
             self.tableWidget.setItem(index, 2, CustomQTableWidgetItem(act.get('desc')))
             if act.get('last_login_time'):
                 self.tableWidget.setItem(index, 3, CustomQTableWidgetItem(
@@ -126,14 +128,14 @@ class ActManagerWin(QDialog, Ui_ActManager):
 
     def show_context_menu(self, position):
         menu = QMenu()
-        add_action = menu.addAction("增加")
+        add_action = menu.addAction(WinManager.translate("增加"))
         delete_action = None
         edit_action = None
         selected_indexes = self.tableWidget.selectedIndexes()
         if selected_indexes:
-            edit_action = menu.addAction("编辑")
-            delete_action = menu.addAction("删除")
-        refresh_action = menu.addAction("刷新")
+            edit_action = menu.addAction(WinManager.translate("编辑"))
+            delete_action = menu.addAction(WinManager.translate("删除"))
+        refresh_action = menu.addAction(WinManager.translate("刷新"))
         action = menu.exec(self.tableWidget.mapToGlobal(position))
 
         if action == refresh_action:
@@ -149,7 +151,7 @@ class ActManagerWin(QDialog, Ui_ActManager):
             select = self.tableWidget.selectedIndexes()
             if len(select) > 0:
                 item = self.tableWidget.item(select[0].row(), 0)
-                if BoxPop.question(self, f'是否删除账号[{item.text()}]?'):
+                if BoxPop.question(self, WinManager.translate('是否删除账号[{account}]?').format(account=item.text())):
                     Config.account_del(item.text())
         elif action == edit_action:
             select = self.tableWidget.selectedIndexes()

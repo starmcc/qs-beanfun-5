@@ -151,7 +151,7 @@
         <item row="5" column="0">
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>數字账号</string>
+           <string>数字账号</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -291,11 +291,11 @@
        </property>
        <item>
         <widget class="QPushButton" name="pushButton_config">
-         <property name="maximumSize">
-          <size>
-           <width>48</width>
-           <height>16777215</height>
-          </size>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
          <property name="text">
           <string>设置</string>
@@ -304,12 +304,6 @@
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_loginOut">
-         <property name="maximumSize">
-          <size>
-           <width>48</width>
-           <height>16777215</height>
-          </size>
-         </property>
          <property name="text">
           <string>登出</string>
          </property>
@@ -317,12 +311,6 @@
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_createAct">
-         <property name="maximumSize">
-          <size>
-           <width>80</width>
-           <height>16777215</height>
-          </size>
-         </property>
          <property name="text">
           <string>新建账号</string>
          </property>
@@ -398,7 +386,7 @@
           </size>
          </property>
          <property name="text">
-          <string>进入经典版</string>
+          <string>经典版</string>
          </property>
         </widget>
        </item>

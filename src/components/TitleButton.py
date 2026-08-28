@@ -11,6 +11,7 @@ class TitleButton(QPushButton):
     def __init__(self, icon_path, parent=None):
         super().__init__(parent)
         self.icon_path = icon_path
+        self.menu = None
         self.init_ui()
 
     def init_ui(self):
@@ -21,6 +22,8 @@ class TitleButton(QPushButton):
         self.setMouseTracking(True)
         self.load_icon()
         self.setStyleSheet(StyleConstants.TITLE_BTN)
+        # 菜单按钮只绑定一次，避免语言切换重建菜单时重复触发 menu.exec()。
+        self.clicked.connect(self.show_menu)
 
     def load_icon(self):
         pixmap = QPixmap(self.icon_path)
@@ -37,9 +40,14 @@ class TitleButton(QPushButton):
         self.setIconSize(QSize(16, 16))
 
     def set_menu(self, menu: QMenu):
+        if self.menu is not None:
+            try:
+                self.menu.aboutToHide.disconnect(self.reset_state)
+            except (RuntimeError, TypeError):
+                pass
         self.menu = menu
-        self.menu.aboutToHide.connect(self.reset_state)
-        self.clicked.connect(self.show_menu)
+        if self.menu is not None:
+            self.menu.aboutToHide.connect(self.reset_state)
 
     def show_menu(self):
         if self.menu:

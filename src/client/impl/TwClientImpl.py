@@ -313,12 +313,12 @@ class TwClientImpl(QsClient):
         if rsp.status_code != 200:
             return None
 
-        # 分支：当配置开启「优先使用 GGM 获取密令」且本地已安装 GGM 时，
+        # 分支：当配置开启「使用 GGM 获取密令」且本地已安装 GGM 时，
         # 使用 GGM 进行解密，跳过后续第 3/4/5 步。
         # 判断方式：通过注册表扫描 GGM 安装路径，存在则视为已安装。
         # GGM 会读取注册表 MapleStory\\Path 指向的拦截器 exe，启动时把动态密码
         # 通过命令行参数传给拦截器，拦截器再通过命名管道回传给本程序。
-        if Config.ggm_first():
+        if Config.ggm_use():
             dynamic_pwd = SystemCom.launch_game_via_ggm(polling_key, m_obj_data)
             if dynamic_pwd:
                 logging.info('已通过 GGM 解密，并获取到动态密码')

@@ -41,7 +41,7 @@ def custom_question(self, msg, buttons: dict[str, QMessageBox.ButtonRole]) -> QM
 
     # 批量添加自定义按钮
     for text, role in buttons.items():
-        msg_box.addButton(text, role)
+        msg_box.addButton(WinManager.translate(text), role)
 
     # 弹出弹窗，等待点击
     msg_box.exec()
@@ -54,8 +54,8 @@ def input_dialog(parent, title: str, label: str) -> Tuple[str, bool]:
     dialog.setWindowFlags(
         dialog.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint | Qt.WindowType.MSWindowsFixedSizeDialogHint)
     dialog.setInputMode(QInputDialog.InputMode.TextInput)
-    dialog.setWindowTitle(title)
-    dialog.setLabelText(label)
+    dialog.setWindowTitle(WinManager.translate(title))
+    dialog.setLabelText(WinManager.translate(label))
     dialog.exec()
     return dialog.textValue(), dialog.result() == QDialog.DialogCode.Accepted
 

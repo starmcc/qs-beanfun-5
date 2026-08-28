@@ -13,6 +13,7 @@ from src.client import QsClient
 from src.config.GlobalConfig import GLOBAL_CONFIG
 from src.models.CustomMenu import CustomMenu
 from src.utils import BoxPop, SystemCom, BaseTools
+from src.config.I18n import tr
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.window.MainWin import MainWin
 from src.components import PyQtBrowser
@@ -63,13 +64,15 @@ def __build_menu(window, menu: QMenu, config_items: list):
                 continue
         if item.children:
             # 创建子菜单
-            submenu = menu.addMenu(item.title)
+            submenu = menu.addMenu(tr(item.title))
             submenu.setObjectName(item.name)
+            submenu.setProperty('_i18n_source_title', item.title)
             __build_menu(window, submenu, item.children)
         else:
             # 创建普通菜单项
-            action = QAction(item.title, menu)
+            action = QAction(tr(item.title), menu)
             action.setObjectName(item.name)
+            action.setProperty('_i18n_source_text', item.title)
             if item.handler:
                 action.triggered.connect(item.handler)
             menu.addAction(action)

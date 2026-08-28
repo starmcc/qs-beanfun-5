@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QDialog, QGroupBox, QHBoxLayout, QLabel, QPushButt
 from src.client import RequestClient
 from src.config.GlobalConfig import GlobalConstants
 from src.utils import WinManager
+from src.config.I18n import I18N
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.UI_Nav import Ui_Nav
 from src.window import CustomToolTipWin
@@ -31,6 +32,7 @@ class NavWin(QDialog, Ui_Nav):
         self.pushButton_refresh.clicked.connect(self._load_entries)
         self.lineEdit_search.textChanged.connect(self._filter_entries)
         CustomToolTipWin.build_tips(self, self.checkBox_outer, "勾选后只会从系统默认浏览器打开网址")
+        I18N.language_changed.connect(lambda _language: self._refresh_entries())
 
     def _load_entries(self):
         def _result(win, entry, e):
@@ -66,6 +68,9 @@ class NavWin(QDialog, Ui_Nav):
 
         self._render_groups(filter_tree(self._raw_entries, keyword))
 
+    def _refresh_entries(self):
+        self._filter_entries(self.lineEdit_search.text())
+
     def _render_groups(self, entries: List[dict]):
         self._clear_layout(self.verticalLayout_groups)
         if not entries:
@@ -77,7 +82,7 @@ class NavWin(QDialog, Ui_Nav):
             title = str(item.get('title') or '')
             data = item.get('data')
             if isinstance(data, list):
-                group = QGroupBox(title, self.container)
+                group = QGroupBox(WinManager.translate(title), self.container)
                 group.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
                 group_layout = QVBoxLayout(group)
                 group_layout.setContentsMargins(8, 8, 8, 8)
@@ -109,7 +114,7 @@ class NavWin(QDialog, Ui_Nav):
             if isinstance(data, list):
                 # 递归：二级组内再建一个小标题
                 sub_title = str(node.get('title') or '')
-                subtitle_label = QLabel(sub_title)
+                subtitle_label = QLabel(WinManager.translate(sub_title))
                 font = QFont()
                 font.setPointSize(10)
                 font.setBold(True)
@@ -138,7 +143,7 @@ class NavWin(QDialog, Ui_Nav):
             parent_layout.addLayout(row_layout)
 
     def _create_nav_button(self, item: dict) -> QPushButton:
-        btn = QPushButton(str(item.get('title') or ''))
+        btn = QPushButton(WinManager.translate(str(item.get('title') or '')))
         btn.setObjectName(str(item.get('name') or 'nav_item'))
         btn.setMinimumHeight(32)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -192,7 +197,7 @@ class NavWin(QDialog, Ui_Nav):
 
     @staticmethod
     def _empty_label(text: str) -> QLabel:
-        label = QLabel(text)
+        label = QLabel(WinManager.translate(text))
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label.setStyleSheet("color: #666666;")
         return label

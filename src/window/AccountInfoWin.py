@@ -32,11 +32,13 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
         self.label_number.setText(self.account.sn)
         palette = self.label_status.palette()
         if self.account.status:
-            self.label_status.setText('正常')
+            status_text = '正常'
             palette.setColor(QPalette.ColorRole.WindowText, QColor(0, 0, 255))
         else:
-            self.label_status.setText('禁止')
+            status_text = '禁止'
             palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 0, 0))
+        self.label_status.setProperty('_i18n_source_text', status_text)
+        self.label_status.setText(WinManager.translate(status_text))
         self.label_status.setPalette(palette)
         try:
             date = datetime.strptime(self.account.create_time, "%Y-%m-%d %H:%M:%S")
@@ -44,7 +46,9 @@ class AccountInfoWin(QDialog, Ui_AccountInfo):
             self.label_day.setText(f'{day}')
         except Exception as e:
             logging.error(f"发生错误:\n{str(e)}")
-        self.label_createTme.setText(f"于 {self.account.create_time} 创建")
+        create_time_text = f"于 {self.account.create_time} 创建"
+        self.label_createTme.setProperty('_i18n_source_text', create_time_text)
+        self.label_createTme.setText(WinManager.translate(create_time_text))
 
     def edit_account(self):
         text, ok = BoxPop.input_dialog(self, '修改账号名称', '请输入新的账号名称')

@@ -15,22 +15,23 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QDialog, QGridLayout,
-    QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
+    QGridLayout, QGroupBox, QHBoxLayout, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QVBoxLayout,
+    QWidget)
 
 class Ui_Config(object):
     def setupUi(self, Config):
         if not Config.objectName():
             Config.setObjectName(u"Config")
-        Config.resize(350, 300)
+        Config.resize(470, 360)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Config.sizePolicy().hasHeightForWidth())
         Config.setSizePolicy(sizePolicy)
-        Config.setMinimumSize(QSize(350, 300))
-        Config.setMaximumSize(QSize(350, 300))
+        Config.setMinimumSize(QSize(470, 360))
+        Config.setMaximumSize(QSize(470, 360))
         Config.setStyleSheet(u"QDialog#Config {\n"
 "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,\n"
 "                                stop:0 #f7faff,\n"
@@ -88,6 +89,17 @@ class Ui_Config(object):
         self.checkBox_ggmFirst.setObjectName(u"checkBox_ggmFirst")
 
         self.gridLayout.addWidget(self.checkBox_ggmFirst, 2, 0, 1, 2)
+
+        self.label_language = QLabel(self.groupBox_normal)
+        self.label_language.setObjectName(u"label_language")
+
+        self.gridLayout.addWidget(self.label_language, 3, 0, 1, 1)
+
+        self.comboBox_language = QComboBox(self.groupBox_normal)
+        self.comboBox_language.setObjectName(u"comboBox_language")
+        self.comboBox_language.setMinimumSize(QSize(150, 30))
+
+        self.gridLayout.addWidget(self.comboBox_language, 3, 1, 1, 1)
 
 
         self.verticalLayout.addWidget(self.groupBox_normal)
@@ -147,7 +159,8 @@ class Ui_Config(object):
         self.checkBox_closeStartWindow.setText(QCoreApplication.translate("Config", u"\u8df3\u8fc7 Play \u7a97\u53e3", None))
         self.checkBox_passInput.setText(QCoreApplication.translate("Config", u"\u8df3\u8fc7\u767b\u5f55\u754c\u9762", None))
         self.checkBox_appCheckUpdate.setText(QCoreApplication.translate("Config", u"\u5de5\u5177\u81ea\u52a8\u68c0\u67e5\u66f4\u65b0", None))
-        self.checkBox_ggmFirst.setText(QCoreApplication.translate("Config", u"\u4f18\u5148\u4f7f\u7528GGM\u83b7\u53d6\u5bc6\u4ee4", None))
+        self.checkBox_ggmFirst.setText(QCoreApplication.translate("Config", u"\u4f7f\u7528GGM\u83b7\u53d6\u5bc6\u4ee4", None))
+        self.label_language.setText(QCoreApplication.translate("Config", u"\u8bed\u8a00", None))
         self.groupBox_gamePath.setTitle(QCoreApplication.translate("Config", u"\u6e38\u620f\u76ee\u5f55", None))
         self.label_gamePathHint.setText(QCoreApplication.translate("Config", u"\u8bf7\u9009\u62e9\u65b0\u67ab\u4e4b\u8c37\u6e38\u620f\u5b89\u88c5\u76ee\u5f55", None))
         self.lineEdit_gamePath.setPlaceholderText(QCoreApplication.translate("Config", u"\u5c1a\u672a\u9009\u62e9\u6e38\u620f\u76ee\u5f55", None))

@@ -98,8 +98,8 @@ def game_path(value: str = None):
     return None
 
 
-def ggm_first(value: bool = None):
-    key = 'ggm_first'
+def ggm_use(value: bool = None):
+    key = 'ggm_use'
     if value is None:
         # 读取
         return __get_config(key, False)
@@ -199,6 +199,14 @@ def account_first(account: str = None):
             accounts(lt)
             break
     return lt[0] if lt else {}
+
+
+def language(value: str = None):
+    key = 'language'
+    if value is None:
+        return __get_config(key, None)
+    __save_config(key, value)
+    return None
 
 
 def remember(value: bool = None):

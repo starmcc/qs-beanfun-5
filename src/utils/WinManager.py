@@ -5,10 +5,11 @@ from PySide6.QtCore import QEvent, Qt, QObject
 from PySide6.QtGui import QIcon, QColor, QPixmap
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QHBoxLayout, QDialog,
                                QGraphicsDropShadowEffect, QPushButton, QMenu, QCheckBox, QRadioButton, QGroupBox,
-                               QComboBox, QMessageBox)
+                               QComboBox, QLineEdit, QMessageBox)
 
 from src.components.TitleButton import TitleButton
 from src.config.GlobalConfig import GlobalConstants
+from src.config.I18n import I18N, LANG_ZH_TW, LANG_EN, tr
 from src.config.TitleBarConfig import TitleBarConfig
 from src.utils import MenuManager
 from src.zhconv import zhconv
@@ -16,6 +17,9 @@ from src.zhconv import zhconv
 
 def set_basic_window(window):
     if getattr(window, '_custom_title_bar_initialized', False):
+        if not getattr(window, '_i18n_connected', False):
+            I18N.language_changed.connect(lambda _language: __translate_all_controls(window))
+            window._i18n_connected = True
         __translate_all_controls(window)
         return window
 
@@ -27,6 +31,15 @@ def set_basic_window(window):
         __build_title_bar(window, titleBarConfig)
         window._custom_title_bar_initialized = True
 
+    if not getattr(window, '_i18n_connected', False):
+        def refresh_window(_language):
+            __translate_all_controls(window)
+            title_label = getattr(window, '_title_bar_label', None)
+            if title_label is not None:
+                source = title_label.property('_i18n_source_text') or title_label.text()
+                title_label.setText(translate(source))
+        I18N.language_changed.connect(refresh_window)
+        window._i18n_connected = True
     __translate_all_controls(window)
     return window
 
@@ -190,9 +203,24 @@ def __create_title_bar(window, config, height):
         title_layout.addWidget(menu_btn)
         title_menu = MenuManager.init_menu(window)
         menu_btn.set_menu(title_menu)
+        window._title_menu_button = menu_btn
+        window._title_menu = title_menu
 
-    title_label = QLabel(config.title)
+        def refresh_menu(_language):
+            old_menu = getattr(window, '_title_menu', None)
+            new_menu = MenuManager.init_menu(window)
+            menu_btn.set_menu(new_menu)
+            window._title_menu = new_menu
+            if old_menu is not None:
+                old_menu.deleteLater()
+
+        window._i18n_menu_refresh = refresh_menu
+        I18N.language_changed.connect(refresh_menu)
+
+    title_label = QLabel(translate(config.title))
+    title_label.setProperty('_i18n_source_text', config.title)
     title_label.setFixedHeight(height)
+    window._title_bar_label = title_label
     title_label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
     title_label.setStyleSheet("color: white; padding-bottom: 1px;")
     title_layout.addWidget(title_label, 0, Qt.AlignmentFlag.AlignVCenter)
@@ -313,23 +341,47 @@ def __setup_window_layout(window, shadow_container):
 
 
 def __translate_all_controls(self):
-    control_types = (QLabel, QPushButton, QCheckBox, QRadioButton, QGroupBox, QComboBox, QMenu)
+    control_types = (QLabel, QPushButton, QCheckBox, QRadioButton, QGroupBox, QComboBox, QLineEdit, QMenu)
     widgets = []
     for cls in control_types:
         widgets.extend(self.findChildren(cls))
 
     for widget in widgets:
+        if isinstance(widget, QMenu):
+            source = widget.property('_i18n_source_title')
+            if source is None:
+                source = widget.title()
+                widget.setProperty('_i18n_source_title', source)
+            widget.setTitle(translate(source))
+            continue
         if hasattr(widget, 'text') and callable(widget.text):
-            text = translate(widget.text())
+            source = widget.property('_i18n_source_text')
+            if source is None:
+                source = widget.text()
+                widget.setProperty('_i18n_source_text', source)
             if hasattr(widget, 'setText') and callable(widget.setText):
-                widget.setText(text)
-            elif isinstance(widget, QMenu):
-                widget.setTitle(text)
-    self.setWindowTitle(translate(self.windowTitle()))
+                widget.setText(translate(source))
+        if isinstance(widget, QLineEdit):
+            placeholder = widget.property('_i18n_source_placeholder')
+            if placeholder is None:
+                placeholder = widget.placeholderText()
+                widget.setProperty('_i18n_source_placeholder', placeholder)
+            if placeholder:
+                widget.setPlaceholderText(translate(placeholder))
+    source_title = self.property('_i18n_source_window_title')
+    if source_title is None:
+        source_title = self.windowTitle()
+        self.setProperty('_i18n_source_window_title', source_title)
+    self.setWindowTitle(translate(source_title))
 
 
 def translate(text):
-    return zhconv.convert(text, 'zh-cn' if __is_windows_simplified_chinese() else 'zh-tw')
+    translated = tr(text)
+    if I18N.language == LANG_EN:
+        return translated
+    if I18N.language == LANG_ZH_TW:
+        return zhconv.convert(translated, 'zh-tw')
+    return zhconv.convert(translated, 'zh-cn')
 
 
 def __is_windows_simplified_chinese():

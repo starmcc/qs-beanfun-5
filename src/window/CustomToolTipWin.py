@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QLabel
 
 from src.config.StyleConstants import StyleConstants
 from src.utils import WinManager
+from src.config.I18n import I18N
 
 
 class __CustomToolTipWin(QObject):
@@ -16,6 +17,7 @@ class __CustomToolTipWin(QObject):
 
         self.tooltip = self._create_tooltip()
         self.tooltip.setText(WinManager.translate(text))
+        I18N.language_changed.connect(lambda _language: self._refresh_text())
         font = QFont("Microsoft YaHei", 13)
         self.tooltip.setFont(font)
         self.tooltip.adjustSize()
@@ -37,6 +39,11 @@ class __CustomToolTipWin(QObject):
         tooltip.hide()
         tooltip.setStyleSheet(StyleConstants.TIPS_WIN_STYLE)
         return tooltip
+
+    def _refresh_text(self):
+        if self.tooltip:
+            self.tooltip.setText(WinManager.translate(self.tip_text))
+            self.tooltip.adjustSize()
 
     def _hide_tip(self):
         if self.tooltip and self.tooltip.isVisible():

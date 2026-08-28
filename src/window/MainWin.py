@@ -14,6 +14,7 @@ from src.config.GlobalConfig import GLOBAL_CONFIG, ActType
 from src.models.Account import Account
 from src.models.ActInfoResult import ActInfoResult
 from src.utils import BaseTools, SystemCom, BoxPop, SchedulerManager, WinManager
+from src.config.I18n import I18N
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.views.Ui_Main import Ui_Main
 from src.window import CustomToolTipWin
@@ -36,6 +37,7 @@ class MainWin(QWidget, Ui_Main):
         self.auth_cert = True
         self.init_ui()
         self.get_account_info()
+        I18N.language_changed.connect(lambda _language: self._refresh_dynamic_i18n())
         # 定时心跳保证登录状态
         self.task_id = SchedulerManager.do_task(self.refresh_login_status, 1000 * 60 * 5)
 
@@ -70,7 +72,7 @@ class MainWin(QWidget, Ui_Main):
         CustomToolTipWin.build_tips(self, self.label_status,
                                     "如显示封禁请立刻联系官方客服解除!\n菜单 -> 用户中心 -> 客服中心 -> 联系客服 -> 填写信息并等待客服邮件回复\n建议勿使用外挂/辅助/宏/VPN等软件\n官方一经查实永久封禁,误封可解除")
         CustomToolTipWin.build_tips(self, self.checkBox_autoInput,
-                                    f"勾选后点击{self.pushButton_dynamicPwd.text()}将自动聚焦《新枫之谷》\n并自动在游戏中输入数字账号和动态密令")
+                                    "勾选后点击获取密令将自动聚焦《新枫之谷》\n并自动在游戏中输入数字账号和动态密令")
         # 经典版按钮：台湾 GamaPass 登录 或 香港登录 时显示
         is_classic_visible = (
             (GLOBAL_CONFIG.now_login_type == ActType.TW.value and GLOBAL_CONFIG.is_gamapass_login)
@@ -180,8 +182,11 @@ class MainWin(QWidget, Ui_Main):
         get_thread_pool().submit_task(__task, __result, self, True, win=self)
 
     def _need_ggm_check(self) -> bool:
-        """判断是否需要检测 GGM 是否安装（纯逻辑，可在工作线程调用）。"""
-        return Config.ggm_first() and not SystemCom.is_ggm_installed()
+        """判断是否需要检测 GGM 是否安装。
+        """
+        if GLOBAL_CONFIG.now_login_type == ActType.HK.value:
+            return False
+        return Config.ggm_use() and not SystemCom.is_ggm_installed()
 
     def _ggm_missing(self):
         """GGM 未安装时，在主线程弹窗询问是否前往官网下载。"""
@@ -257,10 +262,9 @@ class MainWin(QWidget, Ui_Main):
         - account_limit 为 None → 显示「-」（未知/未限制）
         - 否则显示具体数字
         """
-        if actInfoResult.account_limit is not None:
-            self.label_accountLimit.setText(f"最大账号创建数量：{actInfoResult.account_limit}")
-        else:
-            self.label_accountLimit.setText("最大账号创建数量：-")
+        limit_text = f"最大账号创建数量：{actInfoResult.account_limit}" if actInfoResult.account_limit is not None else "最大账号创建数量：-"
+        self.label_accountLimit.setProperty('_i18n_source_text', limit_text)
+        self.label_accountLimit.setText(WinManager.translate(limit_text))
 
     def __can_create_account(self, actInfoResult: ActInfoResult) -> bool:
         """
@@ -290,10 +294,12 @@ class MainWin(QWidget, Ui_Main):
                 return
         palette = self.label_status.palette()
         if self.nowAccount.status:
-            self.label_status.setText('正常')
+            self.label_status.setProperty('_i18n_source_text', '正常')
+            self.label_status.setText(WinManager.translate('正常'))
             palette.setColor(QPalette.ColorRole.WindowText, QColor(0, 0, 0))
         else:
-            self.label_status.setText('封禁')
+            self.label_status.setProperty('_i18n_source_text', '封禁')
+            self.label_status.setText(WinManager.translate('封禁'))
             palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 0, 0))
         self.label_status.setPalette(palette)
         self.lineEdit_numAct.setText(BaseTools.hidden_str(self.nowAccount.id))
@@ -303,6 +309,14 @@ class MainWin(QWidget, Ui_Main):
     def config_clicked(self):
         GLOBAL_CONFIG.win_config = ConfigWin(self)
         GLOBAL_CONFIG.win_config.exec()
+
+    def _refresh_dynamic_i18n(self):
+        source_limit = self.label_accountLimit.property('_i18n_source_text')
+        if source_limit:
+            self.label_accountLimit.setText(WinManager.translate(source_limit))
+        source_status = self.label_status.property('_i18n_source_text')
+        if source_status:
+            self.label_status.setText(WinManager.translate(source_status))
 
     def refresh_points(self, event=None):
         def __task():

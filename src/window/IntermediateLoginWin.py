@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QDialog
 from src.client import RequestClient, QsClient
 from src.models.LoginRecord import LoginRecord
 from src.utils import SchedulerManager, WinManager
+from src.config.I18n import I18N
 from src.views.Ui_IntermediateLogin import Ui_IntermediateLogin
 
 
@@ -25,11 +26,12 @@ class IntermediateLoginWin(QDialog, Ui_IntermediateLogin):
         WinManager.set_basic_window(self)
         self.await_num = 0
         self.close_signal.connect(self.handle_close)
+        I18N.language_changed.connect(lambda _language: self._refresh_await_text())
         self.task_id = SchedulerManager.do_task(self.polling_login, 1000)
 
     def polling_login(self, task_id):
         self.await_num += 1
-        self.label_await.setText(f'等待App确认登录\n请在{self.MAX_AWAIT_SECONDS - self.await_num}秒内进行操作!')
+        self._refresh_await_text()
 
         status, self.login_record.auth_key = self.intermediate_login()
         self.login_record.intermediate_login = False
@@ -43,6 +45,11 @@ class IntermediateLoginWin(QDialog, Ui_IntermediateLogin):
         self.task_id = -1
         SchedulerManager.stop_task(task_id)
         self.close_signal.emit()
+
+    def _refresh_await_text(self):
+        await_text = f'等待App确认登录\n请在{self.MAX_AWAIT_SECONDS - self.await_num}秒内进行操作!'
+        self.label_await.setProperty('_i18n_source_text', await_text)
+        self.label_await.setText(WinManager.translate(await_text))
 
     def handle_close(self):
         self.close()

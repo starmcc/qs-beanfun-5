@@ -6,6 +6,7 @@ from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QAction
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget
 
 from src.config.StyleConstants import StyleConstants
+from src.config.I18n import I18N
 
 
 def get_win_manager():
@@ -19,11 +20,13 @@ class TrayIcon(QSystemTrayIcon):
         super().__init__(parent)
         # 创建菜单和动作
         self.menu = None
-        self.create_menu([{"name": "显示", "func": self.showSelf}])
+        self._source_menus = [{"name": "显示", "func": self.showSelf}]
+        self.create_menu(self._source_menus)
         """ 设置图标 """
         self.setIcon(QIcon(':/images/logo'))
 
-        self.setToolTip("QsBeanfun\n双击：显示/隐藏窗口\n右键：打开菜单")
+        self._refresh_i18n()
+        I18N.language_changed.connect(self._on_language_changed)
 
         self.activated.connect(self.icon_clicked)
         self.show()
@@ -34,16 +37,30 @@ class TrayIcon(QSystemTrayIcon):
 
         if menus:
             for menu in menus:
-                action = QAction(menu['name'], self)
+                action = QAction(get_win_manager().translate(menu['name']), self)
                 action.triggered.connect(menu['func'])
                 self.menu.addAction(action)
 
         self.menu.addSeparator()
 
-        quit_action = QAction("退出", self)
+        quit_action = QAction(get_win_manager().translate("退出"), self)
         quit_action.triggered.connect(self.quit)
         self.menu.addAction(quit_action)
         self.setContextMenu(self.menu)
+
+    def _on_language_changed(self, _language):
+        try:
+            self._refresh_i18n()
+        except RuntimeError:
+            try:
+                I18N.language_changed.disconnect(self._on_language_changed)
+            except (RuntimeError, TypeError):
+                pass
+
+    def _refresh_i18n(self):
+        win_manager = get_win_manager()
+        self.setToolTip(win_manager.translate("QsBeanfun\n双击：显示/隐藏窗口\n右键：打开菜单"))
+        self.create_menu(self._source_menus)
 
     def icon_clicked(self, reason):
         """ 处理图标点击事件 """

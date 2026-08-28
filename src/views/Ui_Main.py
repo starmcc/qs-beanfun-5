@@ -149,19 +149,21 @@ class Ui_Main(object):
         self.horizontalLayout_2.setContentsMargins(9, 1, 9, 1)
         self.pushButton_config = QPushButton(Main)
         self.pushButton_config.setObjectName(u"pushButton_config")
-        self.pushButton_config.setMaximumSize(QSize(48, 16777215))
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.pushButton_config.sizePolicy().hasHeightForWidth())
+        self.pushButton_config.setSizePolicy(sizePolicy1)
 
         self.horizontalLayout_2.addWidget(self.pushButton_config)
 
         self.pushButton_loginOut = QPushButton(Main)
         self.pushButton_loginOut.setObjectName(u"pushButton_loginOut")
-        self.pushButton_loginOut.setMaximumSize(QSize(48, 16777215))
 
         self.horizontalLayout_2.addWidget(self.pushButton_loginOut)
 
         self.pushButton_createAct = QPushButton(Main)
         self.pushButton_createAct.setObjectName(u"pushButton_createAct")
-        self.pushButton_createAct.setMaximumSize(QSize(80, 16777215))
 
         self.horizontalLayout_2.addWidget(self.pushButton_createAct)
 
@@ -184,27 +186,27 @@ class Ui_Main(object):
         self.horizontalLayout.setContentsMargins(9, -1, 9, -1)
         self.pushButton_start = QPushButton(Main)
         self.pushButton_start.setObjectName(u"pushButton_start")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.pushButton_start.sizePolicy().hasHeightForWidth())
-        self.pushButton_start.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.pushButton_start.sizePolicy().hasHeightForWidth())
+        self.pushButton_start.setSizePolicy(sizePolicy2)
         self.pushButton_start.setMinimumSize(QSize(0, 36))
 
         self.horizontalLayout.addWidget(self.pushButton_start)
 
         self.pushButton_classic = QPushButton(Main)
         self.pushButton_classic.setObjectName(u"pushButton_classic")
-        sizePolicy1.setHeightForWidth(self.pushButton_classic.sizePolicy().hasHeightForWidth())
-        self.pushButton_classic.setSizePolicy(sizePolicy1)
+        sizePolicy2.setHeightForWidth(self.pushButton_classic.sizePolicy().hasHeightForWidth())
+        self.pushButton_classic.setSizePolicy(sizePolicy2)
         self.pushButton_classic.setMinimumSize(QSize(0, 36))
 
         self.horizontalLayout.addWidget(self.pushButton_classic)
 
         self.pushButton_dynamicPwd = QPushButton(Main)
         self.pushButton_dynamicPwd.setObjectName(u"pushButton_dynamicPwd")
-        sizePolicy1.setHeightForWidth(self.pushButton_dynamicPwd.sizePolicy().hasHeightForWidth())
-        self.pushButton_dynamicPwd.setSizePolicy(sizePolicy1)
+        sizePolicy2.setHeightForWidth(self.pushButton_dynamicPwd.sizePolicy().hasHeightForWidth())
+        self.pushButton_dynamicPwd.setSizePolicy(sizePolicy2)
         self.pushButton_dynamicPwd.setMinimumSize(QSize(0, 36))
 
         self.horizontalLayout.addWidget(self.pushButton_dynamicPwd)
@@ -229,7 +231,7 @@ class Ui_Main(object):
         Main.setWindowTitle(QCoreApplication.translate("Main", u"QsBeanfun", None))
         self.label_logoView.setText("")
         self.label_points.setText(QCoreApplication.translate("Main", u"0[0]", None))
-        self.label_4.setText(QCoreApplication.translate("Main", u"\u6578\u5b57\u8d26\u53f7", None))
+        self.label_4.setText(QCoreApplication.translate("Main", u"\u6570\u5b57\u8d26\u53f7", None))
         self.label_status.setText(QCoreApplication.translate("Main", u"\u6b63\u5e38", None))
         self.label_2.setText(QCoreApplication.translate("Main", u"\u4e50\u8c46", None))
         self.label_5.setText(QCoreApplication.translate("Main", u"\u52a8\u6001\u5bc6\u4ee4", None))
@@ -241,7 +243,7 @@ class Ui_Main(object):
         self.pushButton_createAct.setText(QCoreApplication.translate("Main", u"\u65b0\u5efa\u8d26\u53f7", None))
         self.checkBox_autoInput.setText(QCoreApplication.translate("Main", u"\u81ea\u52a8\u586b\u5165", None))
         self.pushButton_start.setText(QCoreApplication.translate("Main", u"\u542f\u52a8\u6e38\u620f", None))
-        self.pushButton_classic.setText(QCoreApplication.translate("Main", u"\u8fdb\u5165\u7ecf\u5178\u7248", None))
+        self.pushButton_classic.setText(QCoreApplication.translate("Main", u"\u7ecf\u5178\u7248", None))
         self.pushButton_dynamicPwd.setText(QCoreApplication.translate("Main", u"\u83b7\u53d6\u5bc6\u4ee4", None))
     # retranslateUi
 
