@@ -1,3 +1,4 @@
+import json
 import logging
 import typing
 import webbrowser
@@ -8,7 +9,8 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QDialog, QGroupBox, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout, QWidget
 
 from src.client import RequestClient
-from src.config.GlobalConfig import GlobalConstants
+from src.config import Config
+from src.config.GlobalConfig import GlobalConstants, LANGUAGE
 from src.utils import WinManager
 from src.config.I18n import I18N
 from src.utils.ThreadPoolManager import get_thread_pool
@@ -51,6 +53,10 @@ class NavWin(QDialog, Ui_Nav):
 
         def match(item: dict, kw: str) -> bool:
             title = str(item.get('title') or '')
+            if Config.language() == LANGUAGE.EN.value:
+                en = str(item.get('en') or '')
+                if en:
+                    return kw.lower() in en.lower()
             return kw.lower() in title.lower()
 
         def filter_tree(nodes: List[dict], kw: str) -> List[dict]:
@@ -71,6 +77,15 @@ class NavWin(QDialog, Ui_Nav):
     def _refresh_entries(self):
         self._filter_entries(self.lineEdit_search.text())
 
+    def _localized(self, item: dict) -> str:
+        """根据当前语言返回显示文本：英文时优先使用 en 字段，否则回退 title。"""
+        title = str(item.get('title') or '')
+        if Config.language() == LANGUAGE.EN.value:
+            en = str(item.get('en') or '')
+            if en:
+                return en
+        return WinManager.translate(title)
+
     def _render_groups(self, entries: List[dict]):
         self._clear_layout(self.verticalLayout_groups)
         if not entries:
@@ -79,10 +94,9 @@ class NavWin(QDialog, Ui_Nav):
 
         # 第一层作为分组，子层为按钮网格
         for item in entries:
-            title = str(item.get('title') or '')
             data = item.get('data')
             if isinstance(data, list):
-                group = QGroupBox(WinManager.translate(title), self.container)
+                group = QGroupBox(self._localized(item), self.container)
                 group.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
                 group_layout = QVBoxLayout(group)
                 group_layout.setContentsMargins(8, 8, 8, 8)
@@ -113,8 +127,7 @@ class NavWin(QDialog, Ui_Nav):
             data = node.get('data')
             if isinstance(data, list):
                 # 递归：二级组内再建一个小标题
-                sub_title = str(node.get('title') or '')
-                subtitle_label = QLabel(WinManager.translate(sub_title))
+                subtitle_label = QLabel(self._localized(node))
                 font = QFont()
                 font.setPointSize(10)
                 font.setBold(True)
@@ -143,7 +156,7 @@ class NavWin(QDialog, Ui_Nav):
             parent_layout.addLayout(row_layout)
 
     def _create_nav_button(self, item: dict) -> QPushButton:
-        btn = QPushButton(WinManager.translate(str(item.get('title') or '')))
+        btn = QPushButton(self._localized(item))
         btn.setObjectName(str(item.get('name') or 'nav_item'))
         btn.setMinimumHeight(32)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -155,7 +168,7 @@ class NavWin(QDialog, Ui_Nav):
         # title = 菜单名称
         # data = 数据
         name = item.get('name')
-        title = WinManager.translate(item.get('title'))
+        title = self._localized(item)
         type = int(item.get('type'))
         data = item.get('data')
 
@@ -204,6 +217,205 @@ class NavWin(QDialog, Ui_Nav):
 
     @staticmethod
     def _get_dynamic_nav_config() -> typing.Any:
+        a =  """
+        [
+    {
+        "name": "nav_tools",
+        "en": "Navigation Tools",
+        "type": 0,
+        "title": "实用工具",
+        "data": [
+            {
+                "name": "tools_maple_kit",
+                "en": "MapleKit",
+                "type": 1,
+                "title": "MapleKit",
+                "data": "https://maple-kit.com/"
+            },
+            {
+                "name": "tools_hexa",
+                "en": "Hexa Calculator",
+                "type": 2,
+                "title": "Hexa计算器",
+                "data": "https://starmcc.github.io/MapleStoryCoreCalc/"
+            },
+            {
+                "name": "tools_star",
+                "en": "Star Force Simulator",
+                "type": 2,
+                "title": "星力模拟器",
+                "data": "https://maplehexa.cisyy.cc/starforceEmulator/"
+            },
+            {
+                "name": "tools_all_tools",
+                "en": "MapleStory Toolbox",
+                "type": 2,
+                "title": "枫之谷小工具",
+                "data": "https://mstoolbox.netlify.app/"
+            },
+            {
+                "name": "tools_union",
+                "en": "Legion Solver",
+                "type": 2,
+                "title": "联盟摆放模拟器",
+                "data": "https://xenogents.github.io/LegionSolver/"
+            },
+            {
+                "name": "tools_paper_dolls",
+                "en": "Open‑Source Paper Doll System",
+                "type": 1,
+                "title": "开源纸娃娃系统",
+                "data": "https://github.com/Elem8100/MapleNecrocer"
+            },
+            {
+                "name": "tools_exchange",
+                "en": "Currency Converter",
+                "type": 2,
+                "title": "汇率换算",
+                "data": "https://zh.coinmill.com/CNY_calculator.html"
+            }
+        ]
+    },
+    {
+        "name": "nav_beanfun",
+        "en": "Beanfun Official Links",
+        "type": 0,
+        "title": "新枫之谷官方链接",
+        "data": [
+            {
+                "name": "beanfun_recharge",
+                "en": "(Taobao) GASH Card Purchase",
+                "type": 3,
+                "title": "(淘宝)GASH点卡购买",
+                "data": "shturl.cc/lEPZTGfOKaGHrLBoJqmGwtUNGbGQzNq9eOLKGircQ9IbxH6aCwdsaGdLrkZs2"
+            },
+            {
+                "name": "beanfun_maplestory_classic",
+                "en": "MapleStory Classic Official Site",
+                "type": 1,
+                "title": "新枫之谷经典版官网",
+                "data": "https://maplestoryclassic.beanfun.com/Main"
+            },
+            {
+                "name": "beanfun_hk",
+                "en": "Beanfun Hong Kong",
+                "type": 1,
+                "title": "香港橘子",
+                "data": "https://bfweb.hk.beanfun.com/"
+            },
+            {
+                "name": "beanfun_tw",
+                "en": "Beanfun Taiwan",
+                "type": 1,
+                "title": "台湾橘子",
+                "data": "https://tw.beanfun.com/"
+            },
+            {
+                "name": "beanfun_maplestory",
+                "en": "MapleStory TW Official Site",
+                "type": 1,
+                "title": "新枫之谷官网",
+                "data": "https://maplestory.beanfun.com/main"
+            },
+            {
+                "name": "beanfun_facebook",
+                "en": "(Facebook) Taiwan Official Fanpage",
+                "type": 1,
+                "title": "(脸书)台湾官方粉丝团",
+                "data": "https://www.facebook.com/www.maplestory.msfans.com.tw"
+            },
+            {
+                "name": "beanfun_intagram",
+                "en": "(Instagram) MapleStory TW",
+                "type": 1,
+                "title": "(IG/INS)新枫之谷",
+                "data": "https://www.instagram.com/maplestory_tw/"
+            },
+            {
+                "name": "beanfun_blacklist",
+                "en": "MapleStory Ban List",
+                "type": 1,
+                "title": "枫谷官方封神榜",
+                "data": "https://maplestory.beanfun.com/blacklist"
+            }
+        ]
+    },
+    {
+        "name": "nav_cms",
+        "en": "Community & Forums",
+        "type": 0,
+        "title": "社区论坛",
+        "data": [
+            {
+                "name": "cms_baidu_beanfun",
+                "en": "Beanfun Tieba Forum",
+                "type": 1,
+                "title": "Beanfun贴吧",
+                "data": "https://tieba.baidu.com/f?kw=beanfun"
+            },
+            {
+                "name": "cms_baidu_maplestory",
+                "en": "MapleStory Tieba Forum",
+                "type": 1,
+                "title": "新枫之谷贴吧",
+                "data": "https://tieba.baidu.com/f?kw=%E6%96%B0%E6%9E%AB%E4%B9%8B%E8%B0%B7"
+            },
+            {
+                "name": "cms_bahamute",
+                "en": "Bahamut Forum",
+                "type": 1,
+                "title": "巴哈姆特",
+                "data": "https://forum.gamer.com.tw/B.php?bsn=7650"
+            },
+            {
+                "name": "cms_nga",
+                "en": "NGA MapleStory Forum",
+                "type": 1,
+                "title": "NGA冒险岛论坛",
+                "data": "https://bbs.nga.cn/thread.php?fid=707"
+            }
+        ]
+    },
+    {
+        "name": "nav_blogMaster",
+        "en": "Content Creators",
+        "type": 0,
+        "title": "视频博主",
+        "data": [
+            {
+                "name": "blogMaster_xiaomeng",
+                "en": "(Bilibili‑TMS) Childhood Dream",
+                "type": 1,
+                "title": "(B站‑TMS)童年小梦",
+                "data": "https://space.bilibili.com/391919722"
+            },
+            {
+                "name": "blogMaster_mofu",
+                "en": "(Bilibili‑CMS) Mofu",
+                "type": 1,
+                "title": "(B站‑CMS)魔符",
+                "data": "https://space.bilibili.com/270041969"
+            },
+            {
+                "name": "blogMaster_huoguo",
+                "en": "(Bilibili‑CMS) Hotpot",
+                "type": 1,
+                "title": "(B站‑CMS)火锅",
+                "data": "https://space.bilibili.com/1784563171"
+            },
+            {
+                "name": "blogMaster_reqingTv",
+                "en": "(Bilibili‑CMS) ReqingTV",
+                "type": 1,
+                "title": "(B站‑CMS)热情TV",
+                "data": "https://space.bilibili.com/295598050"
+            }
+        ]
+    }
+]
+
+        """
+        return json.loads(a)
         # 先读取网络配置，再进行菜单配置
         response = RequestClient.get_instance().get(GlobalConstants.NAV_API_URL)
         if response.status_code != 200:

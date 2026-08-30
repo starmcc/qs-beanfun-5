@@ -4,11 +4,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject, Signal
 
-
-LANG_ZH_CN = "zh_CN"
-LANG_ZH_TW = "zh_TW"
-LANG_EN = "en"
-
+from src.config import GlobalConfig
 
 # 仅维护应用自身 UI 文本，不依赖在线服务或大型离线翻译库。
 ENGLISH_DICT: dict[str, str] = {
@@ -185,11 +181,11 @@ class I18n(QObject):
             return
         super().__init__()
         # 直接读取已保存的语言配置；若读取失败则回退简体中文。
-        self._language = LANG_ZH_CN
+        self._language = GlobalConfig.LANGUAGE.ZH_CN.value
         try:
             from src.config import Config
             saved = Config.language()
-            if saved in (LANG_ZH_CN, LANG_ZH_TW, LANG_EN):
+            if saved in (GlobalConfig.LANGUAGE.ZH_CN.value, GlobalConfig.LANGUAGE.ZH_TW.value, GlobalConfig.LANGUAGE.EN.value):
                 self._language = saved
         except Exception:
             pass
@@ -200,8 +196,8 @@ class I18n(QObject):
         return self._language
 
     def set_language(self, language: str) -> None:
-        if language not in (LANG_ZH_CN, LANG_ZH_TW, LANG_EN):
-            language = LANG_ZH_CN
+        if language not in (GlobalConfig.LANGUAGE.ZH_CN.value, GlobalConfig.LANGUAGE.ZH_TW.value, GlobalConfig.LANGUAGE.EN.value):
+            language = GlobalConfig.LANGUAGE.ZH_CN.value
         if self._language == language:
             return
         self._language = language
@@ -213,7 +209,7 @@ class I18n(QObject):
         self.language_changed.emit(language)
 
     def translate(self, text: str) -> str:
-        if self._language == LANG_EN:
+        if self._language == GlobalConfig.LANGUAGE.EN.value:
             if text in ENGLISH_DICT:
                 return ENGLISH_DICT[text]
             # 动态数量文本保留数字，只翻译固定前缀。

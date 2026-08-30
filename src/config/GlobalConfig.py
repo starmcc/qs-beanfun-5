@@ -10,6 +10,10 @@ class ActType(Enum):
     HK = "HK"  # 香港地区
     TW = "TW"  # 台湾地区
 
+class LANGUAGE(Enum):
+    ZH_CN = "zh_CN"
+    ZH_TW = "zh_TW"
+    EN = "en"
 
 class GlobalConstants:
     """全局常量集中管理"""

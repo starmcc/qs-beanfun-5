@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QDialog
 
-from src.config import Config
-from src.config.I18n import I18N, LANG_ZH_CN, LANG_ZH_TW, LANG_EN
+from src.config import Config, GlobalConfig
+from src.config.I18n import I18N
 from src.utils import WinManager, BoxPop, SystemCom
 from src.views.Ui_Config import Ui_Config
 from src.window import CustomToolTipWin
@@ -16,22 +16,28 @@ class ConfigWin(QDialog, Ui_Config):
         self.read_config()
 
     def init_ui(self):
-        self._language_values = (LANG_ZH_CN, LANG_ZH_TW, LANG_EN)
+        self._language_values = (GlobalConfig.LANGUAGE.ZH_CN.value, GlobalConfig.LANGUAGE.ZH_TW.value,
+                                 GlobalConfig.LANGUAGE.EN.value)
         self.comboBox_language.currentIndexChanged.connect(self.language_changed)
         I18N.language_changed.connect(lambda _language: self._refresh_language_items())
         self._refresh_language_items()
         self.checkBox_passInput.stateChanged.connect(self.passInput_statusChanged)
-        CustomToolTipWin.build_tips(self, self.checkBox_passInput, "启动游戏将直接跳过登录界面\n与网页登录相似\n不建议开启该功能")
+        CustomToolTipWin.build_tips(self, self.checkBox_passInput,
+                                    "启动游戏将直接跳过登录界面\n与网页登录相似\n不建议开启该功能")
         self.checkBox_stopUpdate.stateChanged.connect(self.stopUpdate_statusChanged)
-        CustomToolTipWin.build_tips(self, self.checkBox_stopUpdate, "由于连接台服可能存在网络波动导致更新失败\n一般情况下请默认勾选阻止游戏自动更新\n建议通过官网下载最新补丁手动更新")
+        CustomToolTipWin.build_tips(self, self.checkBox_stopUpdate,
+                                    "由于连接台服可能存在网络波动导致更新失败\n一般情况下请默认勾选阻止游戏自动更新\n建议通过官网下载最新补丁手动更新")
         self.checkBox_appCheckUpdate.stateChanged.connect(self.appCheckUpdate_statusChanged)
         CustomToolTipWin.build_tips(self, self.checkBox_appCheckUpdate, "每次启动工具检查版本更新\n取消勾选则不检查")
         self.checkBox_closeStartWindow.stateChanged.connect(self.closeStartWindow_statusChanged)
-        CustomToolTipWin.build_tips(self, self.checkBox_closeStartWindow, "《新枫之谷》启动后,会打开默认启动页\n建议勾选自动关闭该启动页\n该启动页无任何作用,加快游戏启动速度")
+        CustomToolTipWin.build_tips(self, self.checkBox_closeStartWindow,
+                                    "《新枫之谷》启动后,会打开默认启动页\n建议勾选自动关闭该启动页\n该启动页无任何作用,加快游戏启动速度")
         self.checkBox_ggmFirst.stateChanged.connect(self.ggmFirst_statusChanged)
-        CustomToolTipWin.build_tips(self, self.checkBox_ggmFirst, "使用 GGM（Gamania Games Manager）获取动态密令\n需要本地已安装 GGM 才能生效")
+        CustomToolTipWin.build_tips(self, self.checkBox_ggmFirst,
+                                    "使用 GGM（Gamania Games Manager）获取动态密令\n需要本地已安装 GGM 才能生效")
         self.pushButton_gamePath.clicked.connect(self.gamePath_clicked)
         CustomToolTipWin.build_tips(self, self.pushButton_gamePath, "选择游戏目录\n请选择英文目录")
+
     def _refresh_language_items(self):
         current = I18N.language
         self.comboBox_language.blockSignals(True)

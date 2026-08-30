@@ -8,8 +8,9 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, Q
                                QComboBox, QLineEdit, QMessageBox)
 
 from src.components.TitleButton import TitleButton
+from src.config import GlobalConfig
 from src.config.GlobalConfig import GlobalConstants
-from src.config.I18n import I18N, LANG_ZH_TW, LANG_EN, tr
+from src.config.I18n import I18N, tr
 from src.config.TitleBarConfig import TitleBarConfig
 from src.utils import MenuManager
 from src.zhconv import zhconv
@@ -38,11 +39,11 @@ def set_basic_window(window):
             if title_label is not None:
                 source = title_label.property('_i18n_source_text') or title_label.text()
                 title_label.setText(translate(source))
+
         I18N.language_changed.connect(refresh_window)
         window._i18n_connected = True
     __translate_all_controls(window)
     return window
-
 
 
 def __create_title_bar_config(window) -> TitleBarConfig:
@@ -59,14 +60,12 @@ def __create_title_bar_config(window) -> TitleBarConfig:
     )
 
 
-
 def __is_browser_window(window) -> bool:
     from src.components.PyQtBrowser import PyQtBrowser
     from src.components.LoginWeb import LoginWeb
     from src.components.RecaptchaWeb import RecaptchaWindow
 
     return isinstance(window, (PyQtBrowser, LoginWeb, RecaptchaWindow))
-
 
 
 def __apply_native_window_flags(window):
@@ -306,7 +305,6 @@ def __create_content_widget(window):
     return content_widget
 
 
-
 def __resize_window_for_custom_title_bar(window, title_bar_height, shadow_margin):
     if window.testAttribute(Qt.WidgetAttribute.WA_Resized):
         original_size = window.size()
@@ -377,9 +375,9 @@ def __translate_all_controls(self):
 
 def translate(text):
     translated = tr(text)
-    if I18N.language == LANG_EN:
+    if I18N.language == GlobalConfig.LANGUAGE.EN.value:
         return translated
-    if I18N.language == LANG_ZH_TW:
+    if I18N.language == GlobalConfig.LANGUAGE.ZH_TW.value:
         return zhconv.convert(translated, 'zh-tw')
     return zhconv.convert(translated, 'zh-cn')
 
