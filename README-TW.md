@@ -9,7 +9,7 @@
 [![Last Commit](https://img.shields.io/github/last-commit/starmcc/qs-beanfun-5?label=LastCommit&style=flat-square)](https://github.com/starmcc/qs-beanfun-5/commits/master)
 [![Python](https://img.shields.io/badge/Python-3.10.11-8d38dc?style=flat-square)](https://www.python.org/)
 
-[简体中文](./README.md) | **繁體中文**
+[简体中文](./README.md) | **繁體中文** | [English](./README-EN.md)
 
 </div>
 
