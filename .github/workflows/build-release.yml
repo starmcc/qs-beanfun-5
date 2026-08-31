@@ -118,8 +118,8 @@ jobs:
           [void]$sb.AppendLine()
           [void]$sb.AppendLine("## 🚀 使用说明 Usage")
           [void]$sb.AppendLine()
-          [void]$sb.AppendLine("1. 下载 **QsBeanfun.zip** 并解压")
-          [void]$sb.AppendLine("2. 运行 **Beanfun.exe**")
+          [void]$sb.AppendLine("1. 下载 **QsBeanfun.zip** 并解压 / Download and extract **QsBeanfun.zip**")
+          [void]$sb.AppendLine("2. 运行 **Beanfun.exe** / Run **Beanfun.exe**")
           [void]$sb.AppendLine()
 
           # 写入文件（UTF8NoBOM 避免 BOM 影响 release body 开头）
