@@ -71,6 +71,60 @@ jobs:
           Compress-Archive -Path 'compile/dist/Beanfun' -DestinationPath 'compile/dist/QsBeanfun.zip' -Force
           Get-Item 'compile/dist/QsBeanfun.zip' | Select-Object Name, Length
 
+      - name: 生成 update.json（增量/全量更新标记）
+        id: update_json
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ver = "${{ steps.version.outputs.version }}"
+          $tag = "${{ steps.version.outputs.tag }}"
+
+          # 1. 对比 requirements.txt 是否变化（决定是否全量）
+          $prevTag = git describe --tags --abbrev=0 HEAD~1 2>$null
+          $reqChanged = $true
+          if ($prevTag) {
+            $prevReq = git show "${prevTag}:requirements.txt" 2>$null
+            $curReq = Get-Content -Path 'requirements.txt' -Raw
+            if ($prevReq -and $prevReq -eq $curReq) {
+              $reqChanged = $false
+            }
+          }
+
+          # 2. 默认增量：dependency_version 沿用上次基线
+          #    - requirements.txt 变化 → 全量（基线 = 本次版本）
+          #    - requirements.txt 未变化 → 增量（基线 = 上次基线，读取失败则用上一个 tag）
+          if ($reqChanged) {
+            $depVer = $ver
+          } else {
+            $depVer = $prevTag
+            try {
+              $headers = @{ Authorization = "token $env:GITHUB_TOKEN" }
+              $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers $headers -Method Get
+              $prevRelease = $releases | Where-Object { $_.tag_name -ne $tag } | Select-Object -First 1
+              if ($prevRelease) {
+                $prevAsset = $prevRelease.assets | Where-Object { $_.name -eq 'update.json' } | Select-Object -First 1
+                if ($prevAsset) {
+                  $prevUpdate = Invoke-RestMethod -Uri $prevAsset.browser_download_url -Method Get
+                  $depVer = $prevUpdate.dependency_version
+                }
+              }
+            } catch {
+              Write-Host "获取上次 update.json 失败，使用上一个 tag 作为基线: $_"
+            }
+          }
+
+          # 3. 生成 update.json
+          $updateInfo = @{
+            version = $ver
+            dependency_version = $depVer
+            incremental_url = "https://github.com/${{ github.repository }}/releases/download/$tag/Beanfun.exe"
+            full_url = "https://github.com/${{ github.repository }}/releases/download/$tag/QsBeanfun.zip"
+          }
+          $updateInfo | ConvertTo-Json -Depth 3 | Set-Content -Path 'compile/dist/update.json' -Encoding UTF8
+          Write-Output "已生成 update.json："
+          Get-Content -Path 'compile/dist/update.json'
+
       - name: 生成发布说明 (Release Body)
         id: release_body
         shell: pwsh
@@ -138,6 +192,7 @@ jobs:
           path: |
             compile/dist/QsBeanfun.zip
             compile/dist/Beanfun
+            compile/dist/update.json
 
       - name: 创建预发布 (Prerelease)
         uses: softprops/action-gh-release@v2
@@ -148,6 +203,7 @@ jobs:
           files: |
             compile/dist/QsBeanfun.zip
             compile/dist/Beanfun/Beanfun.exe
+            compile/dist/update.json
           draft: false
           prerelease: true
         env:

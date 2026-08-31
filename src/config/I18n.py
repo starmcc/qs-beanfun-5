@@ -33,7 +33,7 @@ ENGLISH_DICT: dict[str, str] = {
     "强制结束NGS进程": "Force close NGS process",
     "强制结束游戏": "Force close game",
     "系统计算器": "Calculator",
-    "下载Nexon Game Manager插件": "Download Nexon Game Manager",
+    "下载GGM插件": "Download GGM",
     "安装枫之谷经典版": "Install MapleStory Classic",
     "获取新版本": "Check for updates",
     "关于..": "About",
@@ -41,8 +41,8 @@ ENGLISH_DICT: dict[str, str] = {
     "是否立即结束Ngs进程?": "Close the NGS process now?",
     "是否强制结束游戏?": "Force close the game?",
     "下载失败，状态码:": "Download failed, status code:",
-    "下载Nexon Game Manager插件失败": "Failed to download Nexon Game Manager",
-    "启动Nexon Game Manager安装程序失败": "Failed to start the Nexon Game Manager installer",
+    "下载GGM插件失败": "Failed to download GGM",
+    "启动GGM安装程序失败": "Failed to start the GGM installer",
     "未找到Nexon Game Manager安装路径，请先下载安装Nexon Game Manager插件": "Nexon Game Manager was not found. Download and install it first.",
     "启动Nexon Game Manager安装经典版失败": "Failed to start the MapleStory Classic installer",
     "忘记密码": "Forgot password",
@@ -125,7 +125,8 @@ ENGLISH_DICT: dict[str, str] = {
     "QsBeanfun\n双击：显示/隐藏窗口\n右键：打开菜单": "QsBeanfun\nDouble-click: show/hide window\nRight-click: open menu",
     "程序已最小化到托盘": "Minimized to tray",
     "正在安全退出...": "Exiting safely...",
-    "前往更新": "Update",
+    "前往发布页": "Open release page",
+    "立即更新": "Update now",
     "不再提醒": "Don't remind",
     "无法获取版本信息": "Unable to get version info",
     "当前是最新版本": "Already up to date",
@@ -215,9 +216,9 @@ class I18n(QObject):
             # 动态数量文本保留数字，只翻译固定前缀。
             if text.startswith("最大账号创建数量："):
                 return "Max accounts: " + text.split("：", 1)[1]
-            if text.startswith("发现新版本：") and text.endswith("\n是否前往更新?"):
+            if text.startswith("发现新版本：") and text.endswith("\n是否立即更新?"):
                 content = text[len("发现新版本："):]
-                return "New version found: " + content.rsplit("\n是否前往更新?", 1)[0] + "\nOpen update page?"
+                return "New version found: " + content.rsplit("\n是否立即更新?", 1)[0] + "\nUpdate now?"
             if text.startswith("于 ") and text.endswith(" 创建"):
                 return "Created at " + text[2:-3]
             if text.startswith("等待App确认登录\n请在") and text.endswith("秒内进行操作!"):
@@ -227,10 +228,10 @@ class I18n(QObject):
                 return "Failed to start game:\n " + text.split("\n ", 1)[1]
             if text.startswith("启动经典版游戏出现了问题:\n "):
                 return "Failed to start Classic:\n " + text.split("\n ", 1)[1]
-            if text.startswith("下载Nexon Game Manager插件失败:\n"):
-                return "Failed to download Nexon Game Manager:\n" + text.split("\n", 1)[1]
-            if text.startswith("启动Nexon Game Manager安装程序失败:\n"):
-                return "Failed to start Nexon Game Manager installer:\n" + text.split("\n", 1)[1]
+            if text.startswith("下载GGM插件失败:\n"):
+                return "Failed to download GGM:\n" + text.split("\n", 1)[1]
+            if text.startswith("启动GGM安装程序失败:\n"):
+                return "Failed to start the GGM installer:\n" + text.split("\n", 1)[1]
             if text.startswith("启动Nexon Game Manager安装经典版失败:\n"):
                 return "Failed to start MapleStory Classic installer:\n" + text.split("\n", 1)[1]
         return text

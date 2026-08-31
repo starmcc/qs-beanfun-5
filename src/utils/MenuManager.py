@@ -1,9 +1,10 @@
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 from pathlib import Path
 
-from PySide6.QtCore import QTimer
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu
 
@@ -17,7 +18,6 @@ from src.config.I18n import tr
 from src.utils.ThreadPoolManager import get_thread_pool
 from src.window.MainWin import MainWin
 from src.components import PyQtBrowser
-from src.components.LoadingTask import DownloadMask
 
 
 def init_menu(self):
@@ -38,7 +38,7 @@ def init_menu(self):
             CustomMenu(name="tools_calc", title="系统计算器", handler=lambda: subprocess.Popen('calc.exe')),
         ]),
         CustomMenu(name="classic", title="经典版", children=[
-            CustomMenu(name="classic_download_ngm", title="下载Nexon Game Manager插件", handler=lambda: classic_download_ngm(self)),
+            CustomMenu(name="classic_download_ngm", title="下载GGM插件", handler=lambda: classic_download_ngm(self)),
             CustomMenu(name="classic_install", title="安装枫之谷经典版", handler=lambda: classic_install(self)),
         ]),
         CustomMenu(name="nav", title="便捷导航", handler=lambda: open_win(self, "nav")),
@@ -120,45 +120,67 @@ def user_loginOut_triggerd(self):
 
 
 def classic_download_ngm(self):
-    """下载NGM插件 - 后台下载到临时目录并自动运行安装程序（带进度条）"""
+    """下载GGM插件 - 后台下载到临时目录并自动运行安装程序（带进度窗口）"""
+    # 延迟导入，避免循环导入
+    from src.window.DownloadWin import DownloadWin
+
     url = 'https://platform.nexon.com/NGM/Bin/Install_NGM.exe'
     tmp_dir = tempfile.gettempdir()
     tmp_file = Path(tmp_dir) / 'Install_NGM.exe'
 
-    # 创建带进度条的下载遮罩
-    mask = DownloadMask(self, "正在下载NGM插件...")
-    mask.show()
+    # 创建下载进度窗口（单独设置标题，覆盖 .ui 默认文字）
+    download_win = DownloadWin(self, status="正在连接服务器...")
+    download_win.set_title("正在下载GGM插件")
+    download_win.show()
+
+    # 取消标志：用户关闭窗口时置位，后台任务据此停止
+    cancel_event = threading.Event()
+
+    def __on_cancel():
+        cancel_event.set()
+
+    download_win.cancel_requested.connect(__on_cancel)
 
     def __download_task():
         try:
+            if cancel_event.is_set():
+                return None
             rsp = RequestClient.get_instance().get(url, stream=True, timeout=120)
             if rsp.status_code != 200:
                 raise Exception(f'下载失败，状态码: {rsp.status_code}')
             total_size = int(rsp.headers.get('content-length', 0))
             downloaded = 0
+            start_time = time.time()
+            download_win.set_status("正在下载GGM插件...")
             with open(str(tmp_file), 'wb') as f:
                 for chunk in rsp.iter_content(chunk_size=8192):
+                    if cancel_event.is_set():
+                        return None
                     if chunk:
                         f.write(chunk)
                         downloaded += len(chunk)
                         if total_size > 0:
                             percent = int(downloaded * 100 / total_size)
-                            mask.set_progress(percent)
+                            download_win.set_progress(percent)
+                            elapsed = time.time() - start_time
+                            if elapsed > 0:
+                                speed = downloaded / elapsed / 1024  # KB/s
+                                download_win.set_speed(f"{speed:.1f} KB/s")
             return str(tmp_file)
         except Exception as e:
             return e
 
     def __download_result(win, result, exception):
-        # 关闭遮罩
-        QTimer.singleShot(0, lambda: (mask.hide(), mask.deleteLater()))
+        # 关闭下载进度窗口
+        download_win.close()
         if exception or isinstance(result, Exception):
             err = exception or result
-            BoxPop.err(win, f'下载Nexon Game Manager插件失败:\n{str(err)}')
+            BoxPop.err(win, f'下载GGM插件失败:\n{str(err)}')
             return
         try:
             subprocess.Popen([result])
         except Exception as e:
-            BoxPop.err(win, f'启动Nexon Game Manager安装程序失败:\n{str(e)}')
+            BoxPop.err(win, f'启动GGM安装程序失败:\n{str(e)}')
 
     get_thread_pool().submit_task(__download_task, __download_result, self, show_loading=False)
 

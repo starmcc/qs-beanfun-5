@@ -3,17 +3,6 @@ import logging
 import os
 import shutil
 import sys
-import webbrowser
-from typing import Tuple
-
-from PySide6.QtWidgets import QMessageBox
-from packaging import version
-
-from src.client import RequestClient
-from src.config import Config
-from src.config.GlobalConfig import GlobalConstants
-from src.utils import BoxPop
-from src.utils.ThreadPoolManager import get_thread_pool
 
 
 def hidden_str(s):
@@ -37,59 +26,10 @@ def build_path(path: str):
 
 
 def check_new_version(win, quiet: bool = True):
-    # 如果是安静模式,且无勾选检查更新
-    if quiet and not Config.app_check_update():
-        return
-
-    # 检查更新
-    def __check_update_result(window, result, e):
-        if not result:
-            result = (False, '未知错误')
-        status_flag, message = result
-        if e:
-            logging.error(f"检查版本更新出现错误：\n {str(e)}")
-            status_flag = False
-            message = "无法获取版本信息"
-        if status_flag:
-            # 修复：ButtonRole 枚举前缀
-            buttons = {
-                "前往更新": QMessageBox.ButtonRole.AcceptRole,
-                "取消": QMessageBox.ButtonRole.RejectRole
-            }
-            if quiet:
-                buttons = {
-                    "前往更新": QMessageBox.ButtonRole.AcceptRole,
-                    "不再提醒": QMessageBox.ButtonRole.ActionRole,
-                    "取消": QMessageBox.ButtonRole.RejectRole
-                }
-            click_result = BoxPop.custom_question(window, message, buttons)
-
-            if click_result == QMessageBox.ButtonRole.AcceptRole:
-                webbrowser.open(f"{GlobalConstants.GITHUB_URL}/releases")
-            if quiet and click_result == QMessageBox.ButtonRole.ActionRole:
-                Config.app_check_update(False)
-        elif not quiet:
-            BoxPop.info(window, message)
-
-    get_thread_pool().submit_task(__check_version, __check_update_result, win, not quiet)
-
-
-def __check_version() -> Tuple[bool, str]:
-    # bool = 是否有更新
-    # str = 更新内容,错误消息
-    msg = '无法获取版本信息'
-    response = RequestClient.get_instance().get(f"{GlobalConstants.GITHUB_API_URL}/releases/latest")
-    response.raise_for_status()
-    data = response.json()
-    latest_version = data.get('tag_name')
-    if latest_version is None:
-        return False, msg
-    if version.parse(GlobalConstants.APP_VERSION) >= version.parse(latest_version):
-        return False, '当前是最新版本'
-    else:
-        body = data.get('body')
-        msg = f'发现新版本：{latest_version}\n{body}\n是否前往更新?'
-        return True, msg
+    """检查新版本（兼容入口，委托给 UpdaterClient）"""
+    # 延迟导入，避免与 RequestClient -> Config -> BaseTools 形成循环导入
+    from src.client.updater.UpdaterClient import UpdaterClient
+    UpdaterClient.check_new_version(win, quiet)
 
 
 def build_chrome():

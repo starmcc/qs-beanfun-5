@@ -161,13 +161,11 @@ def _run_game_result(win, status, msg):
     if status == 1:
         if not BoxPop.question(win, msg):
             return
-        directory, err = select_game_path()
-        if not directory:
-            return
-        if err:
-            BoxPop.warn(win, err)
-            return
-        # 重新打开
+        # 打开设置界面，让用户设置游戏目录
+        from src.window.ConfigWin import ConfigWin
+        GLOBAL_CONFIG.win_config = ConfigWin(win)
+        GLOBAL_CONFIG.win_config.exec()
+        # 设置完成后重新启动游戏
         win.start_clicked()
     elif status == 0:
         # 游戏正在运行
