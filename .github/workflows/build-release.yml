@@ -97,8 +97,6 @@ jobs:
 
           # 组装发布说明（美观的 Markdown 格式）
           $sb = [System.Text.StringBuilder]::new()
-          [void]$sb.AppendLine("# 🚀 QsBeanfun $tag")
-          [void]$sb.AppendLine()
           [void]$sb.AppendLine("**构建时间 Build Time**：$built")
           [void]$sb.AppendLine()
           [void]$sb.AppendLine("---")
@@ -122,17 +120,7 @@ jobs:
           [void]$sb.AppendLine()
           [void]$sb.AppendLine("1. 下载 **QsBeanfun.zip** 并解压")
           [void]$sb.AppendLine("2. 运行 **Beanfun.exe**")
-          [void]$sb.AppendLine("3. 首次启动会自动释放区域模拟文件")
           [void]$sb.AppendLine()
-          [void]$sb.AppendLine("---")
-          [void]$sb.AppendLine()
-          [void]$sb.AppendLine("## 📋 详细信息 Details")
-          [void]$sb.AppendLine()
-          [void]$sb.AppendLine("| 项目 Item | 值 Value |")
-          [void]$sb.AppendLine("|-----------|----------|")
-          [void]$sb.AppendLine("| **SHA256** | `$sha256` |")
-          [void]$sb.AppendLine("| **构建时间 Build Time** | $built |")
-          [void]$sb.AppendLine("| **提交 Commit** | `$commit` |")
 
           # 写入文件（UTF8NoBOM 避免 BOM 影响 release body 开头）
           [System.IO.File]::WriteAllText(
