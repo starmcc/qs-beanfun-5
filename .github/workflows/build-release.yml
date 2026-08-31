@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 设置 Python
         uses: actions/setup-python@v5
@@ -82,6 +84,7 @@ jobs:
 
           # 1. 对比 requirements.txt 是否变化（决定是否全量）
           $prevTag = git describe --tags --abbrev=0 HEAD~1 2>$null
+          if ($LASTEXITCODE -ne 0) { $prevTag = $null }
           $reqChanged = $true
           if ($prevTag) {
             $prevReq = git show "${prevTag}:requirements.txt" 2>$null
