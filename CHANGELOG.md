@@ -15,7 +15,7 @@
 - 🐛 Fix application freeze when repeatedly typing in Hong Kong account 2FA input box
 
 - 🐛 修复香港账号错误套用 GGM 模式问题
-- 🐛 Fix bug that incorrectly enables GMM mode for Hong Kong accounts
+- 🐛 Fix bug that incorrectly enables GGM mode for Hong Kong accounts
 
 - 🐛 修复便捷导航使用测试数据问题
 - 🐛 Fix: Convenient navigation using test data issue
