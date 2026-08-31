@@ -1,0 +1,166 @@
+name: Build & Release (Windows)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'src/**'
+      - 'resources/**'
+      - 'requirements.txt'
+      - 'build.bat'
+      - 'CHANGELOG.md'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10.11'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 读取版本号
+        id: version
+        shell: pwsh
+        run: |
+          $content = Get-Content -Path 'src/config/GlobalConfig.py' -Raw
+          if ($content -match 'APP_VERSION\s*=\s*"([^"]+)"') {
+            $ver = $Matches[1]
+          } else {
+            $ver = '0.0.0'
+          }
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$ver"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "tag=v$ver"
+
+      - name: 打包应用 (PyInstaller)
+        run: |
+          pyinstaller --clean -w `
+            --uac-admin `
+            --name="Beanfun" `
+            --icon="resources/images/logo.ico" `
+            --distpath="compile/dist" `
+            --workpath="compile/build" `
+            --exclude PySide6.QtBluetooth `
+            --exclude PySide6.QtMultimedia `
+            --exclude PySide6.QtOpenGL `
+            --exclude PySide6.QtQuick `
+            --exclude PySide6.QtQml `
+            --exclude PySide6.QtSerialPort `
+            --exclude PySide6.QtSql `
+            --exclude PySide6.QtTest `
+            --exclude PySide6.QtWebSockets `
+            src/QsBeanfun.py -y
+
+      - name: 压缩打包产物为 QsBeanfun.zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path 'compile/dist' | Out-Null
+          Compress-Archive -Path 'compile/dist/Beanfun' -DestinationPath 'compile/dist/QsBeanfun.zip' -Force
+          Get-Item 'compile/dist/QsBeanfun.zip' | Select-Object Name, Length
+
+      - name: 生成发布说明 (Release Body)
+        id: release_body
+        shell: pwsh
+        run: |
+          # 版本号
+          $tag = "${{ steps.version.outputs.tag }}"
+
+          # 构建时间 (UTC)
+          $built = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ss') + ' UTC'
+
+          # 从 CHANGELOG.md 读取最新版本小节内容（指定 UTF8 编码避免中文乱码）
+          $changelog = Get-Content -Path 'CHANGELOG.md' -Raw -Encoding UTF8
+          if ($changelog -match '(?s)##\s+[^\r\n]+(.*?)(?=\n##\s|\z)') {
+            $changes = $Matches[1].Trim()
+          } else {
+            $changes = '本次更新内容请查看 CHANGELOG.md'
+          }
+
+          # 计算 QsBeanfun.zip 的 SHA256
+          $sha256 = (Get-FileHash -Path 'compile/dist/QsBeanfun.zip' -Algorithm SHA256).Hash
+
+          # 当前 commit SHA
+          $commit = $env:GITHUB_SHA
+
+          # 组装发布说明（美观的 Markdown 格式）
+          $sb = [System.Text.StringBuilder]::new()
+          [void]$sb.AppendLine("# 🚀 QsBeanfun $tag")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("**构建时间 Build Time**：$built")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("---")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("## 📥 下载 Download")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("| 文件 File | 说明 Description |")
+          [void]$sb.AppendLine("|-----------|------------------|")
+          [void]$sb.AppendLine("| **QsBeanfun.zip** | 完整打包（推荐 / Recommended） |")
+          [void]$sb.AppendLine("| **Beanfun.exe** | 程序本体 / the application itself |")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("---")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("## 📝 更新内容 Changes")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine($changes)
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("---")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("## 🚀 使用说明 Usage")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("1. 下载 **QsBeanfun.zip** 并解压")
+          [void]$sb.AppendLine("2. 运行 **Beanfun.exe**")
+          [void]$sb.AppendLine("3. 首次启动会自动释放区域模拟文件")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("---")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("## 📋 详细信息 Details")
+          [void]$sb.AppendLine()
+          [void]$sb.AppendLine("| 项目 Item | 值 Value |")
+          [void]$sb.AppendLine("|-----------|----------|")
+          [void]$sb.AppendLine("| **SHA256** | `$sha256` |")
+          [void]$sb.AppendLine("| **构建时间 Build Time** | $built |")
+          [void]$sb.AppendLine("| **提交 Commit** | `$commit` |")
+
+          # 写入文件（UTF8NoBOM 避免 BOM 影响 release body 开头）
+          [System.IO.File]::WriteAllText(
+            (Join-Path $PWD 'release_body.md'),
+            $sb.ToString(),
+            [System.Text.UTF8Encoding]::new($false)
+          )
+          Write-Output "已生成 release_body.md："
+          Get-Content -Path 'release_body.md'
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: QsBeanfun
+          path: |
+            compile/dist/QsBeanfun.zip
+            compile/dist/Beanfun
+
+      - name: 创建预发布 (Prerelease)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body_path: release_body.md
+          files: |
+            compile/dist/QsBeanfun.zip
+            compile/dist/Beanfun/Beanfun.exe
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
